@@ -41,6 +41,13 @@ TIER_1_TITLES = [
     "chief of the defence force", "commander-in-chief",
     "inspector general of police", "inspector-general of police",
     "national security adviser",
+    # Former heads of state remain Tier 1 PEPs
+    "former president", "former prime minister",
+    "former vice president", "former head of state",
+    # Candidates for highest office
+    "candidate", "presidential candidate",
+    # Cabinet Secretary (Kenya style)
+    "cabinet secretary",
 ]
 
 TIER_1_INSTITUTIONS = [
@@ -79,6 +86,9 @@ TIER_2_TITLES = [
     "governor", "deputy governor",
     "premier", "chief minister",
     "regional minister",
+    # Deputies and former officials
+    "former governor", "former minister", "former senator",
+    "deputy", "member of the house",
 ]
 
 TIER_2_INSTITUTIONS = [
@@ -105,6 +115,7 @@ TIER_3_TITLES = [
     "councillor", "council member",
     "magistrate", "district judge",
     "deputy minister", "assistant minister",
+    "acting minister",
     "permanent secretary", "deputy director",
     "special adviser", "special advisor",
 ]
@@ -131,6 +142,18 @@ def classify_pep_tier(title: str, institution: str = "") -> int:
     inst_lower = institution.lower().strip() if institution else ""
     combined = f"{title_lower} {inst_lower}"
 
+    # Check Tier 3 FIRST for deputy/acting/assistant prefixes that would
+    # otherwise match Tier 1 "minister of" patterns
+    for pattern in TIER_3_TITLES:
+        if pattern in combined:
+            log.debug("tier_classified", tier=3, title=title, match=pattern)
+            return 3
+
+    for pattern in TIER_3_INSTITUTIONS:
+        if pattern in inst_lower:
+            log.debug("tier_classified", tier=3, institution=institution, match=pattern)
+            return 3
+
     # Check Tier 1
     for pattern in TIER_1_TITLES:
         if pattern in combined:
@@ -152,17 +175,6 @@ def classify_pep_tier(title: str, institution: str = "") -> int:
         if pattern in inst_lower:
             log.debug("tier_classified", tier=2, institution=institution, match=pattern)
             return 2
-
-    # Check Tier 3
-    for pattern in TIER_3_TITLES:
-        if pattern in combined:
-            log.debug("tier_classified", tier=3, title=title, match=pattern)
-            return 3
-
-    for pattern in TIER_3_INSTITUTIONS:
-        if pattern in inst_lower:
-            log.debug("tier_classified", tier=3, institution=institution, match=pattern)
-            return 3
 
     # Default: if we have any title or institution, classify as tier 2
     # (conservative approach — better to over-classify than miss)

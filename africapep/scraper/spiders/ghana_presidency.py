@@ -161,6 +161,16 @@ class GhanaPresidencyScraper(BaseScraper):
             ("Ibrahim Mohammed Awal", "Minister for Trade and Industry", "7 January 2025"),
             ("Samuel Okudzeto Ablakwa", "Minister for Foreign Affairs", "7 January 2025"),
             ("Dr Zanetor Agyeman-Rawlings", "Minister for Health", "7 January 2025"),
+            ("Governs Kwame Agbodza", "Minister for Roads and Highways", "7 January 2025"),
+            ("Haruna Iddrisu", "Minister for Employment and Labour Relations", "7 January 2025"),
+            ("Alban Sumana Kingsford Bagbin", "Speaker of Parliament", "7 January 2021"),
+            ("Nana Addo Dankwa Akufo-Addo", "Former President of Ghana", "7 January 2017"),
+            ("Gertrude Sackey Torkornoo", "Chief Justice of Ghana", "7 June 2023"),
+            ("Mahama Ayariga", "Minister for Information", "7 January 2025"),
+            ("Fiifi Kwetey", "Minister for Food and Agriculture", "7 January 2025"),
+            ("Emmanuel Armah-Kofi Buah", "Minister for Lands and Natural Resources", "7 January 2025"),
+            ("Dr Kwabena Duffuor", "Former Governor of Bank of Ghana", ""),
+            ("Kofi Annan", "Former UN Secretary General (Ghanaian)", ""),
         ]
         return [
             RawPersonRecord(

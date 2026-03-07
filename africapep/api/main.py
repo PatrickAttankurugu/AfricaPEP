@@ -11,24 +11,42 @@ from slowapi.errors import RateLimitExceeded
 from sqlalchemy.exc import OperationalError, InterfaceError
 import structlog
 
-from africapep.api.routers import screen, pep, graph, search, health
+from africapep.api.routers import screen, pep, graph, search, health, countries
 
 log = structlog.get_logger()
 
 # ── Rate limiter ──
 limiter = Limiter(key_func=get_remote_address)
 
+tags_metadata = [
+    {"name": "Health", "description": "System health and database connectivity checks"},
+    {"name": "Screening", "description": "Screen names against the PEP database using fuzzy matching"},
+    {"name": "Search", "description": "Full-text search across PEP profiles with filters"},
+    {"name": "Countries", "description": "List supported African countries and coverage stats"},
+    {"name": "PEP Profiles", "description": "Retrieve individual PEP profiles and details"},
+    {"name": "Graph", "description": "Graph traversal for relationship exploration"},
+]
+
 app = FastAPI(
     title="AfricaPEP API",
     description=(
-        "African Politically Exposed Persons (PEP) Database API. "
-        "Provides screening, search, and graph traversal capabilities "
-        "for KYC/AML compliance. All data sourced from official African "
-        "government publications."
+        "## African Politically Exposed Persons (PEP) Database\n\n"
+        "Open-source PEP screening API covering all **54 African Union member states**. "
+        "Built from scratch using web scrapers, NLP pipelines, and entity resolution — "
+        "no third-party PEP data providers.\n\n"
+        "### Key Features\n"
+        "- **Name Screening** — Fuzzy match names against 1,500+ PEP profiles\n"
+        "- **Batch Screening** — Screen up to 50 names in a single request\n"
+        "- **Full-text Search** — Search by name, country, tier, and active status\n"
+        "- **FATF-aligned Tiers** — Tier 1 (heads of state), Tier 2 (MPs/judges), Tier 3 (local officials)\n"
+        "- **Dual Database** — Neo4j graph + PostgreSQL for fast search\n"
     ),
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
+    openapi_tags=tags_metadata,
+    contact={"name": "Patrick Attankurugu", "url": "https://github.com/PatrickAttankurugu/AfricaPEP"},
+    license_info={"name": "MIT", "url": "https://opensource.org/licenses/MIT"},
 )
 
 app.state.limiter = limiter
@@ -142,6 +160,7 @@ app.include_router(screen.router, prefix="/api/v1", tags=["Screening"])
 app.include_router(pep.router, prefix="/api/v1", tags=["PEP Profiles"])
 app.include_router(graph.router, prefix="/api/v1", tags=["Graph"])
 app.include_router(search.router, prefix="/api/v1", tags=["Search"])
+app.include_router(countries.router, prefix="/api/v1", tags=["Countries"])
 
 
 @app.get("/", include_in_schema=False)

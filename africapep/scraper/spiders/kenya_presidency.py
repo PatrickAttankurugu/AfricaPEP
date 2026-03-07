@@ -103,6 +103,17 @@ class KenyaPresidencyScraper(BaseScraper):
             {"name": "Ezekiel Machogu", "title": "Cabinet Secretary for Education"},
             {"name": "Aisha Jumwa", "title": "Cabinet Secretary for Gender"},
             {"name": "Susan Nakhumicha", "title": "Cabinet Secretary for Health"},
+            {"name": "Davis Chirchir", "title": "Cabinet Secretary for Energy"},
+            {"name": "Kipchumba Murkomen", "title": "Cabinet Secretary for Roads and Transport"},
+            {"name": "Rebecca Miano", "title": "Cabinet Secretary for Lands"},
+            {"name": "Salim Mvurya", "title": "Cabinet Secretary for Mining"},
+            {"name": "Florence Bore", "title": "Cabinet Secretary for Labour"},
+            {"name": "Mithika Linturi", "title": "Cabinet Secretary for Agriculture"},
+            {"name": "Uhuru Kenyatta", "title": "Former President of Kenya"},
+            {"name": "Raila Odinga", "title": "Former Prime Minister and AU Commission Chairperson Candidate"},
+            {"name": "Martha Koome", "title": "Chief Justice of Kenya"},
+            {"name": "Amason Kingi", "title": "Speaker of the Senate"},
+            {"name": "Moses Wetangula", "title": "Speaker of the National Assembly"},
         ]
         return [
             RawPersonRecord(

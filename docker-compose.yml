@@ -1,6 +1,7 @@
 services:
   neo4j:
     image: neo4j:5-community
+    restart: unless-stopped
     ports:
       - "7474:7474"
       - "7687:7687"
@@ -18,6 +19,7 @@ services:
 
   postgres:
     image: postgres:15
+    restart: unless-stopped
     ports:
       - "5432:5432"
     volumes:
@@ -34,6 +36,7 @@ services:
 
   api:
     build: .
+    restart: unless-stopped
     ports:
       - "8000:8000"
     depends_on:
@@ -42,12 +45,16 @@ services:
       postgres:
         condition: service_healthy
     env_file: .env
-    command: uvicorn africapep.api.main:app --host 0.0.0.0 --port 8000 --reload
-    volumes:
-      - .:/app
+    command: uvicorn africapep.api.main:app --host 0.0.0.0 --port 8000
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
 
   scraper:
     build: .
+    restart: unless-stopped
     depends_on:
       neo4j:
         condition: service_healthy
@@ -56,5 +63,4 @@ services:
     env_file: .env
     command: python -m africapep.scheduler.jobs
     volumes:
-      - .:/app
       - ./data/raw_pdfs:/app/data/raw_pdfs

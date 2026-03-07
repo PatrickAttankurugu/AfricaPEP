@@ -195,54 +195,24 @@ class TanzaniaPresidencyScraper(BaseScraper):
         """Current Tanzania cabinet data as synthetic fixture records."""
         now = datetime.utcnow()
         cabinet = [
-            {
-                "name": "Samia Suluhu Hassan",
-                "title": "President",
-            },
-            {
-                "name": "Philip Isdor Mpango",
-                "title": "Vice President",
-            },
-            {
-                "name": "Kassim Majaliwa",
-                "title": "Prime Minister",
-            },
-            {
-                "name": "Doto Mashaka Biteko",
-                "title": "Deputy PM / Minister of Energy",
-            },
-            {
-                "name": "January Yusuf Makamba",
-                "title": "Minister of Foreign Affairs",
-            },
-            {
-                "name": "Stergomena Lawrence Tax",
-                "title": "Minister of Defence",
-            },
-            {
-                "name": "Hamad Masauni",
-                "title": "Minister of Home Affairs",
-            },
-            {
-                "name": "Emmanuel Mwenyemlare Tutuba",
-                "title": "Minister of Finance",
-            },
-            {
-                "name": "Prof. Adolf Faustine Mkenda",
-                "title": "Minister of Education",
-            },
-            {
-                "name": "Liberata Mulamula",
-                "title": "Minister of Information",
-            },
-            {
-                "name": "Angellah Jasmine Kairuki",
-                "title": "Minister of State, PM's Office",
-            },
-            {
-                "name": "Ummy Ally Mwalimu",
-                "title": "Minister of Health",
-            },
+            {"name": "Samia Suluhu Hassan", "title": "President"},
+            {"name": "Philip Isdor Mpango", "title": "Vice President"},
+            {"name": "Kassim Majaliwa", "title": "Prime Minister"},
+            {"name": "Doto Mashaka Biteko", "title": "Deputy PM / Minister of Energy"},
+            {"name": "January Yusuf Makamba", "title": "Minister of Foreign Affairs"},
+            {"name": "Stergomena Lawrence Tax", "title": "Minister of Defence"},
+            {"name": "Hamad Masauni", "title": "Minister of Home Affairs"},
+            {"name": "Emmanuel Mwenyemlare Tutuba", "title": "Minister of Finance"},
+            {"name": "Adolf Faustine Mkenda", "title": "Minister of Education"},
+            {"name": "Liberata Mulamula", "title": "Minister of Information"},
+            {"name": "Angellah Jasmine Kairuki", "title": "Minister of State, PM's Office"},
+            {"name": "Ummy Ally Mwalimu", "title": "Minister of Health"},
+            {"name": "Pindi Chana", "title": "Minister of Natural Resources and Tourism"},
+            {"name": "Hussein Bashe", "title": "Minister of Agriculture"},
+            {"name": "Tulia Ackson", "title": "Speaker of the National Assembly"},
+            {"name": "Ibrahim Mahamed Juma", "title": "Chief Justice of Tanzania"},
+            {"name": "Jakaya Kikwete", "title": "Former President of Tanzania"},
+            {"name": "Benjamin Mkapa", "title": "Former President of Tanzania"},
         ]
         return [
             RawPersonRecord(

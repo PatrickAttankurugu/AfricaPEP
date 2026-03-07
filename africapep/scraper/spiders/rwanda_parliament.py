@@ -141,6 +141,12 @@ class RwandaParliamentScraper(BaseScraper):
     def _synthetic_fixture(self) -> list[RawPersonRecord]:
         now = datetime.utcnow()
         members = [
+            {"name": "Paul Kagame", "title": "President of the Republic of Rwanda", "chamber": "Executive", "party": "RPF"},
+            {"name": "Edouard Ngirente", "title": "Prime Minister", "chamber": "Executive", "party": "RPF"},
+            {"name": "Vincent Biruta", "title": "Minister of Foreign Affairs", "chamber": "Executive", "party": "RPF"},
+            {"name": "Albert Murasira", "title": "Minister of Defence", "chamber": "Executive", "party": "RPF"},
+            {"name": "Jean Claude Musabyimana", "title": "Minister of Internal Security", "chamber": "Executive", "party": "RPF"},
+            {"name": "Uzziel Ndagijimana", "title": "Minister of Finance and Economic Planning", "chamber": "Executive", "party": "RPF"},
             {"name": "Gertrude Kazarwa", "title": "Speaker", "chamber": "Chamber of Deputies", "party": "RPF"},
             {"name": "Speciose Ayinkamiye", "title": "Deputy", "chamber": "Chamber of Deputies", "party": "PSD"},
             {"name": "Christine Bakundufite", "title": "Deputy", "chamber": "Chamber of Deputies", "party": "RPF"},
@@ -151,6 +157,7 @@ class RwandaParliamentScraper(BaseScraper):
             {"name": "Augustin Iyamuremye", "title": "Senator", "chamber": "Senate", "party": "RPF"},
             {"name": "Francois Xavier Kalinda", "title": "Senator", "chamber": "Senate", "party": "RPF"},
             {"name": "Esperance Nyirasafari", "title": "Senator", "chamber": "Senate", "party": "RPF"},
+            {"name": "Louise Mushikiwabo", "title": "Secretary General of La Francophonie", "chamber": "Executive", "party": "RPF"},
         ]
         return [
             RawPersonRecord(

@@ -58,6 +58,7 @@ class Neo4jClient:
     # ── Graph write operations ──
 
     def upsert_person(self, person: dict) -> str:
+        """Upsert a Person node within a single managed transaction."""
         query = """
         MERGE (p:Person {id: $id})
         SET p.full_name = $full_name,
@@ -71,8 +72,45 @@ class Neo4jClient:
             p.created_at = coalesce(p.created_at, datetime())
         RETURN p.id AS id
         """
-        result = self.run(query, person)
-        return result[0]["id"] if result else person["id"]
+
+        def _do_upsert(tx, params):
+            result = tx.run(query, params)
+            record = result.single()
+            return record["id"] if record else params["id"]
+
+        with self._driver.session() as session:
+            return session.execute_write(_do_upsert, person)
+
+    def upsert_person_batch(self, persons: list[dict]) -> list[str]:
+        """Upsert multiple Person nodes in a single transaction.
+
+        This avoids the overhead of opening a separate transaction for each
+        person, which matters when ingesting hundreds of records at once.
+        """
+        query = """
+        MERGE (p:Person {id: $id})
+        SET p.full_name = $full_name,
+            p.name_variants = $name_variants,
+            p.date_of_birth = $date_of_birth,
+            p.nationality = $nationality,
+            p.gender = $gender,
+            p.pep_tier = $pep_tier,
+            p.is_active_pep = $is_active_pep,
+            p.updated_at = datetime(),
+            p.created_at = coalesce(p.created_at, datetime())
+        RETURN p.id AS id
+        """
+
+        def _do_batch(tx, items):
+            ids = []
+            for person in items:
+                result = tx.run(query, person)
+                record = result.single()
+                ids.append(record["id"] if record else person["id"])
+            return ids
+
+        with self._driver.session() as session:
+            return session.execute_write(_do_batch, persons)
 
     def upsert_position(self, position: dict) -> str:
         query = """
@@ -86,8 +124,14 @@ class Neo4jClient:
             pos.is_current = $is_current
         RETURN pos.id AS id
         """
-        result = self.run(query, position)
-        return result[0]["id"] if result else position["id"]
+
+        def _do_upsert(tx, params):
+            result = tx.run(query, params)
+            record = result.single()
+            return record["id"] if record else params["id"]
+
+        with self._driver.session() as session:
+            return session.execute_write(_do_upsert, position)
 
     def upsert_organisation(self, org: dict) -> str:
         query = """
@@ -98,8 +142,14 @@ class Neo4jClient:
             o.registration_number = $registration_number
         RETURN o.id AS id
         """
-        result = self.run(query, org)
-        return result[0]["id"] if result else org["id"]
+
+        def _do_upsert(tx, params):
+            result = tx.run(query, params)
+            record = result.single()
+            return record["id"] if record else params["id"]
+
+        with self._driver.session() as session:
+            return session.execute_write(_do_upsert, org)
 
     def ensure_country(self, code: str, name: str, region: str):
         query = """
@@ -117,8 +167,14 @@ class Neo4jClient:
         })
         RETURN s.id AS id
         """
-        result = self.run(query, source)
-        return result[0]["id"] if result else source["id"]
+
+        def _do_create(tx, params):
+            result = tx.run(query, params)
+            record = result.single()
+            return record["id"] if record else params["id"]
+
+        with self._driver.session() as session:
+            return session.execute_write(_do_create, source)
 
     def link_person_position(self, person_id: str, position_id: str,
                              start_date=None, end_date=None, is_current=True):

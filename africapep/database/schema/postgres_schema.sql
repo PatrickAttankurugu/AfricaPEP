@@ -60,7 +60,11 @@ CREATE INDEX IF NOT EXISTS idx_pep_trgm ON pep_profiles USING GIN(full_name gin_
 CREATE INDEX IF NOT EXISTS idx_pep_country ON pep_profiles(country);
 CREATE INDEX IF NOT EXISTS idx_pep_tier ON pep_profiles(pep_tier);
 CREATE INDEX IF NOT EXISTS idx_change_entity ON change_log(entity_id);
+CREATE INDEX IF NOT EXISTS idx_change_detected_at ON change_log(detected_at);
 CREATE INDEX IF NOT EXISTS idx_screening_date ON screening_log(query_date);
+CREATE INDEX IF NOT EXISTS idx_source_neo4j_id ON source_records(neo4j_id);
+CREATE INDEX IF NOT EXISTS idx_source_country ON source_records(country);
+CREATE INDEX IF NOT EXISTS idx_pep_nationality ON pep_profiles(nationality);
 
 CREATE OR REPLACE FUNCTION update_search_vector() RETURNS TRIGGER AS $$
 BEGIN

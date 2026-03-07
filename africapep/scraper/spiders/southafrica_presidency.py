@@ -153,66 +153,30 @@ class SouthAfricaPresidencyScraper(BaseScraper):
         now = datetime.utcnow()
 
         cabinet = [
-            {
-                "name": "Cyril Ramaphosa",
-                "title": "President of the Republic of South Africa",
-                "party": "ANC",
-            },
-            {
-                "name": "Paul Mashatile",
-                "title": "Deputy President",
-                "party": "ANC",
-            },
-            {
-                "name": "Enoch Godongwana",
-                "title": "Minister of Finance",
-                "party": "ANC",
-            },
-            {
-                "name": "Ronald Lamola",
-                "title": "Minister of International Relations and Cooperation",
-                "party": "ANC",
-            },
-            {
-                "name": "Angie Motshekga",
-                "title": "Minister of Defence and Military Veterans",
-                "party": "ANC",
-            },
-            {
-                "name": "Senzo Mchunu",
-                "title": "Minister of Police",
-                "party": "ANC",
-            },
-            {
-                "name": "John Steenhuisen",
-                "title": "Minister of Agriculture",
-                "party": "DA",
-            },
-            {
-                "name": "Dean Macpherson",
-                "title": "Minister of Public Works and Infrastructure",
-                "party": "DA",
-            },
-            {
-                "name": "Pieter Groenewald",
-                "title": "Minister of Correctional Services",
-                "party": "FF+",
-            },
-            {
-                "name": "Gayton McKenzie",
-                "title": "Minister of Sports, Arts and Culture",
-                "party": "PA",
-            },
-            {
-                "name": "Parks Tau",
-                "title": "Minister of Trade, Industry and Competition",
-                "party": "ANC",
-            },
-            {
-                "name": "Blade Nzimande",
-                "title": "Minister of Higher Education, Science and Innovation",
-                "party": "SACP",
-            },
+            {"name": "Cyril Ramaphosa", "title": "President of the Republic of South Africa", "party": "ANC"},
+            {"name": "Paul Mashatile", "title": "Deputy President", "party": "ANC"},
+            {"name": "Enoch Godongwana", "title": "Minister of Finance", "party": "ANC"},
+            {"name": "Ronald Lamola", "title": "Minister of International Relations and Cooperation", "party": "ANC"},
+            {"name": "Angie Motshekga", "title": "Minister of Defence and Military Veterans", "party": "ANC"},
+            {"name": "Senzo Mchunu", "title": "Minister of Police", "party": "ANC"},
+            {"name": "John Steenhuisen", "title": "Minister of Agriculture", "party": "DA"},
+            {"name": "Dean Macpherson", "title": "Minister of Public Works and Infrastructure", "party": "DA"},
+            {"name": "Pieter Groenewald", "title": "Minister of Correctional Services", "party": "FF+"},
+            {"name": "Gayton McKenzie", "title": "Minister of Sports, Arts and Culture", "party": "PA"},
+            {"name": "Parks Tau", "title": "Minister of Trade, Industry and Competition", "party": "ANC"},
+            {"name": "Blade Nzimande", "title": "Minister of Higher Education, Science and Innovation", "party": "SACP"},
+            {"name": "Thembi Nkadimeng", "title": "Minister of Home Affairs", "party": "ANC"},
+            {"name": "Khumbudzo Ntshavheni", "title": "Minister in the Presidency", "party": "ANC"},
+            {"name": "Aaron Motsoaledi", "title": "Minister of Health", "party": "ANC"},
+            {"name": "Sindisiwe Chikunga", "title": "Minister of Transport", "party": "ANC"},
+            {"name": "Leon Schreiber", "title": "Minister of Home Affairs", "party": "DA"},
+            {"name": "Solly Malatsi", "title": "Minister of Communications and Digital Technologies", "party": "DA"},
+            {"name": "Mmamoloko Kubayi", "title": "Minister of Human Settlements", "party": "ANC"},
+            {"name": "Mandisa Maya", "title": "Chief Justice of South Africa", "party": ""},
+            {"name": "Thabo Mbeki", "title": "Former President of South Africa", "party": "ANC"},
+            {"name": "Jacob Zuma", "title": "Former President of South Africa", "party": "MK"},
+            {"name": "Pravin Gordhan", "title": "Former Minister of Public Enterprises", "party": "ANC"},
+            {"name": "Gwede Mantashe", "title": "Minister of Mineral Resources and Energy", "party": "ANC"},
         ]
 
         return [
