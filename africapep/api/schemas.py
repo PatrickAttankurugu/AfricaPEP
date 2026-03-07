@@ -3,7 +3,7 @@ from datetime import date, datetime
 from typing import Optional
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 # ── Request models ──
@@ -131,4 +131,36 @@ class HealthResponse(BaseModel):
 
 class ErrorResponse(BaseModel):
     detail: str
-    status_code: int
+    code: str
+
+
+# ── Batch screening models ──
+
+class BatchNameEntry(BaseModel):
+    name: str = Field(..., min_length=2, max_length=200, description="Name to screen")
+    country: Optional[str] = Field(None, min_length=2, max_length=2, description="ISO 3166-1 alpha-2 country code")
+
+
+class BatchScreeningRequest(BaseModel):
+    names: list[BatchNameEntry] = Field(..., min_length=1, max_length=50, description="List of names to screen (max 50)")
+    threshold: float = Field(0.65, ge=0.0, le=1.0, description="Minimum match score")
+
+    @field_validator("names")
+    @classmethod
+    def validate_names_count(cls, v):
+        if len(v) > 50:
+            raise ValueError("Maximum 50 names per batch request")
+        return v
+
+
+class BatchScreeningResultItem(BaseModel):
+    query: str
+    matches: list["MatchResult"]
+    screening_id: str
+    screened_at: str
+
+
+class BatchScreeningResponse(BaseModel):
+    results: list[BatchScreeningResultItem]
+    total_queries: int
+    total_matches: int

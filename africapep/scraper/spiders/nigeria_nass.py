@@ -118,6 +118,7 @@ class NigeriaNASSScraper(BaseScraper):
         """Generate synthetic fixture data with real Nigerian legislators."""
         now = datetime.utcnow()
         senators = [
+            # ── Senate Leadership ──
             {
                 "name": "Godswill Akpabio",
                 "state": "Akwa Ibom North-West",
@@ -139,6 +140,56 @@ class NigeriaNASSScraper(BaseScraper):
                 "role": "Senate Leader",
                 "committees": ["Judiciary, Human Rights and Legal Matters"],
             },
+            # ── Prominent Senators ──
+            {
+                "name": "Ali Ndume",
+                "state": "Borno South",
+                "party": "APC",
+                "role": "Senator",
+                "committees": ["Army", "Defence"],
+            },
+            {
+                "name": "Adams Oshiomhole",
+                "state": "Edo North",
+                "party": "APC",
+                "role": "Senator",
+                "committees": ["Labour", "Employment", "Productivity"],
+            },
+            {
+                "name": "Ned Nwoko",
+                "state": "Delta North",
+                "party": "PDP",
+                "role": "Senator",
+                "committees": ["Appropriations", "Federal Character"],
+            },
+            {
+                "name": "Shehu Buba",
+                "state": "Yobe North",
+                "party": "APC",
+                "role": "Senator",
+                "committees": ["National Security and Intelligence"],
+            },
+            {
+                "name": "Danjuma Goje",
+                "state": "Gombe Central",
+                "party": "APC",
+                "role": "Senator",
+                "committees": ["Appropriations"],
+            },
+            {
+                "name": "Orji Uzor Kalu",
+                "state": "Abia North",
+                "party": "APC",
+                "role": "Chief Whip of the Senate",
+                "committees": ["Privatisation and Commercialisation"],
+            },
+            {
+                "name": "Osita Izunaso",
+                "state": "Imo West",
+                "party": "APC",
+                "role": "Senator",
+                "committees": ["Petroleum Resources (Upstream)"],
+            },
             {
                 "name": "Seriake Dickson",
                 "state": "Bayelsa West",
@@ -154,15 +205,44 @@ class NigeriaNASSScraper(BaseScraper):
                 "committees": ["FCT", "Women Affairs"],
             },
             {
-                "name": "Adams Oshiomhole",
-                "state": "Edo North",
+                "name": "Oluremi Tinubu",
+                "state": "Lagos Central",
                 "party": "APC",
                 "role": "Senator",
-                "committees": ["Labour", "Employment"],
+                "committees": ["Health (Secondary and Tertiary)"],
+            },
+            {
+                "name": "Abdul Ahmed Ningi",
+                "state": "Bauchi Central",
+                "party": "PDP",
+                "role": "Deputy Minority Leader",
+                "committees": ["Finance"],
+            },
+            {
+                "name": "Sumaila Abu Sadiq",
+                "state": "Kwara North",
+                "party": "APC",
+                "role": "Senator",
+                "committees": ["Agriculture"],
+            },
+            {
+                "name": "Abubakar Kyari",
+                "state": "Borno North",
+                "party": "APC",
+                "role": "Senator",
+                "committees": ["Defence", "Interior"],
+            },
+            {
+                "name": "Adamu Aliero",
+                "state": "Kebbi Central",
+                "party": "APC",
+                "role": "Senator",
+                "committees": ["Water Resources"],
             },
         ]
 
         house_members = [
+            # ── House Leadership ──
             {
                 "name": "Abbas Tajudeen",
                 "state": "Zaria Federal Constituency, Kaduna",
@@ -190,6 +270,35 @@ class NigeriaNASSScraper(BaseScraper):
                 "party": "PDP",
                 "role": "Minority Leader",
                 "committees": ["Public Accounts"],
+            },
+            # ── Prominent House Members ──
+            {
+                "name": "Akin Alabi",
+                "state": "Egbeda/Ona Ara Federal Constituency, Oyo",
+                "party": "APC",
+                "role": "Honourable Member",
+                "committees": ["Commerce", "Public Procurement"],
+            },
+            {
+                "name": "Muktar Betara",
+                "state": "Biu/Bayo/Shani Federal Constituency, Borno",
+                "party": "APC",
+                "role": "Chairman, Appropriations Committee",
+                "committees": ["Appropriations"],
+            },
+            {
+                "name": "Oghene Egoh",
+                "state": "Amuwo-Odofin Federal Constituency, Lagos",
+                "party": "APC",
+                "role": "Honourable Member",
+                "committees": ["Finance"],
+            },
+            {
+                "name": "Miriam Onuoha",
+                "state": "Okigwe South Federal Constituency, Imo",
+                "party": "APC",
+                "role": "Honourable Member",
+                "committees": ["Women in Parliament"],
             },
         ]
 

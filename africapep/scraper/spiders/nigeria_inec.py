@@ -236,7 +236,7 @@ class NigeriaINECScraper(BaseScraper):
         """Generate synthetic fixture data with real Nigerian election candidates."""
         now = datetime.utcnow()
         candidates = [
-            # 2023 Presidential election candidates
+            # ── 2023 Presidential Election ──
             {
                 "name": "Bola Ahmed Tinubu",
                 "party": "APC",
@@ -269,14 +269,14 @@ class NigeriaINECScraper(BaseScraper):
                 "votes": "1,496,687",
                 "result": "Fourth Place",
             },
-            # Governorship candidates
+            # ── 2023 Governorship Winners ──
             {
                 "name": "Babajide Sanwo-Olu",
                 "party": "APC",
                 "state": "Lagos",
                 "election_type": "Governorship",
                 "votes": "762,134",
-                "result": "Winner",
+                "result": "Winner – Governor of Lagos State",
             },
             {
                 "name": "Dapo Abiodun",
@@ -284,7 +284,7 @@ class NigeriaINECScraper(BaseScraper):
                 "state": "Ogun",
                 "election_type": "Governorship",
                 "votes": "299,465",
-                "result": "Winner",
+                "result": "Winner – Governor of Ogun State",
             },
             {
                 "name": "Ademola Adeleke",
@@ -292,17 +292,89 @@ class NigeriaINECScraper(BaseScraper):
                 "state": "Osun",
                 "election_type": "Governorship",
                 "votes": "403,371",
-                "result": "Winner",
+                "result": "Winner – Governor of Osun State",
             },
             {
-                "name": "Abdullahi Ganduje",
+                "name": "Charles Chukwuma Soludo",
+                "party": "APGA",
+                "state": "Anambra",
+                "election_type": "Governorship",
+                "votes": "112,229",
+                "result": "Winner – Governor of Anambra State",
+            },
+            {
+                "name": "Siminalayi Fubara",
+                "party": "PDP",
+                "state": "Rivers",
+                "election_type": "Governorship",
+                "votes": "302,614",
+                "result": "Winner – Governor of Rivers State",
+            },
+            {
+                "name": "Abdullahi Umar Ganduje",
                 "party": "APC",
                 "state": "Kano",
                 "election_type": "Governorship",
-                "votes": "",
-                "result": "Former Governor",
+                "votes": "1,033,695",
+                "result": "Former Governor (2019); now APC National Chairman",
             },
-            # Senatorial candidates
+            {
+                "name": "Godwin Obaseki",
+                "party": "PDP",
+                "state": "Edo",
+                "election_type": "Governorship",
+                "votes": "307,955",
+                "result": "Former Governor of Edo State (2016-2024)",
+            },
+            {
+                "name": "Abba Kabir Yusuf",
+                "party": "NNPP",
+                "state": "Kano",
+                "election_type": "Governorship",
+                "votes": "1,019,602",
+                "result": "Winner – Governor of Kano State",
+            },
+            {
+                "name": "Peter Mbah",
+                "party": "PDP",
+                "state": "Enugu",
+                "election_type": "Governorship",
+                "votes": "160,895",
+                "result": "Winner – Governor of Enugu State",
+            },
+            {
+                "name": "Alex Otti",
+                "party": "LP",
+                "state": "Abia",
+                "election_type": "Governorship",
+                "votes": "175,467",
+                "result": "Winner – Governor of Abia State",
+            },
+            {
+                "name": "Umo Eno",
+                "party": "PDP",
+                "state": "Akwa Ibom",
+                "election_type": "Governorship",
+                "votes": "342,931",
+                "result": "Winner – Governor of Akwa Ibom State",
+            },
+            {
+                "name": "Seyi Makinde",
+                "party": "PDP",
+                "state": "Oyo",
+                "election_type": "Governorship",
+                "votes": "562,791",
+                "result": "Winner – Governor of Oyo State",
+            },
+            {
+                "name": "Caleb Mutfwang",
+                "party": "PDP",
+                "state": "Plateau",
+                "election_type": "Governorship",
+                "votes": "523,941",
+                "result": "Winner – Governor of Plateau State",
+            },
+            # ── 2023 Senatorial Candidates ──
             {
                 "name": "Oluremi Tinubu",
                 "party": "APC",

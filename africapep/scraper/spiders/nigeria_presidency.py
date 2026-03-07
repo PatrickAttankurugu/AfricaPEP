@@ -148,6 +148,7 @@ class NigeriaPresidencyScraper(BaseScraper):
         """Generate synthetic fixture data with real Nigerian presidency officials."""
         now = datetime.utcnow()
         officials = [
+            # ── Tier 1: President & Vice President ──
             {
                 "name": "Bola Ahmed Tinubu",
                 "title": "President",
@@ -160,6 +161,7 @@ class NigeriaPresidencyScraper(BaseScraper):
                 "role": "Vice President of the Federal Republic of Nigeria",
                 "category": "Vice President",
             },
+            # ── Key Cabinet Ministers ──
             {
                 "name": "Nyesom Wike",
                 "title": "Minister",
@@ -170,6 +172,12 @@ class NigeriaPresidencyScraper(BaseScraper):
                 "name": "Wale Edun",
                 "title": "Minister",
                 "role": "Minister of Finance and Coordinating Minister of the Economy",
+                "category": "Cabinet Ministers",
+            },
+            {
+                "name": "Lateef Fagbemi",
+                "title": "Attorney General",
+                "role": "Attorney General of the Federation and Minister of Justice",
                 "category": "Cabinet Ministers",
             },
             {
@@ -185,17 +193,90 @@ class NigeriaPresidencyScraper(BaseScraper):
                 "category": "Cabinet Ministers",
             },
             {
-                "name": "Lateef Fagbemi",
-                "title": "Attorney General",
-                "role": "Attorney General and Minister of Justice",
-                "category": "Cabinet Ministers",
-            },
-            {
                 "name": "Mohammed Idris",
                 "title": "Minister",
                 "role": "Minister of Information and National Orientation",
                 "category": "Cabinet Ministers",
             },
+            {
+                "name": "Adegboyega Oyetola",
+                "title": "Minister",
+                "role": "Minister of Marine and Blue Economy",
+                "category": "Cabinet Ministers",
+            },
+            {
+                "name": "Abubakar Atiku Bagudu",
+                "title": "Minister",
+                "role": "Minister of Budget and Economic Planning",
+                "category": "Cabinet Ministers",
+            },
+            {
+                "name": "Simon Bako Lalong",
+                "title": "Minister",
+                "role": "Minister of Labour and Employment",
+                "category": "Cabinet Ministers",
+            },
+            {
+                "name": "Hannatu Musawa",
+                "title": "Minister",
+                "role": "Minister of Art, Culture and the Creative Economy",
+                "category": "Cabinet Ministers",
+            },
+            {
+                "name": "Tahir Mamman",
+                "title": "Minister",
+                "role": "Minister of Education",
+                "category": "Cabinet Ministers",
+            },
+            {
+                "name": "Muhammad Ali Pate",
+                "title": "Minister",
+                "role": "Coordinating Minister of Health and Social Welfare",
+                "category": "Cabinet Ministers",
+            },
+            {
+                "name": "Abubakar Momoh",
+                "title": "Minister",
+                "role": "Minister of Niger Delta Development",
+                "category": "Cabinet Ministers",
+            },
+            {
+                "name": "Olubunmi Tunji-Ojo",
+                "title": "Minister",
+                "role": "Minister of Interior",
+                "category": "Cabinet Ministers",
+            },
+            {
+                "name": "Bosun Tijani",
+                "title": "Minister",
+                "role": "Minister of Communications, Innovation and Digital Economy",
+                "category": "Cabinet Ministers",
+            },
+            {
+                "name": "David Umahi",
+                "title": "Minister",
+                "role": "Minister of Works",
+                "category": "Cabinet Ministers",
+            },
+            {
+                "name": "Uju Kennedy-Ohanenye",
+                "title": "Minister",
+                "role": "Minister of Women Affairs",
+                "category": "Cabinet Ministers",
+            },
+            {
+                "name": "Mohammed Badaru Abubakar",
+                "title": "Minister",
+                "role": "Minister of Defence",
+                "category": "Cabinet Ministers",
+            },
+            {
+                "name": "Yusuf Tuggar",
+                "title": "Minister",
+                "role": "Minister of Foreign Affairs",
+                "category": "Cabinet Ministers",
+            },
+            # ── Special Advisers ──
             {
                 "name": "Hadiza Bala Usman",
                 "title": "Special Adviser",
@@ -203,15 +284,40 @@ class NigeriaPresidencyScraper(BaseScraper):
                 "category": "Special Advisers",
             },
             {
+                "name": "Zahrah Audu",
+                "title": "Special Adviser",
+                "role": "Special Adviser on Revenue",
+                "category": "Special Advisers",
+            },
+            {
+                "name": "Daniel Bwala",
+                "title": "Special Adviser",
+                "role": "Special Adviser to the President on Media and Public Communication",
+                "category": "Special Advisers",
+            },
+            # ── Senior Staff ──
+            {
                 "name": "Femi Gbajabiamila",
                 "title": "Senior Staff",
                 "role": "Chief of Staff to the President",
                 "category": "Senior Staff",
             },
             {
+                "name": "George Akume",
+                "title": "Senior Staff",
+                "role": "Secretary to the Government of the Federation",
+                "category": "Senior Staff",
+            },
+            {
                 "name": "Ajuri Ngelale",
                 "title": "Senior Staff",
                 "role": "Special Adviser to the President on Media and Publicity",
+                "category": "Senior Staff",
+            },
+            {
+                "name": "Sunday Dare",
+                "title": "Senior Staff",
+                "role": "Special Adviser on Public Communication and National Orientation",
                 "category": "Senior Staff",
             },
         ]

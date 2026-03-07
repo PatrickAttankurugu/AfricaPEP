@@ -99,6 +99,7 @@ class NigeriaJudiciaryScraper(BaseScraper):
     def _synthetic_fixture(self) -> list[RawPersonRecord]:
         now = datetime.utcnow()
         justices = [
+            # ── Supreme Court of Nigeria ──
             {"name": "Kudirat Motonmori Olatokunbo Kekere-Ekun", "title": "Chief Justice of Nigeria", "court": "Supreme Court"},
             {"name": "Uwani Musa Abba Aji", "title": "Justice of the Supreme Court", "court": "Supreme Court"},
             {"name": "Mohammed Lawal Garba", "title": "Justice of the Supreme Court", "court": "Supreme Court"},
@@ -106,9 +107,18 @@ class NigeriaJudiciaryScraper(BaseScraper):
             {"name": "Adamu Jauro", "title": "Justice of the Supreme Court", "court": "Supreme Court"},
             {"name": "Tijjani Abubakar", "title": "Justice of the Supreme Court", "court": "Supreme Court"},
             {"name": "Emmanuel Akomaye Agim", "title": "Justice of the Supreme Court", "court": "Supreme Court"},
+            {"name": "Lawal Maidama Garba", "title": "Justice of the Supreme Court", "court": "Supreme Court"},
+            {"name": "Stephen Jonah Adah", "title": "Justice of the Supreme Court", "court": "Supreme Court"},
+            {"name": "Abdu Aboki", "title": "Justice of the Supreme Court", "court": "Supreme Court"},
+            {"name": "Habeeb Adewale Olumuyiwa Abiru", "title": "Justice of the Supreme Court", "court": "Supreme Court"},
+            # ── Court of Appeal ──
             {"name": "Monica Bolna'an Dongban-Mensem", "title": "President, Court of Appeal", "court": "Court of Appeal"},
             {"name": "Uchechukwu Onyemenam", "title": "Justice of the Court of Appeal", "court": "Court of Appeal"},
             {"name": "Elfrieda Oluwayemisi Williams-Dawodu", "title": "Justice of the Court of Appeal", "court": "Court of Appeal"},
+            {"name": "Biobele Abraham Georgewill", "title": "Justice of the Court of Appeal", "court": "Court of Appeal"},
+            {"name": "Hamma Akawu Barka", "title": "Justice of the Court of Appeal", "court": "Court of Appeal"},
+            # ── Federal High Court ──
+            {"name": "John Tsoho", "title": "Chief Judge, Federal High Court", "court": "Federal High Court"},
         ]
         return [
             RawPersonRecord(

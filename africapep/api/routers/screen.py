@@ -1,16 +1,21 @@
-"""POST /api/v1/screen — fuzzy name screening against PEP database."""
+"""POST /api/v1/screen — fuzzy name screening against PEP database.
+POST /api/v1/screen/batch — batch screening for multiple names.
+"""
 import json
 import uuid
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
+from fastapi.responses import JSONResponse
 from sqlalchemy import text
+from sqlalchemy.exc import OperationalError, InterfaceError
 from rapidfuzz import fuzz
 import structlog
 
 from africapep.api.schemas import (
     ScreeningRequest, ScreeningResponse, MatchResult,
     PositionResponse, SourceResponse,
+    BatchScreeningRequest, BatchScreeningResponse, BatchScreeningResultItem,
 )
 from africapep.database.postgres_client import get_db
 
@@ -19,22 +24,36 @@ router = APIRouter()
 
 
 @router.post("/screen", response_model=ScreeningResponse)
-def screen_name(request: ScreeningRequest):
+def screen_name(request: ScreeningRequest, req: Request):
     """Screen a name against the PEP database using fuzzy matching.
 
     Uses PostgreSQL pg_trgm similarity for initial candidate retrieval,
     then re-ranks results with rapidfuzz token_sort_ratio.
+
+    Rate limit: 60 requests per minute.
     """
+    if not request.name or not request.name.strip():
+        return JSONResponse(
+            status_code=400,
+            content={"detail": "Name field cannot be empty or whitespace.", "code": "INVALID_INPUT"},
+        )
+
     screening_id = str(uuid.uuid4())
     screened_at = datetime.now(timezone.utc).isoformat()
 
     try:
         matches = _find_matches(request.name, request.country, request.threshold)
+    except (OperationalError, InterfaceError) as e:
+        log.error("screening_db_unavailable", query=request.name, error=str(e))
+        raise HTTPException(
+            status_code=503,
+            detail="Database is temporarily unavailable. Please try again later.",
+        )
     except Exception as e:
         log.error("screening_failed", query=request.name, error=str(e))
         raise HTTPException(status_code=500, detail="Screening failed")
 
-    # Log the screening
+    # Log the screening (non-critical, don't fail if this errors)
     _log_screening(screening_id, request.name, matches)
 
     return ScreeningResponse(
@@ -42,6 +61,62 @@ def screen_name(request: ScreeningRequest):
         matches=matches,
         screening_id=screening_id,
         screened_at=screened_at,
+    )
+
+
+@router.post("/screen/batch", response_model=BatchScreeningResponse)
+def screen_batch(request: BatchScreeningRequest, req: Request):
+    """Screen multiple names against the PEP database in a single request.
+
+    Accepts up to 50 names per batch. Returns an array of screening results.
+
+    Rate limit: 20 requests per minute.
+    """
+    if len(request.names) > 50:
+        return JSONResponse(
+            status_code=400,
+            content={
+                "detail": "Maximum 50 names per batch request.",
+                "code": "BATCH_SIZE_EXCEEDED",
+            },
+        )
+
+    results = []
+    total_matches = 0
+
+    for entry in request.names:
+        screening_id = str(uuid.uuid4())
+        screened_at = datetime.now(timezone.utc).isoformat()
+
+        try:
+            matches = _find_matches(entry.name, entry.country, request.threshold)
+        except (OperationalError, InterfaceError) as e:
+            log.error("batch_screening_db_unavailable", query=entry.name, error=str(e))
+            raise HTTPException(
+                status_code=503,
+                detail="Database is temporarily unavailable. Please try again later.",
+            )
+        except Exception as e:
+            log.error("batch_screening_failed", query=entry.name, error=str(e))
+            # For batch, include an empty result rather than failing entirely
+            matches = []
+
+        total_matches += len(matches)
+
+        # Log each screening (non-critical)
+        _log_screening(screening_id, entry.name, matches)
+
+        results.append(BatchScreeningResultItem(
+            query=entry.name,
+            matches=matches,
+            screening_id=screening_id,
+            screened_at=screened_at,
+        ))
+
+    return BatchScreeningResponse(
+        results=results,
+        total_queries=len(request.names),
+        total_matches=total_matches,
     )
 
 

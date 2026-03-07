@@ -43,3 +43,6 @@ htmlcov/
 
 # Docker
 docker-compose.override.yml
+
+# Internal plans
+Plan.md

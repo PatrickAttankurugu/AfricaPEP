@@ -3,8 +3,9 @@ GET /api/v1/stats — database statistics.
 """
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, HTTPException
 from sqlalchemy import text
+from sqlalchemy.exc import OperationalError, InterfaceError
 import structlog
 
 from africapep.api.schemas import (
@@ -69,31 +70,38 @@ def search_peps(
         LIMIT :limit OFFSET :offset
     """
 
-    with get_db() as db:
-        total = db.execute(text(count_sql), params).scalar() or 0
+    try:
+        with get_db() as db:
+            total = db.execute(text(count_sql), params).scalar() or 0
 
-        rows = db.execute(text(fetch_sql), params).fetchall()
-        results = []
-        for row in rows:
-            positions = []
-            if row.current_positions and isinstance(row.current_positions, list):
-                for pos in row.current_positions:
-                    positions.append(PositionResponse(
-                        title=pos.get("title", ""),
-                        institution=pos.get("institution", ""),
-                        country=pos.get("country", ""),
-                        branch=pos.get("branch", ""),
-                        is_current=True,
-                    ))
+            rows = db.execute(text(fetch_sql), params).fetchall()
+            results = []
+            for row in rows:
+                positions = []
+                if row.current_positions and isinstance(row.current_positions, list):
+                    for pos in row.current_positions:
+                        positions.append(PositionResponse(
+                            title=pos.get("title", ""),
+                            institution=pos.get("institution", ""),
+                            country=pos.get("country", ""),
+                            branch=pos.get("branch", ""),
+                            is_current=True,
+                        ))
 
-            results.append(SearchResultItem(
-                id=str(row.neo4j_id or row.id),
-                full_name=row.full_name,
-                pep_tier=row.pep_tier or 2,
-                is_active=row.is_active_pep if row.is_active_pep is not None else True,
-                nationality=row.nationality or "",
-                positions=positions,
-            ))
+                results.append(SearchResultItem(
+                    id=str(row.neo4j_id or row.id),
+                    full_name=row.full_name,
+                    pep_tier=row.pep_tier or 2,
+                    is_active=row.is_active_pep if row.is_active_pep is not None else True,
+                    nationality=row.nationality or "",
+                    positions=positions,
+                ))
+    except (OperationalError, InterfaceError) as e:
+        log.error("search_db_unavailable", query=q, error=str(e))
+        raise HTTPException(
+            status_code=503,
+            detail="Database is temporarily unavailable. Please try again later.",
+        )
 
     return SearchResponse(
         query=q,
@@ -107,36 +115,43 @@ def search_peps(
 @router.get("/stats", response_model=StatsResponse)
 def get_stats():
     """Database statistics: total PEPs, by country, by tier, sources count."""
-    with get_db() as db:
-        total = db.execute(text("SELECT COUNT(*) FROM pep_profiles")).scalar() or 0
-        active = db.execute(text(
-            "SELECT COUNT(*) FROM pep_profiles WHERE is_active_pep = true"
-        )).scalar() or 0
-        sources = db.execute(text("SELECT COUNT(*) FROM source_records")).scalar() or 0
+    try:
+        with get_db() as db:
+            total = db.execute(text("SELECT COUNT(*) FROM pep_profiles")).scalar() or 0
+            active = db.execute(text(
+                "SELECT COUNT(*) FROM pep_profiles WHERE is_active_pep = true"
+            )).scalar() or 0
+            sources = db.execute(text("SELECT COUNT(*) FROM source_records")).scalar() or 0
 
-        # By country
-        country_rows = db.execute(text(
-            "SELECT COALESCE(nationality, 'XX') AS c, COUNT(*) AS n "
-            "FROM pep_profiles GROUP BY nationality ORDER BY n DESC"
-        )).fetchall()
-        by_country = {row[0]: row[1] for row in country_rows}
+            # By country
+            country_rows = db.execute(text(
+                "SELECT COALESCE(nationality, 'XX') AS c, COUNT(*) AS n "
+                "FROM pep_profiles GROUP BY nationality ORDER BY n DESC"
+            )).fetchall()
+            by_country = {row[0]: row[1] for row in country_rows}
 
-        # By tier
-        tier_rows = db.execute(text(
-            "SELECT COALESCE(pep_tier, 0) AS t, COUNT(*) AS n "
-            "FROM pep_profiles GROUP BY pep_tier ORDER BY t"
-        )).fetchall()
-        by_tier = {}
-        for row in tier_rows:
-            t = row[0]
-            n = row[1]
-            key = f"tier_{t}" if t else "unclassified"
-            by_tier[key] = n
+            # By tier
+            tier_rows = db.execute(text(
+                "SELECT COALESCE(pep_tier, 0) AS t, COUNT(*) AS n "
+                "FROM pep_profiles GROUP BY pep_tier ORDER BY t"
+            )).fetchall()
+            by_tier = {}
+            for row in tier_rows:
+                t = row[0]
+                n = row[1]
+                key = f"tier_{t}" if t else "unclassified"
+                by_tier[key] = n
 
-        # Last updated
-        last = db.execute(text(
-            "SELECT MAX(updated_at) FROM pep_profiles"
-        )).scalar()
+            # Last updated
+            last = db.execute(text(
+                "SELECT MAX(updated_at) FROM pep_profiles"
+            )).scalar()
+    except (OperationalError, InterfaceError) as e:
+        log.error("stats_db_unavailable", error=str(e))
+        raise HTTPException(
+            status_code=503,
+            detail="Database is temporarily unavailable. Please try again later.",
+        )
 
     return StatsResponse(
         total_peps=total,
