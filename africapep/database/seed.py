@@ -5,12 +5,7 @@ Idempotent — safe to run multiple times.
 """
 import structlog
 
-from africapep.scraper.spiders.ghana_parliament import GhanaParliamentScraper
-from africapep.scraper.spiders.ghana_presidency import GhanaPresidencyScraper
-from africapep.scraper.spiders.nigeria_nass import NigeriaNASSScraper
-from africapep.scraper.spiders.nigeria_presidency import NigeriaPresidencyScraper
-from africapep.scraper.spiders.kenya_parliament import KenyaParliamentScraper
-from africapep.scraper.spiders.southafrica_parliament import SouthAfricaParliamentScraper
+from africapep.scraper.spiders import ALL_SCRAPERS
 from africapep.pipeline.normaliser import normalise_record
 from africapep.pipeline.classifier import classify_pep_tier
 from africapep.pipeline.resolver import EntityResolver
@@ -28,12 +23,8 @@ def main():
 
     # Use fixture mode for all scrapers
     scrapers = [
-        ("Ghana Parliament", GhanaParliamentScraper(use_fixture=True)),
-        ("Ghana Presidency", GhanaPresidencyScraper(use_fixture=True)),
-        ("Nigeria NASS", NigeriaNASSScraper(use_fixture=True)),
-        ("Nigeria Presidency", NigeriaPresidencyScraper(use_fixture=True)),
-        ("Kenya Parliament", KenyaParliamentScraper(use_fixture=True)),
-        ("South Africa Parliament", SouthAfricaParliamentScraper(use_fixture=True)),
+        (cls.__name__, cls(use_fixture=True))
+        for cls in ALL_SCRAPERS
     ]
 
     resolver = EntityResolver()

@@ -54,12 +54,14 @@ A production-grade, open-source PEP (Politically Exposed Persons) database built
 
 ## Supported Countries
 
-| Country | Parliament | Presidency | Gazette | Electoral |
-|---------|-----------|-----------|---------|-----------|
-| Ghana   | ✅        | ✅        | ✅      | ✅        |
-| Nigeria | ✅        | ✅        | —       | ✅        |
-| Kenya   | ✅        | —         | ✅      | —         |
-| South Africa | ✅   | —         | —       | —         |
+| Country | Parliament | Presidency | Judiciary | Gazette | Electoral |
+|---------|-----------|-----------|-----------|---------|-----------|
+| Ghana   | ✅        | ✅        | ✅        | ✅      | ✅        |
+| Nigeria | ✅        | ✅        | ✅        | —       | ✅        |
+| Kenya   | ✅        | ✅        | —         | ✅      | —         |
+| South Africa | ✅   | —         | —         | —       | —         |
+| Rwanda  | ✅        | —         | —         | —       | —         |
+| Uganda  | ✅        | —         | —         | —       | —         |
 
 ## Quick Start (Docker)
 
@@ -226,7 +228,7 @@ python -c "from africapep.database.sync import sync_all; sync_all()"
 1. Create `africapep/scraper/spiders/{country}_{source}.py`
 2. Inherit from `BaseScraper` (or `BaseGovGazetteScraper` for gazette PDFs)
 3. Implement `scrape()` and `_load_fixture()` methods
-4. Add to the scraper list in `africapep/scheduler/jobs.py`
+4. Add to `ALL_SCRAPERS` in `africapep/scraper/spiders/__init__.py`
 5. Add fixture test in `tests/test_scrapers.py`
 6. Update PEP tier classifier with country-specific titles
 

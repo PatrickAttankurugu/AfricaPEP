@@ -1,37 +1,38 @@
 """
 Scraper for the South Africa Parliament members list.
 
-Source: https://www.parliament.gov.za/mps
-Method: Playwright (JS-rendered) + BeautifulSoup parsing
-Extracts: MP name, party, province, portfolio committee
+Source: https://www.parliament.gov.za/members-of-parliament
+Method: JSON API (POST /group-details-filter)
+Extracts: MP name, party, province, chamber (National Assembly / NCOP)
 """
 
-from bs4 import BeautifulSoup
+import requests
 from datetime import datetime
 from pathlib import Path
 
 import structlog
 
 from africapep.scraper.base_scraper import BaseScraper, RawPersonRecord
-from africapep.scraper.utils.playwright_utils import get_page_content_sync
 
 logger = structlog.get_logger(__name__)
 
 
 class SouthAfricaParliamentScraper(BaseScraper):
-    """Scraper for South Africa National Assembly MPs."""
+    """Scraper for South Africa National Assembly and NCOP MPs."""
 
     country_code = "ZA"
     source_type = "PARLIAMENT"
 
-    SOURCE_URL = "https://www.parliament.gov.za/mps"
+    SOURCE_URL = "https://www.parliament.gov.za/members-of-parliament"
+    API_URL = "https://www.parliament.gov.za/group-details-filter"
     FIXTURE_PATH = Path(__file__).parent / "fixtures" / "southafrica_parliament.html"
 
     def scrape(self) -> list[RawPersonRecord]:
-        """Scrape the South Africa Parliament website for current MPs.
+        """Scrape the South Africa Parliament via the internal JSON API.
 
-        Uses Playwright to render JavaScript content, then parses the
-        resulting HTML with BeautifulSoup.
+        The parliament website uses an AngularJS frontend that loads member
+        data from a POST endpoint at /group-details-filter. We call that
+        API directly, which returns all members as JSON.
 
         Returns:
             List of RawPersonRecord objects containing MP data.
@@ -43,89 +44,87 @@ class SouthAfricaParliamentScraper(BaseScraper):
         )
 
         try:
-            html = get_page_content_sync(self.SOURCE_URL)
+            data = self._fetch_api()
         except Exception as exc:
             logger.error(
                 "scraper.southafrica_parliament.fetch_failed",
-                url=self.SOURCE_URL,
+                url=self.API_URL,
                 error=str(exc),
             )
             raise
 
-        return self._parse_html(html)
+        return self._parse_api_response(data)
 
-    def _parse_html(self, html: str) -> list[RawPersonRecord]:
-        """Parse the rendered HTML content and extract MP records.
+    def _fetch_api(self) -> dict:
+        """Fetch member data from the parliament JSON API.
+
+        Returns:
+            Parsed JSON response dict with 'members' and 'member_count'.
+        """
+        resp = requests.post(
+            self.API_URL,
+            headers={
+                "User-Agent": (
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                    "AppleWebKit/537.36 (KHTML, like Gecko) "
+                    "Chrome/120.0.0.0 Safari/537.36"
+                ),
+                "Content-Type": "application/json",
+                "X-Requested-With": "XMLHttpRequest",
+                "Referer": self.SOURCE_URL,
+            },
+            json={
+                "committee": "",
+                "ministry": "",
+                "party": "",
+                "chamber": "",
+                "national": "",
+                "province": "",
+            },
+            timeout=30,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+
+        if not data.get("success"):
+            raise RuntimeError(
+                f"Parliament API returned success=false: {data}"
+            )
+
+        return data
+
+    def _parse_api_response(self, data: dict) -> list[RawPersonRecord]:
+        """Parse the JSON API response into RawPersonRecord objects.
+
+        The API returns members grouped alphabetically (a-d, e-g, etc.).
+        Each member dict has: id, full_name, profile_pic_url, party,
+        province, national (1 = National Assembly, 0 = NCOP).
 
         Args:
-            html: Rendered HTML string from the parliament page.
+            data: Parsed JSON response from the API.
 
         Returns:
             List of RawPersonRecord objects.
         """
-        soup = BeautifulSoup(html, "html.parser")
         records: list[RawPersonRecord] = []
         now = datetime.utcnow().isoformat()
 
-        # The SA Parliament site uses JS-rendered cards/tables for MP listings.
-        # Try table-based layout first.
-        table = soup.find("table")
-        if table:
-            rows = table.find_all("tr")[1:]  # skip header
-            for row in rows:
-                cols = row.find_all("td")
-                if len(cols) >= 3:
-                    name = cols[0].get_text(strip=True)
-                    party = cols[1].get_text(strip=True)
-                    province = cols[2].get_text(strip=True) if len(cols) > 2 else ""
-                    committee = cols[3].get_text(strip=True) if len(cols) > 3 else ""
-
-                    if not name:
-                        continue
-
-                    records.append(
-                        RawPersonRecord(
-                            full_name=name,
-                            title="Member of Parliament",
-                            institution="Parliament of South Africa",
-                            country_code=self.country_code,
-                            source_type=self.source_type,
-                            source_url=self.SOURCE_URL,
-                            raw_text=f"{name} – Member of Parliament, {party}",
-                            scraped_at=now,
-                            extra_fields={
-                                "party": party,
-                                "province": province,
-                                "portfolio_committee": committee,
-                            },
-                        )
-                    )
-        else:
-            # Fallback: card/div-based layout
-            mp_cards = soup.select(
-                ".member-card, .mp-item, .views-row, .member-profile, .mp-listing-item"
-            )
-            for card in mp_cards:
-                name_el = card.select_one(
-                    ".member-name, .mp-name, .field-name, h3, h4, .title"
-                )
-                party_el = card.select_one(
-                    ".member-party, .mp-party, .field-party, .party"
-                )
-                province_el = card.select_one(
-                    ".member-province, .mp-province, .field-province, .province"
-                )
-                committee_el = card.select_one(
-                    ".member-committee, .mp-committee, .field-committee, .portfolio"
-                )
-
-                name = name_el.get_text(strip=True) if name_el else ""
-                party = party_el.get_text(strip=True) if party_el else ""
-                province = province_el.get_text(strip=True) if province_el else ""
-                committee = committee_el.get_text(strip=True) if committee_el else ""
-
+        members_groups = data.get("members", {})
+        for _group_key, members in members_groups.items():
+            for member in members:
+                name = member.get("full_name", "").strip()
                 if not name:
                     continue
+
+                party = member.get("party", "")
+                province = member.get("province", "")
+                is_national = member.get("national", 0)
+                chamber = (
+                    "National Assembly" if is_national
+                    else "National Council of Provinces"
+                )
+                member_id = member.get("id", "")
+                profile_pic = member.get("profile_pic_url", "")
 
                 records.append(
                     RawPersonRecord(
@@ -135,12 +134,14 @@ class SouthAfricaParliamentScraper(BaseScraper):
                         country_code=self.country_code,
                         source_type=self.source_type,
                         source_url=self.SOURCE_URL,
-                        raw_text=f"{name} – Member of Parliament, {party}",
+                        raw_text=f"{name} – {chamber}, {party}",
                         scraped_at=now,
                         extra_fields={
                             "party": party,
                             "province": province,
-                            "portfolio_committee": committee,
+                            "chamber": chamber,
+                            "member_id": member_id,
+                            "profile_pic_url": profile_pic,
                         },
                     )
                 )
@@ -148,26 +149,16 @@ class SouthAfricaParliamentScraper(BaseScraper):
         logger.info(
             "scraper.southafrica_parliament.complete",
             record_count=len(records),
+            reported_count=data.get("member_count"),
         )
         return records
 
     def _load_fixture(self) -> list[RawPersonRecord]:
-        """Load fixture data for testing and development.
-
-        If a fixture HTML file exists on disk, parse it. Otherwise,
-        fall back to synthetic fixture data.
+        """Load synthetic fixture data for testing and development.
 
         Returns:
             List of RawPersonRecord objects from fixture data.
         """
-        if self.FIXTURE_PATH.exists():
-            logger.info(
-                "scraper.southafrica_parliament.loading_fixture",
-                path=str(self.FIXTURE_PATH),
-            )
-            html = self.FIXTURE_PATH.read_text(encoding="utf-8")
-            return self._parse_html(html)
-
         logger.info("scraper.southafrica_parliament.using_synthetic_fixture")
         return self._synthetic_fixture()
 

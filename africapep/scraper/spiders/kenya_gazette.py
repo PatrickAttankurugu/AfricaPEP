@@ -1,20 +1,27 @@
 """
 Scraper for the Kenya Government Gazette appointments.
 
-Source: https://kenyagazette.go.ke
-Method: PDF download and text extraction
-Extracts: Government appointments from gazette PDFs
+Source: https://new.kenyalaw.org/gazettes/
+Method: Browse gazette index by year, discover individual gazette pages,
+        download PDFs via the ``/source.pdf`` convention, and extract
+        appointment records.
+The old kenyagazette.go.ke domain is defunct; Kenya Law is the
+authoritative mirror.
 """
 
-from bs4 import BeautifulSoup
+from __future__ import annotations
+
+import re
 from datetime import datetime
 from pathlib import Path
+from urllib.parse import urljoin
 
 import requests
 import structlog
+from bs4 import BeautifulSoup
 
-from africapep.scraper.spiders.base_gov_gazette import BaseGovGazetteScraper
 from africapep.scraper.base_scraper import RawPersonRecord
+from africapep.scraper.spiders.base_gov_gazette import BaseGovGazetteScraper
 from africapep.scraper.utils.pdf_parser import extract_text_from_pdf
 
 logger = structlog.get_logger(__name__)
@@ -27,14 +34,20 @@ class KenyaGazetteScraper(BaseGovGazetteScraper):
     source_type = "GOV_GAZETTE"
     raw_pdf_dir = "data/raw_pdfs/KE"
 
-    SOURCE_URL = "https://kenyagazette.go.ke"
+    SOURCE_URL = "https://new.kenyalaw.org/gazettes/"
     FIXTURE_PATH = Path(__file__).parent / "fixtures" / "kenya_gazette.html"
+    _BASE_DOMAIN = "https://new.kenyalaw.org"
 
     def scrape(self) -> list[RawPersonRecord]:
-        """Scrape the Kenya Gazette website for appointment notices.
+        """Scrape the Kenya Gazette via Kenya Law for appointment notices.
 
-        Downloads gazette PDFs, extracts text, and parses appointment
-        records from the extracted content.
+        The Kenya Law site organises gazettes by year.  For each year
+        page the scraper discovers individual gazette detail links
+        (``/akn/ke/officialGazette/...``) and derives PDF download URLs
+        by appending ``/source.pdf``.
+
+        Falls back to synthetic fixture data when the site is
+        unreachable or no gazette entries are found.
 
         Returns:
             List of RawPersonRecord objects containing appointment data.
@@ -45,6 +58,7 @@ class KenyaGazetteScraper(BaseGovGazetteScraper):
             country_code=self.country_code,
         )
 
+        # Fetch the main gazettes index to discover year links
         try:
             response = requests.get(self.SOURCE_URL, timeout=30)
             response.raise_for_status()
@@ -55,9 +69,49 @@ class KenyaGazetteScraper(BaseGovGazetteScraper):
                 url=self.SOURCE_URL,
                 error=str(exc),
             )
-            raise
+            logger.info("scraper.kenya_gazette.fallback_to_fixture")
+            return self._synthetic_fixture()
 
-        pdf_urls = self._extract_pdf_urls(html)
+        # Discover gazette detail page URLs (current year first)
+        gazette_urls = self._extract_gazette_detail_urls(html)
+
+        # Optionally follow the most-recent year page for more entries
+        soup = BeautifulSoup(html, "html.parser")
+        current_year = datetime.utcnow().year
+        for anchor in soup.select("a[href]"):
+            href = anchor["href"]
+            if re.match(rf"^/gazettes/{current_year}$", href):
+                year_url = urljoin(self._BASE_DOMAIN, href)
+                try:
+                    yr_resp = requests.get(year_url, timeout=30)
+                    yr_resp.raise_for_status()
+                    gazette_urls.extend(
+                        self._extract_gazette_detail_urls(yr_resp.text)
+                    )
+                except requests.RequestException:
+                    logger.debug(
+                        "scraper.kenya_gazette.year_page_error",
+                        url=year_url,
+                    )
+                break
+
+        # De-duplicate while preserving order
+        seen: set[str] = set()
+        unique_urls: list[str] = []
+        for u in gazette_urls:
+            if u not in seen:
+                seen.add(u)
+                unique_urls.append(u)
+
+        if not unique_urls:
+            logger.warning(
+                "scraper.kenya_gazette.no_gazettes_found",
+                msg="No gazette entries discovered; using synthetic fixture",
+            )
+            return self._synthetic_fixture()
+
+        # Derive PDF URLs and process
+        pdf_urls = [f"{u}/source.pdf" for u in unique_urls]
         logger.info(
             "scraper.kenya_gazette.pdf_urls_found",
             count=len(pdf_urls),
@@ -87,30 +141,52 @@ class KenyaGazetteScraper(BaseGovGazetteScraper):
         )
         return records
 
-    def _extract_pdf_urls(self, html: str) -> list[str]:
-        """Extract PDF download URLs from the gazette index page.
+    def _extract_gazette_detail_urls(self, html: str) -> list[str]:
+        """Extract gazette detail page URLs from a Kenya Law gazette listing.
+
+        Kenya Law lists gazette editions in ``<td class="cell-title">``
+        elements containing ``<a>`` tags whose *href* matches the pattern
+        ``/akn/ke/officialGazette/...``.  Each of these detail pages
+        exposes a downloadable PDF at ``{detail_url}/source.pdf``.
 
         Args:
-            html: Raw HTML from the gazette website.
+            html: Raw HTML from a gazette listing page.
 
         Returns:
-            List of absolute URLs to gazette PDF files.
+            List of absolute URLs to gazette detail pages.
         """
         soup = BeautifulSoup(html, "html.parser")
-        pdf_links: list[str] = []
+        detail_urls: list[str] = []
 
-        for link in soup.find_all("a", href=True):
-            href = link["href"]
-            if href.endswith(".pdf") or "gazette" in href.lower():
-                if href.startswith("http"):
-                    pdf_links.append(href)
-                elif href.startswith("/"):
-                    pdf_links.append(f"{self.SOURCE_URL}{href}")
+        # Primary strategy: find links inside table cells with class cell-title
+        for td in soup.select("td.cell-title a[href]"):
+            href = td["href"]
+            if "/akn/ke/officialGazette/" in href:
+                detail_urls.append(urljoin(self._BASE_DOMAIN, href))
 
-        return pdf_links
+        # Fallback: scan all anchors for the officialGazette pattern
+        if not detail_urls:
+            for anchor in soup.select("a[href]"):
+                href = anchor["href"]
+                if "/akn/ke/officialGazette/" in href:
+                    detail_urls.append(urljoin(self._BASE_DOMAIN, href))
+
+        return detail_urls
+
+    # Keep legacy name as alias so fixture path still works
+    def _extract_pdf_urls(self, html: str) -> list[str]:
+        """Legacy wrapper -- returns PDF download URLs directly."""
+        detail_urls = self._extract_gazette_detail_urls(html)
+        return [f"{u}/source.pdf" for u in detail_urls]
 
     def _download_pdf(self, pdf_url: str, pdf_dir: Path) -> Path:
         """Download a PDF file to the local raw PDF directory.
+
+        The Kenya Law PDF URLs look like:
+        ``https://new.kenyalaw.org/akn/ke/officialGazette/2026-02-27/34/eng@2026-02-27/source.pdf``
+
+        We derive a human-readable filename from the URL path segments
+        (date and issue number).
 
         Args:
             pdf_url: URL of the PDF to download.
@@ -119,9 +195,16 @@ class KenyaGazetteScraper(BaseGovGazetteScraper):
         Returns:
             Path to the downloaded PDF file.
         """
-        filename = pdf_url.split("/")[-1]
-        if not filename.endswith(".pdf"):
-            filename = f"{filename}.pdf"
+        # Derive a readable filename, e.g. "ke_gazette_2026-02-27_34.pdf"
+        match = re.search(
+            r"/officialGazette/(\d{4}-\d{2}-\d{2})/(\d+)/", pdf_url
+        )
+        if match:
+            filename = f"ke_gazette_{match.group(1)}_{match.group(2)}.pdf"
+        else:
+            filename = pdf_url.split("/")[-1]
+            if not filename.endswith(".pdf"):
+                filename = f"{filename}.pdf"
 
         pdf_path = pdf_dir / filename
         if pdf_path.exists():

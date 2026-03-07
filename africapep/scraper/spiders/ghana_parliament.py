@@ -1,5 +1,5 @@
 """Ghana Parliament Members scraper.
-Source: https://www.parliament.gh/mps
+Source: https://www.parliament.gh/members
 Method: BeautifulSoup (static HTML)
 Schedule: Weekly
 """
@@ -15,7 +15,7 @@ log = structlog.get_logger()
 
 FIXTURE_DIR = Path(__file__).parent.parent.parent.parent / "tests" / "fixtures" / "ghana_parliament"
 BASE_URL = "https://www.parliament.gh"
-MP_LIST_URL = f"{BASE_URL}/mps"
+MP_LIST_URL = f"{BASE_URL}/members"
 
 
 class GhanaParliamentScraper(BaseScraper):
@@ -43,9 +43,15 @@ class GhanaParliamentScraper(BaseScraper):
             records.extend(batch)
             log.info("ghana_parliament_page", page=page, found=len(batch))
 
-            # Check for next page
-            next_link = soup.select_one("a[rel=next], .pagination .next a, li.next a")
-            if not next_link:
+            # Check for next page: find page links with page number > current
+            page_links = soup.select("ul.pagination li.page-item a.page-link")
+            next_page_exists = False
+            for pl in page_links:
+                href = pl.get("href", "")
+                if f"page={page + 1}" in href:
+                    next_page_exists = True
+                    break
+            if not next_page_exists:
                 break
             page += 1
 
@@ -54,36 +60,29 @@ class GhanaParliamentScraper(BaseScraper):
     def _parse_page(self, soup: BeautifulSoup, source_url: str) -> list[RawPersonRecord]:
         records = []
 
-        # Try multiple CSS selectors for different site layouts
-        cards = (
-            soup.select(".mp-card") or
-            soup.select(".member-item") or
-            soup.select(".views-row") or
-            soup.select("table.mp-table tbody tr") or
-            soup.select("table tbody tr") or
-            soup.select(".team-member") or
-            soup.select(".member-box")
-        )
+        # Each MP is in a div.col-lg-4.col-md-6 card on parliament.gh/members
+        cards = soup.select("div.col-lg-4.col-md-6")
 
         for card in cards:
             try:
-                name = self._extract_text(card, [
-                    ".mp-name", ".member-name", "h3", "h4", "h5",
-                    "td:first-child", ".field-name-title",
-                ])
+                # Name is in an <h5> tag
+                h5 = card.select_one("h5")
+                if not h5:
+                    continue
+                name = h5.get_text(strip=True)
                 if not name or len(name) < 3:
                     continue
 
-                constituency = self._extract_text(card, [
-                    ".constituency", ".field-constituency",
-                    "td:nth-child(2)", ".mp-constituency",
-                ])
-                party = self._extract_text(card, [
-                    ".party", ".field-party", "td:nth-child(3)", ".mp-party",
-                ])
-                region = self._extract_text(card, [
-                    ".region", ".field-region", "td:nth-child(4)", ".mp-region",
-                ])
+                # Constituency and party are in a <p> tag, separated by <br/>
+                constituency = ""
+                party = ""
+                p_tag = card.select_one("p.text-center")
+                if p_tag:
+                    parts = [t.strip() for t in p_tag.stripped_strings]
+                    if len(parts) >= 1:
+                        constituency = parts[0]
+                    if len(parts) >= 2:
+                        party = parts[1]
 
                 # Extract photo URL if available
                 photo_url = ""
@@ -92,6 +91,16 @@ class GhanaParliamentScraper(BaseScraper):
                     photo_url = img.get("src", "") or img.get("data-src", "")
                     if photo_url and not photo_url.startswith("http"):
                         photo_url = BASE_URL + "/" + photo_url.lstrip("/")
+
+                # Extract profile link
+                profile_url = ""
+                link = card.select_one("a[href*='members?mp=']")
+                if link:
+                    href = link.get("href", "")
+                    if href and not href.startswith("http"):
+                        profile_url = BASE_URL + "/" + href.lstrip("/")
+                    else:
+                        profile_url = href
 
                 records.append(RawPersonRecord(
                     full_name=name.strip(),
@@ -105,21 +114,14 @@ class GhanaParliamentScraper(BaseScraper):
                     extra_fields={
                         "constituency": constituency,
                         "party": party,
-                        "region": region,
                         "photo_url": photo_url,
+                        "profile_url": profile_url,
                     },
                 ))
             except Exception as e:
                 log.warning("ghana_parliament_parse_error", error=str(e))
 
         return records
-
-    def _extract_text(self, tag, selectors: list[str]) -> str:
-        for sel in selectors:
-            el = tag.select_one(sel)
-            if el:
-                return el.get_text(strip=True)
-        return ""
 
     def _load_fixture(self) -> list[RawPersonRecord]:
         fixture_file = FIXTURE_DIR / "mps.html"
@@ -142,25 +144,25 @@ class GhanaParliamentScraper(BaseScraper):
         now = datetime.utcnow()
         mps = [
             {"name": "Alban Sumana Kingsford Bagbin", "constituency": "Nadowli-Kaleo",
-             "party": "NDC", "region": "Upper West"},
+             "party": "National Democratic Congress"},
             {"name": "Joseph Osei-Owusu", "constituency": "Bekwai",
-             "party": "NPP", "region": "Ashanti"},
+             "party": "New Patriotic Party"},
             {"name": "Samuel Okudzeto Ablakwa", "constituency": "North Tongu",
-             "party": "NDC", "region": "Volta"},
+             "party": "National Democratic Congress"},
             {"name": "Ursula Owusu-Ekuful", "constituency": "Ablekuma West",
-             "party": "NPP", "region": "Greater Accra"},
+             "party": "New Patriotic Party"},
             {"name": "Kennedy Ohene Agyapong", "constituency": "Assin Central",
-             "party": "NPP", "region": "Central"},
+             "party": "New Patriotic Party"},
             {"name": "Sarah Adwoa Safo", "constituency": "Dome-Kwabenya",
-             "party": "NPP", "region": "Greater Accra"},
+             "party": "New Patriotic Party"},
             {"name": "Haruna Iddrisu", "constituency": "Tamale South",
-             "party": "NDC", "region": "Northern"},
+             "party": "National Democratic Congress"},
             {"name": "Afenyo-Markin Alexander", "constituency": "Effutu",
-             "party": "NPP", "region": "Central"},
+             "party": "New Patriotic Party"},
             {"name": "Mahama Ayariga", "constituency": "Bawku Central",
-             "party": "NDC", "region": "Upper East"},
+             "party": "National Democratic Congress"},
             {"name": "Lydia Seyram Alhassan", "constituency": "Ayawaso West Wuogon",
-             "party": "NPP", "region": "Greater Accra"},
+             "party": "New Patriotic Party"},
         ]
         return [
             RawPersonRecord(

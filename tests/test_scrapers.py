@@ -142,3 +142,82 @@ def test_southafrica_parliament_fixture():
     assert len(records) >= 5
     for r in records:
         assert r.country_code == "ZA"
+
+
+# ── Ghana Judiciary ──
+
+def test_ghana_judiciary_fixture():
+    from africapep.scraper.spiders.ghana_judiciary import GhanaJudiciaryScraper
+
+    records = GhanaJudiciaryScraper(use_fixture=True).run()
+    assert isinstance(records, list)
+    assert len(records) >= 5
+    for r in records:
+        assert r.country_code == "GH"
+        assert r.source_type == "JUDICIARY"
+        assert "Court" in r.institution
+
+
+# ── Nigeria Judiciary ──
+
+def test_nigeria_judiciary_fixture():
+    from africapep.scraper.spiders.nigeria_judiciary import NigeriaJudiciaryScraper
+
+    records = NigeriaJudiciaryScraper(use_fixture=True).run()
+    assert isinstance(records, list)
+    assert len(records) >= 5
+    for r in records:
+        assert r.country_code == "NG"
+        assert r.source_type == "JUDICIARY"
+
+
+# ── Kenya Presidency ──
+
+def test_kenya_presidency_fixture():
+    from africapep.scraper.spiders.kenya_presidency import KenyaPresidencyScraper
+
+    records = KenyaPresidencyScraper(use_fixture=True).run()
+    assert isinstance(records, list)
+    assert len(records) >= 5
+    for r in records:
+        assert r.country_code == "KE"
+        assert r.source_type == "PRESIDENCY"
+
+
+# ── Rwanda Parliament ──
+
+def test_rwanda_parliament_fixture():
+    from africapep.scraper.spiders.rwanda_parliament import RwandaParliamentScraper
+
+    records = RwandaParliamentScraper(use_fixture=True).run()
+    assert isinstance(records, list)
+    assert len(records) >= 5
+    for r in records:
+        assert r.country_code == "RW"
+        assert r.source_type == "PARLIAMENT"
+
+
+# ── Uganda Parliament ──
+
+def test_uganda_parliament_fixture():
+    from africapep.scraper.spiders.uganda_parliament import UgandaParliamentScraper
+
+    records = UgandaParliamentScraper(use_fixture=True).run()
+    assert isinstance(records, list)
+    assert len(records) >= 5
+    for r in records:
+        assert r.country_code == "UG"
+        assert r.source_type == "PARLIAMENT"
+
+
+# ── ALL_SCRAPERS registry ──
+
+def test_all_scrapers_registry():
+    from africapep.scraper.spiders import ALL_SCRAPERS
+
+    assert len(ALL_SCRAPERS) >= 15, "Should have at least 15 scrapers registered"
+    for cls in ALL_SCRAPERS:
+        scraper = cls(use_fixture=True)
+        records = scraper.run()
+        assert isinstance(records, list), f"{cls.__name__} should return a list"
+        assert len(records) >= 1, f"{cls.__name__} should have at least 1 fixture record"

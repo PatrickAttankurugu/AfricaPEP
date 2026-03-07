@@ -24,7 +24,7 @@ logger = structlog.get_logger(__name__)
 
 FIXTURE_DIR = Path(__file__).parent.parent.parent.parent / "tests" / "fixtures" / "ghana_ec"
 
-SOURCE_URL = "https://ec.gov.gh/results/"
+SOURCE_URL = "https://ec.gov.gh/2024-election-results/"
 BASE_URL = "https://ec.gov.gh"
 
 # Reasonable request timeout in seconds

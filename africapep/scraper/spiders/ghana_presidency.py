@@ -1,7 +1,7 @@
 """
 Scraper for the Ghana Presidency cabinet page.
 
-Source: https://presidency.gov.gh/index.php/the-executive/cabinet
+Source: https://presidency.gov.gh/members-of-the-cabinet/
 Method: Playwright (JS-rendered) + BeautifulSoup HTML parsing
 """
 
@@ -22,7 +22,7 @@ logger = structlog.get_logger(__name__)
 
 FIXTURE_DIR = Path(__file__).parent.parent.parent.parent / "tests" / "fixtures" / "ghana_parliament"
 
-SOURCE_URL = "https://presidency.gov.gh/index.php/the-executive/cabinet"
+SOURCE_URL = "https://presidency.gov.gh/members-of-the-cabinet/"
 
 
 class GhanaPresidencyScraper(BaseScraper):
@@ -67,46 +67,41 @@ class GhanaPresidencyScraper(BaseScraper):
         records: List[RawPersonRecord] = []
         now = datetime.utcnow()
 
-        # The cabinet page typically lists ministers in card / article blocks.
-        # We attempt several common selectors to be resilient to layout changes.
-        minister_blocks = (
-            soup.select(".cabinet-member")
-            or soup.select(".minister-card")
-            or soup.select("article.item-page")
-            or soup.select(".sppb-addon-content")
-            or soup.select("div.card")
-        )
+        # The cabinet page lists ministers in .member-i-title blocks,
+        # each containing an <h3> (name) and <p> (portfolio/role).
+        # Structure: .grid-item > .member-i > .member-i-main > .member-i-title
+        minister_blocks = soup.select(".member-i-title")
 
         if not minister_blocks:
+            # Fallback: try broader selectors in case the site layout changes
             logger.warning(
                 "ghana_presidency.parse.no_blocks_found",
-                hint="Falling back to table rows",
+                hint="Primary selector .member-i-title failed, trying fallbacks",
             )
-            minister_blocks = soup.select("table tr")
+            minister_blocks = (
+                soup.select(".member-i-main")
+                or soup.select(".member-i")
+                or soup.select("div.card")
+            )
 
         for block in minister_blocks:
             try:
                 name_tag = (
-                    block.select_one("h2")
-                    or block.select_one("h3")
+                    block.select_one("h3")
+                    or block.select_one("h2")
                     or block.select_one("h4")
-                    or block.select_one(".minister-name")
                     or block.select_one("strong")
                 )
                 if not name_tag:
                     continue
 
-                name = name_tag.get_text(strip=True)
+                name = " ".join(name_tag.get_text(strip=True).split())
                 if not name:
                     continue
 
-                # Portfolio / role
-                portfolio_tag = (
-                    block.select_one(".minister-portfolio")
-                    or block.select_one("p")
-                    or block.select_one("span")
-                )
-                portfolio = portfolio_tag.get_text(strip=True) if portfolio_tag else ""
+                # Portfolio / role – the <p> sibling inside .member-i-title
+                portfolio_tag = block.select_one("p")
+                portfolio = " ".join(portfolio_tag.get_text(strip=True).split()) if portfolio_tag else ""
 
                 # Attempt to extract an appointment date if present
                 date_appointed = self._extract_date(block.get_text(" ", strip=True))

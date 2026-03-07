@@ -47,34 +47,14 @@ def run_all_scrapers():
     total_records = 0
 
     try:
-        from africapep.scraper.spiders.ghana_parliament import GhanaParliamentScraper
-        from africapep.scraper.spiders.ghana_presidency import GhanaPresidencyScraper
-        from africapep.scraper.spiders.ghana_ec import GhanaECScraper
-        from africapep.scraper.spiders.ghana_gazette import GhanaGazetteScraper
-        from africapep.scraper.spiders.nigeria_nass import NigeriaNASSScraper
-        from africapep.scraper.spiders.nigeria_presidency import NigeriaPresidencyScraper
-        from africapep.scraper.spiders.nigeria_inec import NigeriaINECScraper
-        from africapep.scraper.spiders.kenya_parliament import KenyaParliamentScraper
-        from africapep.scraper.spiders.kenya_gazette import KenyaGazetteScraper
-        from africapep.scraper.spiders.southafrica_parliament import SouthAfricaParliamentScraper
+        from africapep.scraper.spiders import ALL_SCRAPERS
 
         from africapep.pipeline.normaliser import normalise_record
         from africapep.pipeline.classifier import classify_pep_tier
         from africapep.pipeline.resolver import EntityResolver
         from africapep.database.neo4j_client import neo4j_client
 
-        scrapers = [
-            GhanaParliamentScraper(),
-            GhanaPresidencyScraper(),
-            GhanaECScraper(),
-            GhanaGazetteScraper(),
-            NigeriaNASSScraper(),
-            NigeriaPresidencyScraper(),
-            NigeriaINECScraper(),
-            KenyaParliamentScraper(),
-            KenyaGazetteScraper(),
-            SouthAfricaParliamentScraper(),
-        ]
+        scrapers = [cls() for cls in ALL_SCRAPERS]
 
         resolver = EntityResolver()
         for scraper in scrapers:

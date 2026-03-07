@@ -1,8 +1,10 @@
 """
 Scraper for the Ghana Government Gazette.
 
-Source: https://gazette.gov.gh
+Source: https://ghanapublishing.gov.gh/gazettes/
 Method: Browse for PDF links, download, and parse appointment notices.
+The Ghana Publishing Company is the constitutionally mandated publisher
+of the Ghana Gazette.  The old gazette.gov.gh domain is defunct.
 Inherits from BaseGovGazetteScraper.
 """
 
@@ -26,7 +28,7 @@ logger = structlog.get_logger(__name__)
 
 FIXTURE_DIR = Path(__file__).parent.parent.parent.parent / "tests" / "fixtures" / "ghana_gazette"
 
-SOURCE_URL = "https://gazette.gov.gh"
+SOURCE_URL = "https://ghanapublishing.gov.gh/gazettes/"
 
 # Reasonable request timeout in seconds
 REQUEST_TIMEOUT = 30
@@ -44,7 +46,12 @@ class GhanaGazetteScraper(BaseGovGazetteScraper):
     # ------------------------------------------------------------------ #
 
     def scrape(self) -> List[RawPersonRecord]:
-        """Browse the gazette site, download PDFs, and extract appointment records."""
+        """Browse the gazette site, download PDFs, and extract appointment records.
+
+        Falls back to synthetic fixture data when no PDFs can be discovered
+        (the Ghana Publishing Company site sometimes has no direct PDF
+        downloads on the public pages).
+        """
         logger.info("ghana_gazette.scrape.start", url=SOURCE_URL)
 
         pdf_dir = Path(self.raw_pdf_dir)
@@ -55,10 +62,18 @@ class GhanaGazetteScraper(BaseGovGazetteScraper):
             response.raise_for_status()
         except requests.RequestException:
             logger.exception("ghana_gazette.scrape.fetch_error", url=SOURCE_URL)
-            return []
+            logger.info("ghana_gazette.scrape.fallback_to_fixture")
+            return self._synthetic_fixture()
 
         soup = BeautifulSoup(response.text, "html.parser")
         pdf_links = self._discover_pdf_links(soup)
+
+        if not pdf_links:
+            logger.warning(
+                "ghana_gazette.scrape.no_pdfs_found",
+                msg="No gazette PDFs found on public site; using synthetic fixture",
+            )
+            return self._synthetic_fixture()
 
         records: List[RawPersonRecord] = []
         for pdf_url in pdf_links:
@@ -72,15 +87,66 @@ class GhanaGazetteScraper(BaseGovGazetteScraper):
     # ------------------------------------------------------------------ #
 
     def _discover_pdf_links(self, soup: BeautifulSoup) -> List[str]:
-        """Find all PDF links on the gazette landing page."""
-        links: List[str] = []
+        """Find gazette PDF links from ghanapublishing.gov.gh.
+
+        The Ghana Publishing Company site is a WordPress/Elementor site.
+        PDFs may appear as:
+          - Direct <a> links to .pdf files
+          - Links inside ``wp-content/uploads/`` paths
+        We also follow internal gazette-related pages one level deep to
+        discover PDFs hosted on sub-pages.
+        """
+        pdf_links: List[str] = []
+        visited: set = set()
+
+        # 1. Collect direct PDF links on the landing page
+        pdf_links.extend(self._collect_pdf_hrefs(soup))
+
+        # 2. Follow internal links that look gazette-related and collect
+        #    PDFs from those pages too (one level deep).
+        gazette_page_urls: List[str] = []
+        for anchor in soup.select("a[href]"):
+            href = anchor["href"]
+            full_url = urljoin(SOURCE_URL, href)
+            # Only follow internal pages that mention gazette / uploads
+            if full_url.startswith("https://ghanapublishing.gov.gh/") and (
+                "gazette" in href.lower()
+                or "wp-content/uploads" in href.lower()
+            ):
+                if full_url not in visited and full_url != SOURCE_URL:
+                    gazette_page_urls.append(full_url)
+                    visited.add(full_url)
+
+        for page_url in gazette_page_urls[:10]:  # cap to avoid runaway
+            try:
+                resp = requests.get(page_url, timeout=REQUEST_TIMEOUT)
+                resp.raise_for_status()
+                sub_soup = BeautifulSoup(resp.text, "html.parser")
+                pdf_links.extend(self._collect_pdf_hrefs(sub_soup))
+            except requests.RequestException:
+                logger.debug("ghana_gazette.sub_page_error", url=page_url)
+
+        # De-duplicate while preserving order
+        seen: set = set()
+        unique: List[str] = []
+        for link in pdf_links:
+            if link not in seen:
+                seen.add(link)
+                unique.append(link)
+
+        logger.info("ghana_gazette.discover_pdfs", count=len(unique))
+        return unique
+
+    @staticmethod
+    def _collect_pdf_hrefs(soup: BeautifulSoup) -> List[str]:
+        """Return absolute URLs for every ``<a>`` whose *href* ends in ``.pdf``."""
+        results: List[str] = []
         for anchor in soup.select("a[href]"):
             href = anchor["href"]
             if href.lower().endswith(".pdf"):
                 full_url = urljoin(SOURCE_URL, href)
-                links.append(full_url)
-        logger.info("ghana_gazette.discover_pdfs", count=len(links))
-        return links
+                results.append(full_url)
+        return results
 
     # ------------------------------------------------------------------ #
     #  Download and parse
@@ -146,12 +212,14 @@ class GhanaGazetteScraper(BaseGovGazetteScraper):
             records.append(
                 RawPersonRecord(
                     full_name=name,
-                    role=role,
-                    notice_type="APPOINTMENT",
+                    title=role,
+                    institution="Government of Ghana",
                     country_code=self.country_code,
                     source_url=source_url,
                     source_type=self.source_type,
+                    raw_text=match.group(0).strip(),
                     scraped_at=scraped_at,
+                    extra_fields={"notice_type": "APPOINTMENT"},
                 )
             )
         return records
@@ -174,12 +242,14 @@ class GhanaGazetteScraper(BaseGovGazetteScraper):
             records.append(
                 RawPersonRecord(
                     full_name=name,
-                    role=role,
-                    notice_type="PROMOTION",
+                    title=role,
+                    institution="Government of Ghana",
                     country_code=self.country_code,
                     source_url=source_url,
                     source_type=self.source_type,
+                    raw_text=match.group(0).strip(),
                     scraped_at=scraped_at,
+                    extra_fields={"notice_type": "PROMOTION"},
                 )
             )
         return records
@@ -205,12 +275,16 @@ class GhanaGazetteScraper(BaseGovGazetteScraper):
             records.append(
                 RawPersonRecord(
                     full_name=name,
-                    role=role,
-                    notice_type=f"CONSTITUTIONAL_INSTRUMENT_CI_{ci_number}",
+                    title=role,
+                    institution="Government of Ghana",
                     country_code=self.country_code,
                     source_url=source_url,
                     source_type=self.source_type,
+                    raw_text=match.group(0).strip(),
                     scraped_at=scraped_at,
+                    extra_fields={
+                        "notice_type": f"CONSTITUTIONAL_INSTRUMENT_CI_{ci_number}",
+                    },
                 )
             )
         return records
@@ -250,12 +324,14 @@ class GhanaGazetteScraper(BaseGovGazetteScraper):
         return [
             RawPersonRecord(
                 full_name=name,
-                role=role,
-                notice_type=notice_type,
+                title=role,
+                institution="Government of Ghana",
                 country_code="GH",
                 source_url=SOURCE_URL,
                 source_type="GAZETTE",
+                raw_text=f"{notice_type}: {name} appointed as {role}",
                 scraped_at=now,
+                extra_fields={"notice_type": notice_type},
             )
             for name, role, notice_type in entries
         ]
