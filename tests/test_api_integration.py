@@ -3,6 +3,7 @@
 These tests require database connections.
 Run with: pytest tests/test_api_integration.py -v -m integration
 """
+import sys
 import pytest
 from unittest.mock import patch, MagicMock
 
@@ -12,13 +13,23 @@ pytestmark = pytest.mark.integration
 @pytest.fixture
 def client():
     """Create a TestClient with mocked database connections."""
-    # Mock database connections before importing app
+    mock_neo4j = MagicMock()
+    mock_neo4j.verify_connectivity.return_value = True
+    mock_neo4j.get_stats.return_value = {
+        "total_persons": 100, "active": 80, "sources": 50
+    }
+
     mock_db = MagicMock()
     mock_db.__enter__ = MagicMock(return_value=mock_db)
     mock_db.__exit__ = MagicMock(return_value=False)
 
-    with patch("africapep.database.postgres_client.get_db", return_value=mock_db):
-        with patch("africapep.database.neo4j_client.Neo4jClient"):
+    # Pre-populate the module in sys.modules with our mock before importing the app
+    mock_neo4j_module = MagicMock()
+    mock_neo4j_module.Neo4jClient = MagicMock(return_value=mock_neo4j)
+    mock_neo4j_module.neo4j_client = mock_neo4j
+
+    with patch.dict(sys.modules, {"africapep.database.neo4j_client": mock_neo4j_module}):
+        with patch("africapep.database.postgres_client.get_db", return_value=mock_db):
             from fastapi.testclient import TestClient
             from africapep.api.main import app
             yield TestClient(app)
