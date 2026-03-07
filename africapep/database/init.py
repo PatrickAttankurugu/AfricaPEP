@@ -1,0 +1,86 @@
+"""Database initialization script.
+Run with: python -m africapep.database.init
+"""
+import sys
+from pathlib import Path
+import structlog
+
+from africapep.database.neo4j_client import neo4j_client
+from africapep.database.postgres_client import verify_connectivity, apply_schema
+
+log = structlog.get_logger()
+SCHEMA_DIR = Path(__file__).parent / "schema"
+
+
+def main():
+    print("=" * 40)
+    print("  AfricaPEP Database Initialization")
+    print("=" * 40)
+    print()
+
+    # 1. PostgreSQL
+    print("[1/4] Checking PostgreSQL connectivity...")
+    if not verify_connectivity():
+        print("  FAIL: Cannot connect to PostgreSQL")
+        sys.exit(1)
+    print("  OK")
+
+    print("[2/4] Applying PostgreSQL schema...")
+    apply_schema(str(SCHEMA_DIR / "postgres_schema.sql"))
+    print("  OK")
+
+    # 2. Neo4j
+    print("[3/4] Checking Neo4j connectivity...")
+    if not neo4j_client.verify_connectivity():
+        print("  FAIL: Cannot connect to Neo4j")
+        sys.exit(1)
+    print("  OK")
+
+    print("[4/4] Applying Neo4j constraints and indexes...")
+    neo4j_client.apply_constraints(str(SCHEMA_DIR / "neo4j_constraints.cypher"))
+    print("  OK")
+
+    # 3. Seed countries
+    print()
+    print("Seeding African countries...")
+    _seed_countries()
+    print("  OK")
+
+    print()
+    print("=" * 40)
+    print("  Initialization complete!")
+    print("=" * 40)
+    neo4j_client.close()
+
+
+AFRICAN_COUNTRIES = {
+    "GH": ("Ghana", "WEST_AFRICA"),
+    "NG": ("Nigeria", "WEST_AFRICA"),
+    "KE": ("Kenya", "EAST_AFRICA"),
+    "ZA": ("South Africa", "SOUTHERN_AFRICA"),
+    "ET": ("Ethiopia", "EAST_AFRICA"),
+    "TZ": ("Tanzania", "EAST_AFRICA"),
+    "UG": ("Uganda", "EAST_AFRICA"),
+    "SN": ("Senegal", "WEST_AFRICA"),
+    "CI": ("Cote d'Ivoire", "WEST_AFRICA"),
+    "CM": ("Cameroon", "CENTRAL_AFRICA"),
+    "AO": ("Angola", "SOUTHERN_AFRICA"),
+    "MZ": ("Mozambique", "SOUTHERN_AFRICA"),
+    "ZW": ("Zimbabwe", "SOUTHERN_AFRICA"),
+    "RW": ("Rwanda", "EAST_AFRICA"),
+    "BW": ("Botswana", "SOUTHERN_AFRICA"),
+    "NA": ("Namibia", "SOUTHERN_AFRICA"),
+    "EG": ("Egypt", "NORTH_AFRICA"),
+    "MA": ("Morocco", "NORTH_AFRICA"),
+    "TN": ("Tunisia", "NORTH_AFRICA"),
+    "DZ": ("Algeria", "NORTH_AFRICA"),
+}
+
+
+def _seed_countries():
+    for code, (name, region) in AFRICAN_COUNTRIES.items():
+        neo4j_client.ensure_country(code, name, region)
+
+
+if __name__ == "__main__":
+    main()

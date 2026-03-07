@@ -1,0 +1,11 @@
+CREATE CONSTRAINT person_id IF NOT EXISTS FOR (p:Person) REQUIRE p.id IS UNIQUE;
+CREATE CONSTRAINT position_id IF NOT EXISTS FOR (pos:Position) REQUIRE pos.id IS UNIQUE;
+CREATE CONSTRAINT org_id IF NOT EXISTS FOR (o:Organisation) REQUIRE o.id IS UNIQUE;
+CREATE CONSTRAINT country_code IF NOT EXISTS FOR (c:Country) REQUIRE c.code IS UNIQUE;
+CREATE CONSTRAINT source_id IF NOT EXISTS FOR (s:SourceRecord) REQUIRE s.id IS UNIQUE;
+CREATE INDEX person_name IF NOT EXISTS FOR (p:Person) ON (p.full_name);
+CREATE INDEX person_nationality IF NOT EXISTS FOR (p:Person) ON (p.nationality);
+CREATE INDEX person_tier IF NOT EXISTS FOR (p:Person) ON (p.pep_tier);
+CREATE INDEX person_active IF NOT EXISTS FOR (p:Person) ON (p.is_active_pep);
+CREATE INDEX position_current IF NOT EXISTS FOR (pos:Position) ON (pos.is_current);
+CREATE INDEX source_country IF NOT EXISTS FOR (s:SourceRecord) ON (s.country);

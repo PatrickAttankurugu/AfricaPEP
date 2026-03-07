@@ -1,0 +1,62 @@
+version: "3.9"
+
+services:
+  neo4j:
+    image: neo4j:5-community
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    volumes:
+      - ./data/neo4j:/data
+    environment:
+      NEO4J_AUTH: neo4j/africapep_secret
+      NEO4J_dbms_memory_heap_initial__size: 512m
+      NEO4J_dbms_memory_heap_max__size: 1G
+    healthcheck:
+      test: ["CMD", "cypher-shell", "-u", "neo4j", "-p", "africapep_secret", "RETURN 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  postgres:
+    image: postgres:15
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: africapep
+      POSTGRES_PASSWORD: africapep_secret
+      POSTGRES_DB: africapep
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U africapep"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    depends_on:
+      neo4j:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    env_file: .env
+    command: uvicorn africapep.api.main:app --host 0.0.0.0 --port 8000 --reload
+    volumes:
+      - .:/app
+
+  scraper:
+    build: .
+    depends_on:
+      neo4j:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    env_file: .env
+    command: python -m africapep.scheduler.jobs
+    volumes:
+      - .:/app
+      - ./data/raw_pdfs:/app/data/raw_pdfs
