@@ -25,6 +25,16 @@ from africapep.scraper.spiders.cameroon_presidency import CameroonPresidencyScra
 from africapep.scraper.spiders.cotedivoire_parliament import CoteDIvoireParliamentScraper
 from africapep.scraper.spiders.malawi_presidency import MalawiPresidencyScraper
 from africapep.scraper.spiders.zambia_parliament import ZambiaParliamentScraper
+from africapep.scraper.spiders.egypt_presidency import EgyptPresidencyScraper
+from africapep.scraper.spiders.morocco_presidency import MoroccoPresidencyScraper
+from africapep.scraper.spiders.botswana_parliament import BotswanaParliamentScraper
+from africapep.scraper.spiders.zimbabwe_parliament import ZimbabweParliamentScraper
+from africapep.scraper.spiders.mozambique_presidency import MozambiquePresidencyScraper
+from africapep.scraper.spiders.angola_presidency import AngolaPresidencyScraper
+from africapep.scraper.spiders.drc_parliament import DRCParliamentScraper
+from africapep.scraper.spiders.tunisia_presidency import TunisiaPresidencyScraper
+from africapep.scraper.spiders.gambia_presidency import GambiaPresidencyScraper
+from africapep.scraper.spiders.sierraleone_presidency import SierraLeonePresidencyScraper
 
 ALL_SCRAPERS = [
     GhanaParliamentScraper,
@@ -52,4 +62,14 @@ ALL_SCRAPERS = [
     CoteDIvoireParliamentScraper,
     MalawiPresidencyScraper,
     ZambiaParliamentScraper,
+    EgyptPresidencyScraper,
+    MoroccoPresidencyScraper,
+    BotswanaParliamentScraper,
+    ZimbabweParliamentScraper,
+    MozambiquePresidencyScraper,
+    AngolaPresidencyScraper,
+    DRCParliamentScraper,
+    TunisiaPresidencyScraper,
+    GambiaPresidencyScraper,
+    SierraLeonePresidencyScraper,
 ]

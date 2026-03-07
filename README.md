@@ -70,6 +70,16 @@ A production-grade, open-source PEP (Politically Exposed Persons) database built
 | Côte d'Ivoire | ✅  | —         | —         | —       | —         |
 | Malawi  | —         | ✅        | —         | —       | —         |
 | Zambia  | ✅        | —         | —         | —       | —         |
+| Egypt   | —         | ✅        | —         | —       | —         |
+| Morocco | —         | ✅        | —         | —       | —         |
+| Botswana | ✅       | —         | —         | —       | —         |
+| Zimbabwe | ✅       | —         | —         | —       | —         |
+| Mozambique | —      | ✅        | —         | —       | —         |
+| Angola  | —         | ✅        | —         | —       | —         |
+| DR Congo | ✅       | —         | —         | —       | —         |
+| Tunisia | —         | ✅        | —         | —       | —         |
+| Gambia  | —         | ✅        | —         | —       | —         |
+| Sierra Leone | —    | ✅        | —         | —       | —         |
 
 ## Quick Start (Docker)
 

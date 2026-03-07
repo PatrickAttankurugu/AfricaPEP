@@ -76,6 +76,9 @@ AFRICAN_COUNTRIES = {
     "DZ": ("Algeria", "NORTH_AFRICA"),
     "MW": ("Malawi", "SOUTHERN_AFRICA"),
     "ZM": ("Zambia", "SOUTHERN_AFRICA"),
+    "CD": ("Democratic Republic of the Congo", "CENTRAL_AFRICA"),
+    "GM": ("Gambia", "WEST_AFRICA"),
+    "SL": ("Sierra Leone", "WEST_AFRICA"),
 }
 
 
