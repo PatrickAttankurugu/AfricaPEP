@@ -19,6 +19,12 @@ from africapep.scraper.spiders.ethiopia_presidency import EthiopiaPresidencyScra
 from africapep.scraper.spiders.tanzania_presidency import TanzaniaPresidencyScraper
 from africapep.scraper.spiders.senegal_presidency import SenegalPresidencyScraper
 from africapep.scraper.spiders.uganda_parliament import UgandaParliamentScraper
+from africapep.scraper.spiders.tanzania_parliament import TanzaniaParliamentScraper
+from africapep.scraper.spiders.namibia_parliament import NamibiaParliamentScraper
+from africapep.scraper.spiders.cameroon_presidency import CameroonPresidencyScraper
+from africapep.scraper.spiders.cotedivoire_parliament import CoteDIvoireParliamentScraper
+from africapep.scraper.spiders.malawi_presidency import MalawiPresidencyScraper
+from africapep.scraper.spiders.zambia_parliament import ZambiaParliamentScraper
 
 ALL_SCRAPERS = [
     GhanaParliamentScraper,
@@ -40,4 +46,10 @@ ALL_SCRAPERS = [
     EthiopiaPresidencyScraper,
     TanzaniaPresidencyScraper,
     SenegalPresidencyScraper,
+    TanzaniaParliamentScraper,
+    NamibiaParliamentScraper,
+    CameroonPresidencyScraper,
+    CoteDIvoireParliamentScraper,
+    MalawiPresidencyScraper,
+    ZambiaParliamentScraper,
 ]

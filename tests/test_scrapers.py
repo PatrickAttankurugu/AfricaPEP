@@ -262,12 +262,90 @@ def test_senegal_presidency_fixture():
         assert r.source_type == "PRESIDENCY"
 
 
+# ── Tanzania Parliament ──
+
+def test_tanzania_parliament_fixture():
+    from africapep.scraper.spiders.tanzania_parliament import TanzaniaParliamentScraper
+
+    records = TanzaniaParliamentScraper(use_fixture=True).run()
+    assert isinstance(records, list)
+    assert len(records) >= 5
+    for r in records:
+        assert r.country_code == "TZ"
+        assert r.source_type == "PARLIAMENT"
+
+
+# ── Namibia Parliament ──
+
+def test_namibia_parliament_fixture():
+    from africapep.scraper.spiders.namibia_parliament import NamibiaParliamentScraper
+
+    records = NamibiaParliamentScraper(use_fixture=True).run()
+    assert isinstance(records, list)
+    assert len(records) >= 5
+    for r in records:
+        assert r.country_code == "NA"
+        assert r.source_type == "PARLIAMENT"
+
+
+# ── Cameroon Presidency ──
+
+def test_cameroon_presidency_fixture():
+    from africapep.scraper.spiders.cameroon_presidency import CameroonPresidencyScraper
+
+    records = CameroonPresidencyScraper(use_fixture=True).run()
+    assert isinstance(records, list)
+    assert len(records) >= 5
+    for r in records:
+        assert r.country_code == "CM"
+        assert r.source_type == "PRESIDENCY"
+
+
+# ── Côte d'Ivoire Parliament ──
+
+def test_cotedivoire_parliament_fixture():
+    from africapep.scraper.spiders.cotedivoire_parliament import CoteDIvoireParliamentScraper
+
+    records = CoteDIvoireParliamentScraper(use_fixture=True).run()
+    assert isinstance(records, list)
+    assert len(records) >= 5
+    for r in records:
+        assert r.country_code == "CI"
+        assert r.source_type == "PARLIAMENT"
+
+
+# ── Malawi Presidency ──
+
+def test_malawi_presidency_fixture():
+    from africapep.scraper.spiders.malawi_presidency import MalawiPresidencyScraper
+
+    records = MalawiPresidencyScraper(use_fixture=True).run()
+    assert isinstance(records, list)
+    assert len(records) >= 5
+    for r in records:
+        assert r.country_code == "MW"
+        assert r.source_type == "PRESIDENCY"
+
+
+# ── Zambia Parliament ──
+
+def test_zambia_parliament_fixture():
+    from africapep.scraper.spiders.zambia_parliament import ZambiaParliamentScraper
+
+    records = ZambiaParliamentScraper(use_fixture=True).run()
+    assert isinstance(records, list)
+    assert len(records) >= 5
+    for r in records:
+        assert r.country_code == "ZM"
+        assert r.source_type == "PARLIAMENT"
+
+
 # ── ALL_SCRAPERS registry ──
 
 def test_all_scrapers_registry():
     from africapep.scraper.spiders import ALL_SCRAPERS
 
-    assert len(ALL_SCRAPERS) >= 19, "Should have at least 19 scrapers registered"
+    assert len(ALL_SCRAPERS) >= 25, "Should have at least 25 scrapers registered"
     for cls in ALL_SCRAPERS:
         scraper = cls(use_fixture=True)
         records = scraper.run()

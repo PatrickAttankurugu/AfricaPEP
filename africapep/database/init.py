@@ -74,6 +74,8 @@ AFRICAN_COUNTRIES = {
     "MA": ("Morocco", "NORTH_AFRICA"),
     "TN": ("Tunisia", "NORTH_AFRICA"),
     "DZ": ("Algeria", "NORTH_AFRICA"),
+    "MW": ("Malawi", "SOUTHERN_AFRICA"),
+    "ZM": ("Zambia", "SOUTHERN_AFRICA"),
 }
 
 
