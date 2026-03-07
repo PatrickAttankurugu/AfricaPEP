@@ -195,10 +195,12 @@ class TanzaniaPresidencyScraper(BaseScraper):
         """Current Tanzania cabinet data as synthetic fixture records."""
         now = datetime.utcnow()
         cabinet = [
+            # ---- Head of State & Government ----
             {"name": "Samia Suluhu Hassan", "title": "President"},
             {"name": "Philip Isdor Mpango", "title": "Vice President"},
             {"name": "Kassim Majaliwa", "title": "Prime Minister"},
             {"name": "Doto Mashaka Biteko", "title": "Deputy PM / Minister of Energy"},
+            # ---- Cabinet Ministers ----
             {"name": "January Yusuf Makamba", "title": "Minister of Foreign Affairs"},
             {"name": "Stergomena Lawrence Tax", "title": "Minister of Defence"},
             {"name": "Hamad Masauni", "title": "Minister of Home Affairs"},
@@ -218,18 +220,65 @@ class TanzaniaPresidencyScraper(BaseScraper):
             {"name": "Abdallah Ulega", "title": "Minister of Works and Transport"},
             {"name": "Damas Daniel Ndumbaro", "title": "Minister of Lands, Housing and Human Settlements"},
             {"name": "Anthony Peter Mavunde", "title": "Minister of State, PM's Office (Labour, Youth and Employment)"},
-            # Judiciary
+            {"name": "Ashatu Kijaji", "title": "Minister of Industry and Trade"},
+            {"name": "Jerry William Silaa", "title": "Minister of Livestock and Fisheries"},
+            # ---- Deputy Ministers ----
+            {"name": "Ndugulile Godwin", "title": "Deputy Minister of Health"},
+            {"name": "David Mwakiposa Kihenzile", "title": "Deputy Minister of Finance and Planning"},
+            {"name": "Omary Tebere Mgumba", "title": "Deputy Minister of Agriculture"},
+            {"name": "Stella Alex Manyanya", "title": "Deputy Minister of Energy"},
+            {"name": "Eng. Atashasta Justus Nditiye", "title": "Deputy Minister of Works and Transport"},
+            {"name": "Stanslaus Haroon Nyongo", "title": "Deputy Minister of Minerals"},
+            {"name": "Pauline Phillip Gekul", "title": "Deputy Minister of Education, Science and Technology"},
+            {"name": "Hamis Kigwangalla", "title": "Deputy Minister of Natural Resources and Tourism"},
+            {"name": "Mwanaisha Ulega", "title": "Deputy Minister of Home Affairs"},
+            {"name": "Mary Masanja", "title": "Deputy Minister of Lands, Housing and Human Settlements"},
+            # ---- Attorney General & Legal ----
+            {"name": "Eliezer Mbuki Feleshi", "title": "Attorney General of Tanzania"},
+            {"name": "Sylvester Mwakitalu", "title": "Director of Public Prosecutions"},
+            # ---- Judiciary ----
             {"name": "Ibrahim Mahamed Juma", "title": "Chief Justice of Tanzania"},
-            # Central Bank
+            # ---- Central Bank ----
             {"name": "Emmanuel Mpawe Tutuba", "title": "Governor, Bank of Tanzania"},
-            # Parliament
+            # ---- Parliament ----
             {"name": "Tulia Ackson", "title": "Speaker of the National Assembly"},
-            # Military
+            # ---- Military & Security ----
             {"name": "Jacob John Mkunda", "title": "Chief of Defence Forces, TPDF"},
-            # Former Presidents
+            {"name": "Camillus Simon Wambura", "title": "Inspector General of Police"},
+            {"name": "Anna Charles Makakala", "title": "Commissioner General of Immigration"},
+            {"name": "Diwani Athumani Masanga", "title": "Director, Tanzania Intelligence and Security Service (TISS)"},
+            # ---- Key Agencies ----
+            {"name": "Alphayo Japhet Kidata", "title": "Commissioner General, Tanzania Revenue Authority"},
+            {"name": "Maharage Chande", "title": "Managing Director, TANESCO"},
+            {"name": "Salum Rashid Aboud", "title": "Director General, Prevention and Combating of Corruption Bureau (PCCB)"},
+            {"name": "Jabiri Bakari", "title": "Director General, Tanzania Communications Regulatory Authority (TCRA)"},
+            # ---- Permanent Secretaries ----
+            {"name": "Prof. Moses Kusiluka", "title": "Permanent Secretary, Ministry of Finance and Planning"},
+            {"name": "Joseph Simbakalia", "title": "Permanent Secretary, Ministry of Foreign Affairs"},
+            {"name": "Zena Ahmed Said", "title": "Permanent Secretary, Ministry of Health"},
+            {"name": "Abel Shelukindo", "title": "Permanent Secretary, Ministry of Education"},
+            {"name": "Mary Gabriel Maganga", "title": "Permanent Secretary, Ministry of Home Affairs"},
+            # ---- Regional Commissioners (selected) ----
+            {"name": "Albert John Chalamila", "title": "Regional Commissioner, Dar es Salaam"},
+            {"name": "Aboud Jumbe Aboud", "title": "Regional Commissioner, Dodoma"},
+            {"name": "John Mongella", "title": "Regional Commissioner, Mwanza"},
+            {"name": "Idd Kimanta", "title": "Regional Commissioner, Arusha"},
+            {"name": "Zainab Telack", "title": "Regional Commissioner, Kilimanjaro"},
+            {"name": "Hamad Salim Masoud", "title": "Regional Commissioner, Mbeya"},
+            {"name": "Thobias Makoba Andengenye", "title": "Regional Commissioner, Kagera"},
+            {"name": "Anthony Mtaka", "title": "Regional Commissioner, Morogoro"},
+            {"name": "Marco Gaguti", "title": "Regional Commissioner, Tanga"},
+            {"name": "Juma Homera", "title": "Regional Commissioner, Tabora"},
+            {"name": "Mashimba Mashauri Ndaki", "title": "Regional Commissioner, Mara"},
+            {"name": "Robert Gabriel", "title": "Regional Commissioner, Iringa"},
+            {"name": "Ally Hapi", "title": "Regional Commissioner, Kigoma"},
+            {"name": "Amina Masenza", "title": "Regional Commissioner, Geita"},
+            {"name": "Said Mecky Sadiki", "title": "Regional Commissioner, Lindi"},
+            # ---- Former Presidents ----
             {"name": "Jakaya Kikwete", "title": "Former President of Tanzania"},
             {"name": "Ali Hassan Mwinyi", "title": "Former President of Tanzania"},
-            # Opposition
+            {"name": "Benjamin William Mkapa", "title": "Former President of Tanzania (Deceased)"},
+            # ---- Opposition ----
             {"name": "Freeman Aikaeli Mbowe", "title": "Leader of CHADEMA"},
             {"name": "Tundu Antiphas Lissu", "title": "CHADEMA Vice Chairman"},
         ]

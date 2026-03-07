@@ -153,10 +153,10 @@ class SouthAfricaPresidencyScraper(BaseScraper):
         now = datetime.utcnow()
 
         cabinet = [
-            # President and Deputy
+            # ── President and Deputy ──
             {"name": "Cyril Ramaphosa", "title": "President of the Republic of South Africa", "party": "ANC"},
             {"name": "Paul Mashatile", "title": "Deputy President", "party": "ANC"},
-            # ANC Ministers
+            # ── ANC Ministers ──
             {"name": "Enoch Godongwana", "title": "Minister of Finance", "party": "ANC"},
             {"name": "Ronald Lamola", "title": "Minister of International Relations and Cooperation", "party": "ANC"},
             {"name": "Angie Motshekga", "title": "Minister of Defence and Military Veterans", "party": "ANC"},
@@ -172,31 +172,63 @@ class SouthAfricaPresidencyScraper(BaseScraper):
             {"name": "Thembi Nkadimeng", "title": "Minister of Water and Sanitation", "party": "ANC"},
             {"name": "Pemmy Majodina", "title": "Minister of Public Service and Administration", "party": "ANC"},
             {"name": "Barbara Creecy", "title": "Minister of Forestry, Fisheries and the Environment", "party": "ANC"},
-            # DA Ministers (GNU coalition)
+            {"name": "Blade Nzimande", "title": "Minister of Higher Education, Science and Innovation", "party": "SACP"},
+            {"name": "Nosiviwe Mapisa-Nqakula", "title": "Minister of Employment and Labour", "party": "ANC"},
+            # ── Deputy Ministers (ANC) ──
+            {"name": "Zizi Kodwa", "title": "Deputy Minister of State Security", "party": "ANC"},
+            {"name": "Buti Manamela", "title": "Deputy Minister in the Presidency for Women, Youth and Persons with Disabilities", "party": "ANC"},
+            {"name": "David Masondo", "title": "Deputy Minister of Finance", "party": "ANC"},
+            {"name": "Nokuthula Mkhize", "title": "Deputy Minister of Transport", "party": "ANC"},
+            {"name": "Obed Bapela", "title": "Deputy Minister of Cooperative Governance and Traditional Affairs", "party": "ANC"},
+            {"name": "Nonceba Mhlauli", "title": "Deputy Minister of International Relations and Cooperation", "party": "ANC"},
+            {"name": "Zuko Godlimpi", "title": "Deputy Minister of Police", "party": "ANC"},
+            {"name": "Peace Mabe", "title": "Deputy Minister of Water and Sanitation", "party": "ANC"},
+            # ── DA Ministers (GNU coalition) ──
             {"name": "John Steenhuisen", "title": "Minister of Agriculture", "party": "DA"},
             {"name": "Dean Macpherson", "title": "Minister of Public Works and Infrastructure", "party": "DA"},
             {"name": "Leon Schreiber", "title": "Minister of Home Affairs", "party": "DA"},
             {"name": "Solly Malatsi", "title": "Minister of Communications and Digital Technologies", "party": "DA"},
             {"name": "Siviwe Gwarube", "title": "Minister of Basic Education", "party": "DA"},
-            # Other coalition parties
+            # ── Other coalition parties ──
             {"name": "Pieter Groenewald", "title": "Minister of Correctional Services", "party": "FF+"},
             {"name": "Gayton McKenzie", "title": "Minister of Sports, Arts and Culture", "party": "PA"},
-            {"name": "Blade Nzimande", "title": "Minister of Higher Education, Science and Innovation", "party": "SACP"},
-            # Judiciary
-            {"name": "Mandisa Maya", "title": "Chief Justice of South Africa", "party": ""},
-            {"name": "Steven Majiedt", "title": "Deputy Chief Justice of South Africa", "party": ""},
-            # Reserve Bank
-            {"name": "Lesetja Kganyago", "title": "Governor, South African Reserve Bank", "party": ""},
-            # Military
-            {"name": "Rudzani Maphwanya", "title": "Chief of the SANDF", "party": ""},
-            # Parliament
-            {"name": "Thoko Didiza", "title": "Speaker of the National Assembly", "party": "ANC"},
-            {"name": "Refilwe Mtsweni-Tsipane", "title": "Chairperson of the NCOP", "party": "ANC"},
-            # Former Presidents
+            # ── Director General in the Presidency ──
+            {"name": "Phindile Baleni", "title": "Director General in the Presidency", "party": ""},
+            # ── National Treasury ──
+            {"name": "Dondo Mogajane", "title": "Director General, National Treasury", "party": ""},
+            # ── Former Presidents ──
             {"name": "Thabo Mbeki", "title": "Former President of South Africa", "party": "ANC"},
             {"name": "Jacob Zuma", "title": "Former President of South Africa", "party": "MK"},
-            {"name": "F.W. de Klerk Foundation (legacy)", "title": "Former President of South Africa (deceased 2021)", "party": ""},
-            # Opposition
+            {"name": "Kgalema Motlanthe", "title": "Former President of South Africa", "party": "ANC"},
+            {"name": "F.W. de Klerk", "title": "Former President of South Africa (deceased 2021)", "party": "NP"},
+            # ── Judiciary ──
+            {"name": "Mandisa Maya", "title": "Chief Justice of South Africa", "party": ""},
+            {"name": "Steven Majiedt", "title": "Deputy Chief Justice of South Africa", "party": ""},
+            # ── Reserve Bank ──
+            {"name": "Lesetja Kganyago", "title": "Governor, South African Reserve Bank", "party": ""},
+            # ── Military ──
+            {"name": "Rudzani Maphwanya", "title": "Chief of the SANDF", "party": ""},
+            {"name": "Lawrence Khulekani Mbatha", "title": "Chief of the South African Army", "party": ""},
+            {"name": "Monde Lobese", "title": "Chief of the South African Navy", "party": ""},
+            {"name": "Wiseman Mbambo", "title": "Chief of the South African Air Force", "party": ""},
+            # ── Intelligence ──
+            {"name": "Ambassador Thulani Dlomo", "title": "Director General, State Security Agency", "party": ""},
+            # ── Police ──
+            {"name": "Fannie Masemola", "title": "National Commissioner, South African Police Service (SAPS)", "party": ""},
+            # ── NPA ──
+            {"name": "Shamila Batohi", "title": "National Director of Public Prosecutions", "party": ""},
+            # ── Chapter 9 Institutions ──
+            {"name": "Kholeka Gcaleka", "title": "Public Protector of South Africa", "party": ""},
+            {"name": "Tsakani Maluleke", "title": "Auditor General of South Africa", "party": ""},
+            # ── Parliament ──
+            {"name": "Thoko Didiza", "title": "Speaker of the National Assembly", "party": "ANC"},
+            {"name": "Refilwe Mtsweni-Tsipane", "title": "Chairperson of the NCOP", "party": "ANC"},
+            # ── State-Owned Enterprises ──
+            {"name": "Dan Marokane", "title": "CEO, Eskom", "party": ""},
+            {"name": "Michelle Phillips", "title": "Acting CEO, Transnet", "party": ""},
+            {"name": "Gidon Novick", "title": "Interim CEO, South African Airways (SAA)", "party": ""},
+            {"name": "Hishaam Emeran", "title": "CEO, PRASA (Passenger Rail Agency of South Africa)", "party": ""},
+            # ── Opposition Leaders ──
             {"name": "Julius Malema", "title": "Leader of the EFF", "party": "EFF"},
         ]
 

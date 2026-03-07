@@ -64,7 +64,13 @@ class MoroccoPresidencyScraper(BaseScraper):
     def _synthetic_fixture(self) -> list[RawPersonRecord]:
         now = datetime.utcnow()
         officials = [
+            # ---- Head of State & Royal Family ----
             {"name": "King Mohammed VI", "role": "King of Morocco, Head of State"},
+            {"name": "Prince Moulay Hassan", "role": "Crown Prince of Morocco"},
+            {"name": "Prince Moulay Rachid", "role": "Prince, Royal Family"},
+            {"name": "Princess Lalla Meryem", "role": "Princess, President of National Union of Moroccan Women"},
+            {"name": "Princess Lalla Hasna", "role": "Princess, President of Mohammed VI Foundation for Environmental Protection"},
+            # ---- Head of Government & Cabinet ----
             {"name": "Aziz Akhannouch", "role": "Head of Government"},
             {"name": "Nasser Bourita", "role": "Minister of Foreign Affairs, African Cooperation and Moroccans Abroad"},
             {"name": "Abdelouafi Laftit", "role": "Minister of Interior"},
@@ -85,14 +91,66 @@ class MoroccoPresidencyScraper(BaseScraper):
             {"name": "Mohamed Sadiki", "role": "Minister of Agriculture, Maritime Fisheries, Rural Development and Water and Forests"},
             {"name": "Aawatif Hayar", "role": "Minister of Solidarity, Social Inclusion and Family"},
             {"name": "Mohamed Mehdi Bensaid", "role": "Minister of Youth, Culture and Communication"},
+            {"name": "Mustapha Baitas", "role": "Government Spokesperson, Minister Delegate to Head of Government"},
+            {"name": "Faouzi Lekjaa", "role": "Minister Delegate for Budget"},
+            {"name": "Lahcen Daoudi", "role": "Minister Delegate for General Affairs and Governance"},
+            {"name": "Mamoun Bouhdoud", "role": "Minister Delegate for Small Business and Entrepreneurship"},
+            {"name": "Khalid Safir", "role": "Wali, Director General of Local Authorities, Ministry of Interior"},
+            # ---- Parliament ----
             {"name": "Rachid Talbi El Alami", "role": "Speaker of the House of Representatives"},
             {"name": "Enaam Mayara", "role": "Speaker of the House of Councillors"},
+            # ---- Judiciary ----
             {"name": "Mohamed Benabdelkader", "role": "First President of the Court of Cassation"},
+            {"name": "Mohamed Abdennabaoui", "role": "Prosecutor General of the King at the Court of Cassation"},
+            {"name": "Ahmed El Ghazali", "role": "Head of the Supreme Judicial Council (Delegated)"},
+            # ---- Central Bank ----
             {"name": "Abdellatif Jouahri", "role": "Governor, Bank Al-Maghrib"},
-            {"name": "Général de Corps d'Armée Belkhir El Farouk", "role": "Inspector General of the Royal Armed Forces"},
-            {"name": "Abdellatif Hammouchi", "role": "Director General of National Security and Territorial Surveillance"},
-            {"name": "Driss Jettou", "role": "First President of the Court of Accounts"},
-            {"name": "Abdelilah Benkirane", "role": "Former Head of Government, PJD Leader"},
+            # ---- Military & Security ----
+            {"name": "Belkhir El Farouk", "role": "Inspector General of the Royal Armed Forces (FAR)"},
+            {"name": "Mohamed Haramou", "role": "Commander of the Royal Gendarmerie"},
+            {"name": "Abdellatif Hammouchi", "role": "Director General of National Security (DGSN) and Territorial Surveillance (DGST)"},
+            {"name": "Yassine Mansouri", "role": "Director General, External Intelligence (DGED)"},
+            # ---- Court of Accounts ----
+            {"name": "Zineb El Adaoui", "role": "First President of the Court of Accounts"},
+            # ---- Previous Prime Ministers ----
+            {"name": "Saadeddine El Othmani", "role": "Former Head of Government (2017-2021)"},
+            {"name": "Abdelilah Benkirane", "role": "Former Head of Government (2011-2017), PJD Leader"},
+            {"name": "Abbas El Fassi", "role": "Former Prime Minister (2007-2011)"},
+            {"name": "Driss Jettou", "role": "Former Prime Minister (2002-2007)"},
+            # ---- Political Party Leaders ----
+            {"name": "Abdellatif Wahbi", "role": "Secretary General, Authenticity and Modernity Party (PAM)"},
+            {"name": "Nizar Baraka", "role": "Secretary General, Istiqlal Party (PI)"},
+            {"name": "Driss Lachgar", "role": "First Secretary, Socialist Union of Popular Forces (USFP)"},
+            {"name": "Mohand Laenser", "role": "Secretary General, Popular Movement (MP)"},
+            {"name": "Nabil Benabdellah", "role": "Secretary General, Party of Progress and Socialism (PPS)"},
+            # ---- Ambassadors ----
+            {"name": "Omar Hilale", "role": "Permanent Representative to the United Nations"},
+            {"name": "Youssef Amrani", "role": "Ambassador to the United States"},
+            {"name": "Samira Sitail", "role": "Ambassador to France"},
+            # ---- Regional Governors / Walis ----
+            {"name": "Said Ahmidouch", "role": "Wali of Casablanca-Settat Region"},
+            {"name": "Mohamed Yacoubi", "role": "Wali of Rabat-Sale-Kenitra Region"},
+            {"name": "Karim Kassi-Lahlou", "role": "Wali of Marrakech-Safi Region"},
+            {"name": "Said Zniber", "role": "Wali of Fez-Meknes Region"},
+            {"name": "Mohamed Mhidia", "role": "Wali of Tangier-Tetouan-Al Hoceima Region"},
+            {"name": "Ahmed Hajji", "role": "Wali of Souss-Massa Region"},
+            {"name": "Khatib El Hebil", "role": "Wali of Oriental Region"},
+            # ---- Key Agencies & State Enterprises ----
+            {"name": "Mostafa Terrab", "role": "Chairman and CEO, OCP Group"},
+            {"name": "Anass Houir Alami", "role": "Director General, Caisse de Depot et de Gestion (CDG)"},
+            {"name": "Tarik Hamane", "role": "Director General, Moroccan Agency for Sustainable Energy (MASEN)"},
+            {"name": "Asmaa Rhlalou", "role": "Director General, National Telecommunications Regulatory Agency (ANRT)"},
+            {"name": "Abderrahim El Hafidi", "role": "Director General, National Office of Electricity and Water (ONEE)"},
+            {"name": "Mohamed Bachir Rachdi", "role": "President, National Authority for Probity, Prevention and Fight against Corruption (INPPLC)"},
+            {"name": "Ahmed Reda Chami", "role": "President, Economic, Social and Environmental Council (CESE)"},
+            # ---- Human Rights & Oversight ----
+            {"name": "Amina Bouayach", "role": "President, National Human Rights Council (CNDH)"},
+            {"name": "Omar Azziman", "role": "Advisor to the King, Former President of CESE"},
+            {"name": "Andre Azoulay", "role": "Senior Advisor to King Mohammed VI"},
+            {"name": "Fouad Ali El Himma", "role": "Senior Advisor to King Mohammed VI"},
+            # ---- Competition & Regulation ----
+            {"name": "Ahmed Rahhou", "role": "President, Competition Council"},
+            {"name": "Latifa Akharbach", "role": "President, High Authority for Audiovisual Communication (HACA)"},
         ]
         records = []
         for o in officials:
