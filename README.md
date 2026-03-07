@@ -80,6 +80,36 @@ A production-grade, open-source PEP (Politically Exposed Persons) database built
 | Tunisia | —         | ✅        | —         | —       | —         |
 | Gambia  | —         | ✅        | —         | —       | —         |
 | Sierra Leone | —    | ✅        | —         | —       | —         |
+| Algeria | —         | ✅        | —         | —       | —         |
+| Benin   | —         | ✅        | —         | —       | —         |
+| Burkina Faso | —    | ✅        | —         | —       | —         |
+| Burundi | —         | ✅        | —         | —       | —         |
+| Cape Verde | —      | ✅        | —         | —       | —         |
+| Central African Rep. | — | ✅   | —         | —       | —         |
+| Chad    | —         | ✅        | —         | —       | —         |
+| Comoros | —         | ✅        | —         | —       | —         |
+| Congo (Brazzaville) | — | ✅   | —         | —       | —         |
+| Djibouti | —        | ✅        | —         | —       | —         |
+| Equatorial Guinea | — | ✅     | —         | —       | —         |
+| Eritrea | —         | ✅        | —         | —       | —         |
+| Eswatini | —        | ✅        | —         | —       | —         |
+| Gabon   | —         | ✅        | —         | —       | —         |
+| Guinea  | —         | ✅        | —         | —       | —         |
+| Guinea-Bissau | —   | ✅        | —         | —       | —         |
+| Lesotho | —         | ✅        | —         | —       | —         |
+| Liberia | —         | ✅        | —         | —       | —         |
+| Libya   | —         | ✅        | —         | —       | —         |
+| Madagascar | —      | ✅        | —         | —       | —         |
+| Mali    | —         | ✅        | —         | —       | —         |
+| Mauritania | —      | ✅        | —         | —       | —         |
+| Mauritius | —       | ✅        | —         | —       | —         |
+| Niger   | —         | ✅        | —         | —       | —         |
+| São Tomé & Príncipe | — | ✅   | —         | —       | —         |
+| Seychelles | —      | ✅        | —         | —       | —         |
+| Somalia | —         | ✅        | —         | —       | —         |
+| South Sudan | —     | ✅        | —         | —       | —         |
+| Sudan   | —         | ✅        | —         | —       | —         |
+| Togo    | —         | ✅        | —         | —       | —         |
 
 ## Quick Start (Docker)
 

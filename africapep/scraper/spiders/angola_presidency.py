@@ -1,7 +1,7 @@
 """
 Scraper for the Angolan Presidency / Government.
 
-Source: https://www.governo.gov.ao
+Source: https://governo.gov.ao
 """
 
 from bs4 import BeautifulSoup
@@ -12,7 +12,7 @@ from africapep.scraper.base_scraper import BaseScraper, RawPersonRecord
 
 logger = structlog.get_logger(__name__)
 
-GOV_URL = "https://www.governo.gov.ao"
+GOV_URL = "https://governo.gov.ao"
 
 
 class AngolaPresidencyScraper(BaseScraper):

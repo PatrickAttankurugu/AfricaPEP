@@ -12,7 +12,7 @@ from africapep.scraper.base_scraper import BaseScraper, RawPersonRecord
 
 logger = structlog.get_logger(__name__)
 
-GOV_URL = "https://www.pm.gov.tn/pm/content/index.php?lang=en"
+GOV_URL = "http://pm.gov.tn/ar"
 
 
 class TunisiaPresidencyScraper(BaseScraper):
