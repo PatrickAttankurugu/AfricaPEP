@@ -71,8 +71,8 @@ class WikidataScraper(BaseScraper):
 
     source_type = "WIKIDATA"
 
-    def __init__(self, country_code: str, use_fixture: bool = False):
-        super().__init__(use_fixture=use_fixture)
+    def __init__(self, country_code: str):
+        super().__init__()
         self.country_code = country_code.upper()
         qid = COUNTRY_QIDS.get(self.country_code)
         if not qid:
@@ -86,29 +86,13 @@ class WikidataScraper(BaseScraper):
             country=self.country_code,
             qid=self._country_qid,
         )
-        try:
-            records = self._query_sparql()
-            log.info(
-                "wikidata.scrape.complete",
-                country=self.country_code,
-                record_count=len(records),
-            )
-            if records:
-                return records
-            log.warning(
-                "wikidata.scrape.no_results",
-                country=self.country_code,
-                hint="Falling back to fixture data",
-            )
-            return self._load_fixture()
-        except Exception as exc:
-            log.error(
-                "wikidata.scrape.failed",
-                country=self.country_code,
-                error=str(exc),
-                hint="Falling back to fixture data",
-            )
-            return self._load_fixture()
+        records = self._query_sparql()
+        log.info(
+            "wikidata.scrape.complete",
+            country=self.country_code,
+            record_count=len(records),
+        )
+        return records
 
     def _query_sparql(self) -> List[RawPersonRecord]:
         """Execute SPARQL query and parse results into records."""
@@ -173,11 +157,6 @@ class WikidataScraper(BaseScraper):
             )
 
         return records
-
-    def _load_fixture(self) -> List[RawPersonRecord]:
-        """No fixture data for Wikidata scraper — returns empty list."""
-        return []
-
 
 def _parse_date(value: Optional[str]) -> Optional[str]:
     """Parse Wikidata date string to ISO format."""

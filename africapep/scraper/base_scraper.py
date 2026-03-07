@@ -13,9 +13,8 @@ from africapep.config import settings
 log = structlog.get_logger()
 
 USER_AGENTS = [
-    "AfricaPEP-Bot/1.0 (KYC research; contact@africapep.dev) Python/3.11",
+    "AfricaPEP/1.0 (KYC research; https://github.com/PatrickAttankurugu/AfricaPEP)",
     "AfricaPEP-Scraper/1.0 (AML compliance research) +https://africapep.dev",
-    "AfricaPEP-Crawler/1.0 (academic PEP research; contact@africapep.dev)",
 ]
 
 
@@ -35,16 +34,14 @@ class RawPersonRecord:
 class BaseScraper(ABC):
     """Abstract base class all scrapers inherit from.
 
-    Provides: polite rate limiting, retry logic, structured logging,
-    and a fixture mode for testing without hitting live servers.
+    Provides: polite rate limiting, retry logic, structured logging.
     """
 
     country_code: str = ""
     source_type: str = ""
     delay_seconds: float = settings.scraper_delay_seconds
 
-    def __init__(self, use_fixture: bool = False):
-        self.use_fixture = use_fixture
+    def __init__(self):
         self.session = requests.Session()
         self.session.headers["User-Agent"] = random.choice(USER_AGENTS)
 
@@ -52,15 +49,8 @@ class BaseScraper(ABC):
     def scrape(self) -> list[RawPersonRecord]:
         ...
 
-    @abstractmethod
-    def _load_fixture(self) -> list[RawPersonRecord]:
-        ...
-
     def run(self) -> list[RawPersonRecord]:
         scraper_name = self.__class__.__name__
-        if self.use_fixture:
-            log.info("scraper_fixture_mode", scraper=scraper_name)
-            return self._load_fixture()
         try:
             log.info("scraper_started", scraper=scraper_name)
             records = self.scrape()
