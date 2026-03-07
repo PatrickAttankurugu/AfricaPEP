@@ -119,14 +119,19 @@ def get_stats():
             "SELECT COALESCE(nationality, 'XX') AS c, COUNT(*) AS n "
             "FROM pep_profiles GROUP BY nationality ORDER BY n DESC"
         )).fetchall()
-        by_country = {row.c: row.n for row in country_rows}
+        by_country = {row[0]: row[1] for row in country_rows}
 
         # By tier
         tier_rows = db.execute(text(
             "SELECT COALESCE(pep_tier, 0) AS t, COUNT(*) AS n "
             "FROM pep_profiles GROUP BY pep_tier ORDER BY t"
         )).fetchall()
-        by_tier = {f"tier_{row.t}" if row.t else "unclassified": row.n for row in tier_rows}
+        by_tier = {}
+        for row in tier_rows:
+            t = row[0]
+            n = row[1]
+            key = f"tier_{t}" if t else "unclassified"
+            by_tier[key] = n
 
         # Last updated
         last = db.execute(text(
