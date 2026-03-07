@@ -95,18 +95,41 @@ class NamibiaParliamentScraper(BaseScraper):
     def _synthetic_fixture(self) -> list[RawPersonRecord]:
         now = datetime.utcnow()
         members = [
-            {"name": "Lukas Sinimbo Muha", "title": "Chairperson", "party": "SWAPO"},
+            # Executive
+            {"name": "Netumbo Nandi-Ndaitwah", "title": "President of the Republic of Namibia", "party": "SWAPO"},
+            {"name": "Nangolo Mbumba", "title": "Former President (2024 interim)", "party": "SWAPO"},
+            # Cabinet Ministers
+            {"name": "Saara Kuugongelwa-Amadhila", "title": "Prime Minister", "party": "SWAPO"},
+            {"name": "Netumbo Nandi-Ndaitwah", "title": "Deputy Prime Minister / Minister of International Relations", "party": "SWAPO"},
+            {"name": "Ipumbu Shiimi", "title": "Minister of Finance", "party": "SWAPO"},
+            {"name": "Frans Kapofi", "title": "Minister of Home Affairs", "party": "SWAPO"},
+            {"name": "Peter Vilho", "title": "Minister of Defence", "party": "SWAPO"},
+            {"name": "Albert Kawana", "title": "Attorney General", "party": "SWAPO"},
+            {"name": "Kalumbi Shangula", "title": "Minister of Health and Social Services", "party": "SWAPO"},
+            {"name": "Anna Nghipondoka", "title": "Minister of Education", "party": "SWAPO"},
+            {"name": "Calle Schlettwein", "title": "Minister of Agriculture", "party": "SWAPO"},
+            {"name": "Tom Alweendo", "title": "Minister of Mines and Energy", "party": "SWAPO"},
+            {"name": "Obeth Kandjoze", "title": "Minister of Economic Planning", "party": "SWAPO"},
+            {"name": "Peya Mushelenga", "title": "Minister of Urban and Rural Development", "party": "SWAPO"},
+            {"name": "Emma Theofelus", "title": "Deputy Minister of ICT", "party": "SWAPO"},
+            # Parliament
+            {"name": "Peter Katjavivi", "title": "Speaker of the National Assembly", "party": "SWAPO"},
+            {"name": "Lukas Sinimbo Muha", "title": "Chairperson of the National Council", "party": "SWAPO"},
+            # Judiciary
+            {"name": "Peter Shivute", "title": "Chief Justice of Namibia", "party": ""},
+            # Central Bank
+            {"name": "Johannes Gawaxab", "title": "Governor, Bank of Namibia", "party": ""},
+            # Opposition
+            {"name": "McHenry Venaani", "title": "Leader of PDM (Official Opposition)", "party": "PDM"},
+            {"name": "Panduleni Itula", "title": "President of IPC", "party": "IPC"},
+            {"name": "Bernadus Swartbooi", "title": "Leader of LPM", "party": "LPM"},
+            # National Council members
             {"name": "Victoria Mbawo Kauma", "title": "Vice Chairperson", "party": "SWAPO"},
-            {"name": "Emma T. Muteka", "title": "Deputy Chairperson", "party": "SWAPO"},
             {"name": "Gerhard Shiimi", "title": "Chief Whip", "party": "SWAPO"},
-            {"name": "Peter Chance Kazongominja", "title": "Chief Whip", "party": "NUDO"},
-            {"name": "Lonia Kaishungu-Shinana", "title": "Member of Parliament", "party": "SWAPO"},
-            {"name": "Hans Linekela Nambondi", "title": "Member of Parliament", "party": "SWAPO"},
             {"name": "Melania Ndjago", "title": "Member of Parliament", "party": "SWAPO"},
-            {"name": "Anseline V. Beukes", "title": "Member of Parliament", "party": "SWAPO"},
-            {"name": "Paulus N. Mbangu", "title": "Member of Parliament", "party": "SWAPO"},
-            {"name": "Phillipus N. Mavara", "title": "Member of Parliament", "party": "SWAPO"},
-            {"name": "Richard Gaoseb", "title": "Member of Parliament", "party": "SWAPO"},
+            {"name": "Hans Linekela Nambondi", "title": "Member of Parliament", "party": "SWAPO"},
+            # Former President
+            {"name": "Hage Geingob", "title": "Former President of Namibia (deceased 2024)", "party": "SWAPO"},
         ]
 
         records = []

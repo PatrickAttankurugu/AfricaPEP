@@ -64,18 +64,38 @@ class MadagascarPresidencyScraper(BaseScraper):
     def _synthetic_fixture(self) -> list[RawPersonRecord]:
         now = datetime.utcnow()
         officials = [
+            # Executive
             {"name": "Andry Rajoelina", "role": "President of the Republic"},
             {"name": "Christian Ntsay", "role": "Prime Minister"},
+            # Cabinet Ministers
             {"name": "Rasata Rafaravavitafika", "role": "Minister of Foreign Affairs"},
-            {"name": "Justin Tokely", "role": "Minister of Interior"},
+            {"name": "Justin Tokely", "role": "Minister of Interior and Decentralisation"},
             {"name": "Rindra Hasimbelo Rabarinirinarison", "role": "Minister of Economy and Finance"},
-            {"name": "Léon Jean Richard Rakotonirina", "role": "Minister of Defence"},
+            {"name": "Léon Jean Richard Rakotonirina", "role": "Minister of National Defence"},
             {"name": "Herilaza Imbiki", "role": "Minister of Justice"},
-            {"name": "Zely Arivelo Randriamanantany", "role": "Minister of Health"},
-            {"name": "Marie Michelle Sahondrarimalala", "role": "Minister of Education"},
-            {"name": "Harifidy Ramilison", "role": "Minister of Agriculture"},
-            {"name": "Olivier Herindrainy Rakotomalala", "role": "Minister of Energy"},
-            {"name": "Lalatiana Andriatongarivo", "role": "Minister of Communication"},
+            {"name": "Zely Arivelo Randriamanantany", "role": "Minister of Public Health"},
+            {"name": "Marie Michelle Sahondrarimalala", "role": "Minister of National Education"},
+            {"name": "Harifidy Ramilison", "role": "Minister of Agriculture and Livestock"},
+            {"name": "Olivier Herindrainy Rakotomalala", "role": "Minister of Energy and Hydrocarbons"},
+            {"name": "Lalatiana Andriatongarivo", "role": "Minister of Communication and Culture"},
+            {"name": "Andriamanohisoa Ramaholimasy", "role": "Minister of Public Works"},
+            {"name": "Joël Randriamandranto", "role": "Minister of Transport and Meteorology"},
+            {"name": "Fidiniavo Ravokatra", "role": "Minister of Environment and Sustainable Development"},
+            {"name": "Lantosoa Rakotomalala", "role": "Minister of Mines"},
+            {"name": "Edgard Razafindravahy", "role": "Minister of Industrialisation and Trade"},
+            {"name": "Gisèle Ranampy", "role": "Minister of Labour and Civil Service"},
+            {"name": "Miora Lanto Rakotohasimbola", "role": "Minister of Water, Sanitation and Hygiene"},
+            {"name": "Herimanana Razafimahefa", "role": "Secretary of State for Gendarmerie"},
+            # Judiciary
+            {"name": "Florent Rakotoarisoa", "role": "President of the High Constitutional Court"},
+            # Central Bank
+            {"name": "Henri Rabarijohn", "role": "Governor, Banque Centrale de Madagascar"},
+            # Parliament
+            {"name": "Christine Razanamahasoa", "role": "President of the National Assembly"},
+            {"name": "Herimanana Razafimahefa", "role": "President of the Senate"},
+            # Former President
+            {"name": "Marc Ravalomanana", "role": "Former President of Madagascar"},
+            {"name": "Hery Rajaonarimampianina", "role": "Former President of Madagascar"},
         ]
         records = []
         for o in officials:

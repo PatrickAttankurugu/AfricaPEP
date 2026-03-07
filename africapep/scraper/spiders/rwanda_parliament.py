@@ -141,22 +141,43 @@ class RwandaParliamentScraper(BaseScraper):
     def _synthetic_fixture(self) -> list[RawPersonRecord]:
         now = datetime.utcnow()
         members = [
+            # Executive
             {"name": "Paul Kagame", "title": "President of the Republic of Rwanda", "chamber": "Executive", "party": "RPF"},
             {"name": "Edouard Ngirente", "title": "Prime Minister", "chamber": "Executive", "party": "RPF"},
             {"name": "Vincent Biruta", "title": "Minister of Foreign Affairs", "chamber": "Executive", "party": "RPF"},
             {"name": "Albert Murasira", "title": "Minister of Defence", "chamber": "Executive", "party": "RPF"},
             {"name": "Jean Claude Musabyimana", "title": "Minister of Internal Security", "chamber": "Executive", "party": "RPF"},
             {"name": "Uzziel Ndagijimana", "title": "Minister of Finance and Economic Planning", "chamber": "Executive", "party": "RPF"},
-            {"name": "Gertrude Kazarwa", "title": "Speaker", "chamber": "Chamber of Deputies", "party": "RPF"},
+            {"name": "Valentine Uwamariya", "title": "Minister of Education", "chamber": "Executive", "party": "RPF"},
+            {"name": "Daniel Ngamije", "title": "Minister of Health", "chamber": "Executive", "party": "RPF"},
+            {"name": "Ildephonse Musafiri", "title": "Minister of Agriculture", "chamber": "Executive", "party": "RPF"},
+            {"name": "Jean Chrysostome Ngabitsinze", "title": "Minister of Infrastructure", "chamber": "Executive", "party": "RPF"},
+            {"name": "Francis Gatare", "title": "Minister of State for Mining", "chamber": "Executive", "party": "RPF"},
+            {"name": "Paula Ingabire", "title": "Minister of ICT and Innovation", "chamber": "Executive", "party": "RPF"},
+            {"name": "Ernest Nsabimana", "title": "Minister of Trade and Industry", "chamber": "Executive", "party": "RPF"},
+            {"name": "Jeanne d'Arc Mujawamariya", "title": "Minister of Environment", "chamber": "Executive", "party": "RPF"},
+            {"name": "Jean de Dieu Uwihanganye", "title": "Minister of Justice", "chamber": "Executive", "party": "RPF"},
+            # Judiciary
+            {"name": "Faustin Ntezilyayo", "title": "Chief Justice of Rwanda", "chamber": "Judiciary", "party": ""},
+            # Central Bank
+            {"name": "John Rwangombwa", "title": "Governor, National Bank of Rwanda", "chamber": "Executive", "party": ""},
+            # Parliament
+            {"name": "Donatille Mukabalisa", "title": "Speaker of the Chamber of Deputies", "chamber": "Chamber of Deputies", "party": "RPF"},
+            {"name": "Augustin Iyamuremye", "title": "President of the Senate", "chamber": "Senate", "party": "RPF"},
+            # Deputies
             {"name": "Speciose Ayinkamiye", "title": "Deputy", "chamber": "Chamber of Deputies", "party": "PSD"},
             {"name": "Christine Bakundufite", "title": "Deputy", "chamber": "Chamber of Deputies", "party": "RPF"},
             {"name": "Diogene Bitunguramye", "title": "Deputy", "chamber": "Chamber of Deputies", "party": "RPF"},
             {"name": "Deogratias Bizimana Minani", "title": "Deputy", "chamber": "Chamber of Deputies", "party": "PL"},
             {"name": "Donatha Gihana", "title": "Deputy", "chamber": "Chamber of Deputies", "party": "RPF"},
             {"name": "Mussa Fazil Harerimana", "title": "Deputy", "chamber": "Chamber of Deputies", "party": "PSD"},
-            {"name": "Augustin Iyamuremye", "title": "Senator", "chamber": "Senate", "party": "RPF"},
+            {"name": "Jean Pierre Dusingizemungu", "title": "Deputy", "chamber": "Chamber of Deputies", "party": "PSD"},
+            {"name": "Edouard Bamporiki", "title": "Deputy", "chamber": "Chamber of Deputies", "party": "RPF"},
+            # Senators
             {"name": "Francois Xavier Kalinda", "title": "Senator", "chamber": "Senate", "party": "RPF"},
             {"name": "Esperance Nyirasafari", "title": "Senator", "chamber": "Senate", "party": "RPF"},
+            {"name": "Tito Rutaremara", "title": "Senator / Ombudsman Emeritus", "chamber": "Senate", "party": "RPF"},
+            # International
             {"name": "Louise Mushikiwabo", "title": "Secretary General of La Francophonie", "chamber": "Executive", "party": "RPF"},
         ]
         return [

@@ -64,18 +64,41 @@ class SomaliaPresidencyScraper(BaseScraper):
     def _synthetic_fixture(self) -> list[RawPersonRecord]:
         now = datetime.utcnow()
         officials = [
-            {"name": "Hassan Sheikh Mohamud", "role": "President of the Federal Republic"},
+            # Executive
+            {"name": "Hassan Sheikh Mohamud", "role": "President of the Federal Republic of Somalia"},
             {"name": "Hamza Abdi Barre", "role": "Prime Minister"},
-            {"name": "Ahmed Moallim Fiqi", "role": "Minister of Foreign Affairs"},
-            {"name": "Ahmed Moalim Fiqi", "role": "Minister of Interior"},
+            # Cabinet Ministers
+            {"name": "Ahmed Moallim Fiqi", "role": "Minister of Foreign Affairs and International Cooperation"},
+            {"name": "Ahmed Macallin Fiqi", "role": "Minister of Interior, Federal Affairs and Reconciliation"},
             {"name": "Bihi Iman Egeh", "role": "Minister of Finance"},
             {"name": "Abdulkadir Mohamed Nur", "role": "Minister of Defence"},
-            {"name": "Hassan Hussein Haji", "role": "Minister of Justice"},
-            {"name": "Ali Haji Adam", "role": "Minister of Health"},
-            {"name": "Farah Sheikh Abdulkadir", "role": "Minister of Education"},
-            {"name": "Said Hussein Iid", "role": "Minister of Petroleum"},
-            {"name": "Adan Mohamed Nur", "role": "Speaker of Parliament"},
-            {"name": "Abshir Omar Jama", "role": "Minister of Planning"},
+            {"name": "Hassan Hussein Haji", "role": "Minister of Justice and Judicial Affairs"},
+            {"name": "Ali Haji Adam", "role": "Minister of Health and Human Services"},
+            {"name": "Farah Sheikh Abdulkadir", "role": "Minister of Education, Culture and Higher Education"},
+            {"name": "Said Hussein Iid", "role": "Minister of Petroleum and Mineral Resources"},
+            {"name": "Abshir Omar Jama", "role": "Minister of Planning, Investment and Economic Development"},
+            {"name": "Jibril Abdirashid Haji", "role": "Minister of Commerce and Industry"},
+            {"name": "Daud Aweis", "role": "Minister of Agriculture and Irrigation"},
+            {"name": "Maryan Dahir Aweys", "role": "Minister of Women and Human Rights Development"},
+            {"name": "Abdullahi Godah Barre", "role": "Minister of Public Works, Reconstruction and Housing"},
+            {"name": "Salah Ahmed Jama", "role": "Minister of Information, Culture and Tourism"},
+            {"name": "Abdirahman Yusuf Al Adala", "role": "Minister of Transport and Civil Aviation"},
+            {"name": "Mohamed Abdi Hayir Mareye", "role": "Minister of Labour and Social Affairs"},
+            # Parliament
+            {"name": "Adan Mohamed Nur Madobe", "role": "Speaker of the House of the People"},
+            {"name": "Abdi Hashi Abdullahi", "role": "Speaker of the Upper House"},
+            # Judiciary
+            {"name": "Baashe Yusuf Ahmed", "role": "Chief Justice of the Supreme Court"},
+            # Central Bank
+            {"name": "Abdirahman Mohamed Abdullahi", "role": "Governor, Central Bank of Somalia"},
+            # Security
+            {"name": "Odowa Yusuf Rage", "role": "Chief of Defence Forces, Somali National Army"},
+            # Federal Member States
+            {"name": "Ahmed Mohamed Islam Madobe", "role": "President of Jubaland"},
+            {"name": "Said Abdullahi Deni", "role": "President of Puntland"},
+            # Former
+            {"name": "Mohamed Abdullahi Farmajo", "role": "Former President of Somalia"},
+            {"name": "Sharif Sheikh Ahmed", "role": "Former President of Somalia"},
         ]
         records = []
         for o in officials:

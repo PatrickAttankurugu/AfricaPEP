@@ -81,8 +81,10 @@ class MalawiPresidencyScraper(BaseScraper):
     def _synthetic_fixture(self) -> list[RawPersonRecord]:
         now = datetime.utcnow()
         officials = [
+            # Executive
             {"name": "Lazarus Chakwera", "role": "President of the Republic of Malawi"},
-            {"name": "Saulos Chilima", "role": "Vice President"},
+            {"name": "Michael Usi", "role": "Vice President"},
+            # Cabinet Ministers
             {"name": "Sosten Gwengwe", "role": "Minister of Finance"},
             {"name": "Ken Zikhale Ng'oma", "role": "Minister of Defence"},
             {"name": "Richard Chimwendo Banda", "role": "Minister of Homeland Security"},
@@ -93,6 +95,27 @@ class MalawiPresidencyScraper(BaseScraper):
             {"name": "Agnes NyaLonje", "role": "Minister of Education"},
             {"name": "Jappie Mhango", "role": "Minister of Lands"},
             {"name": "Sidik Mia", "role": "Minister of Transport and Public Works"},
+            {"name": "Gospel Kazako", "role": "Minister of Information"},
+            {"name": "Samuel Tembenu", "role": "Minister of Justice"},
+            {"name": "Ibrahim Matola", "role": "Minister of Water and Sanitation"},
+            {"name": "Abida Mia", "role": "Minister of Energy"},
+            {"name": "Vera Kamtukule", "role": "Minister of Trade and Industry"},
+            {"name": "Jean Sendeza", "role": "Minister of Gender, Community Development and Social Welfare"},
+            {"name": "Mark Botomani", "role": "Minister of Tourism"},
+            {"name": "Chikumbutso Mtumodzi", "role": "Minister of Labour"},
+            # Judiciary
+            {"name": "Rizine Mzikamanda", "role": "Chief Justice of Malawi"},
+            # Central Bank
+            {"name": "Wilson Tonganivuka Banda", "role": "Governor, Reserve Bank of Malawi"},
+            # Parliament
+            {"name": "Catherine Gotani Hara", "role": "Speaker of the National Assembly"},
+            # Military
+            {"name": "Griffin Supuni Phiri", "role": "Commander, Malawi Defence Force"},
+            # Opposition
+            {"name": "Peter Mutharika", "role": "Former President of Malawi"},
+            {"name": "Kondwani Nankhumwa", "role": "Leader of the Opposition in Parliament"},
+            # Former VP (legacy note)
+            {"name": "Saulos Chilima", "role": "Former Vice President (deceased 2024)"},
         ]
 
         records = []

@@ -64,18 +64,37 @@ class EswatiniPresidencyScraper(BaseScraper):
     def _synthetic_fixture(self) -> list[RawPersonRecord]:
         now = datetime.utcnow()
         officials = [
+            # Head of State
             {"name": "Mswati III", "role": "King of Eswatini"},
+            {"name": "Ntfombi Tfwala", "role": "Queen Mother (Ndlovukazi)"},
+            # Executive
             {"name": "Russell Dlamini", "role": "Prime Minister"},
-            {"name": "Pholile Shakantu", "role": "Minister of Foreign Affairs"},
+            {"name": "Themba Masuku", "role": "Deputy Prime Minister"},
+            # Cabinet Ministers
+            {"name": "Pholile Shakantu", "role": "Minister of Foreign Affairs and International Cooperation"},
             {"name": "Amos Shongwe", "role": "Minister of Home Affairs"},
             {"name": "Neal Rijkenberg", "role": "Minister of Finance"},
             {"name": "Prince Simelane", "role": "Minister of Defence"},
-            {"name": "Pholile Dlamini-Shakantu", "role": "Minister of Justice"},
+            {"name": "Pholile Dlamini-Shakantu", "role": "Minister of Justice and Constitutional Affairs"},
             {"name": "Lizzie Nkosi", "role": "Minister of Health"},
-            {"name": "Owen Nkosi", "role": "Minister of Education"},
+            {"name": "Owen Nkosi", "role": "Minister of Education and Training"},
             {"name": "Jabulani Mabuza", "role": "Minister of Agriculture"},
-            {"name": "Moses Vilakati", "role": "Minister of Commerce"},
-            {"name": "Phila Buthelezi", "role": "Minister of Natural Resources"},
+            {"name": "Moses Vilakati", "role": "Minister of Commerce, Industry and Trade"},
+            {"name": "Phila Buthelezi", "role": "Minister of Natural Resources and Energy"},
+            {"name": "Manqoba Bhekizwe Khumalo", "role": "Minister of Information, Communications and Technology"},
+            {"name": "Chief Ndlaluhlaza Ndwandwe", "role": "Minister of Tinkhundla Administration and Development"},
+            {"name": "Absalom Themba Dlamini", "role": "Minister of Labour and Social Security"},
+            {"name": "Princess Sikhanyiso Dlamini", "role": "Minister of Tourism and Environmental Affairs"},
+            {"name": "Martin Dlamini", "role": "Minister of Public Works and Transport"},
+            {"name": "Chief Makhosini Maseko", "role": "Minister of Housing and Urban Development"},
+            # Parliament
+            {"name": "Petros Mavimbela", "role": "Speaker of the House of Assembly"},
+            # Judiciary
+            {"name": "Bheki Maphalala", "role": "Chief Justice of Eswatini"},
+            # Central Bank
+            {"name": "Phil Mnisi", "role": "Governor, Central Bank of Eswatini"},
+            # Military
+            {"name": "Jeffery Shabalala", "role": "Commander, Umbutfo Eswatini Defence Force"},
         ]
         records = []
         for o in officials:

@@ -81,9 +81,12 @@ class ZambiaParliamentScraper(BaseScraper):
     def _synthetic_fixture(self) -> list[RawPersonRecord]:
         now = datetime.utcnow()
         officials = [
+            # Executive
             {"name": "Hakainde Hichilema", "role": "President of the Republic of Zambia", "party": "UPND"},
             {"name": "Mutale Nalumango", "role": "Vice President", "party": "UPND"},
+            # Parliament
             {"name": "Nelly Mutti", "role": "Speaker of the National Assembly", "party": "UPND"},
+            # Cabinet Ministers
             {"name": "Jack Mwiimbu", "role": "Minister of Home Affairs and Internal Security", "party": "UPND"},
             {"name": "Situmbeko Musokotwane", "role": "Minister of Finance and National Planning", "party": "UPND"},
             {"name": "Sylvia Masebo", "role": "Minister of Health", "party": "UPND"},
@@ -91,8 +94,28 @@ class ZambiaParliamentScraper(BaseScraper):
             {"name": "Stanley Kakubo", "role": "Minister of Foreign Affairs", "party": "UPND"},
             {"name": "Ambrose Lufuma", "role": "Minister of Defence", "party": "UPND"},
             {"name": "Gary Nkombo", "role": "Minister of Local Government", "party": "UPND"},
-            {"name": "Miles Sampa", "role": "Minister of Commerce, Trade and Industry", "party": "PF"},
             {"name": "Cornelius Mweetwa", "role": "Minister of Information and Media", "party": "UPND"},
+            {"name": "Douglas Syakalima", "role": "Minister of Education", "party": "UPND"},
+            {"name": "Elijah Muchima", "role": "Minister of Agriculture", "party": "UPND"},
+            {"name": "Collins Nzovu", "role": "Minister of Green Economy and Environment", "party": "UPND"},
+            {"name": "Frank Tayali", "role": "Minister of Transport and Logistics", "party": "UPND"},
+            {"name": "Makozo Chikote", "role": "Minister of Mines and Minerals Development", "party": "UPND"},
+            {"name": "Peter Kapala", "role": "Minister of Energy", "party": "UPND"},
+            {"name": "Brenda Tambatamba", "role": "Minister of Labour and Social Security", "party": "UPND"},
+            {"name": "Charles Milupi", "role": "Minister of Infrastructure and Urban Development", "party": "UPND"},
+            {"name": "Mulambo Haimbe", "role": "Attorney General", "party": "UPND"},
+            # Judiciary
+            {"name": "Mumba Malila", "role": "Chief Justice of Zambia", "party": ""},
+            # Central Bank
+            {"name": "Denny Kalyalya", "role": "Governor, Bank of Zambia", "party": ""},
+            # Military
+            {"name": "Dennis Alibuzwi", "role": "Commander, Zambia Defence Force", "party": ""},
+            # Opposition
+            {"name": "Miles Sampa", "role": "PF President", "party": "PF"},
+            {"name": "Given Lubinda", "role": "Former Minister / PF Member", "party": "PF"},
+            {"name": "Edgar Lungu", "role": "Former President of Zambia", "party": "PF"},
+            # Former President
+            {"name": "Rupiah Banda", "role": "Former President of Zambia", "party": ""},
         ]
 
         records = []

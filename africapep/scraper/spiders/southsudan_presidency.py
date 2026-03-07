@@ -67,6 +67,9 @@ class SouthSudanPresidencyScraper(BaseScraper):
             {"name": "Salva Kiir Mayardit", "role": "President of the Republic"},
             {"name": "Riek Machar", "role": "First Vice President"},
             {"name": "James Wani Igga", "role": "Vice President"},
+            {"name": "Hussein Abdelbagi Akol", "role": "Vice President"},
+            {"name": "Taban Deng Gai", "role": "Vice President"},
+            {"name": "Rebecca Nyandeng de Mabior", "role": "Vice President"},
             {"name": "Deng Alor Kuol", "role": "Minister of Foreign Affairs"},
             {"name": "Awut Deng Acuil", "role": "Minister of General Education"},
             {"name": "Angelina Teny", "role": "Minister of Defence"},
@@ -76,6 +79,16 @@ class SouthSudanPresidencyScraper(BaseScraper):
             {"name": "Ruben Madol Arol", "role": "Minister of Justice"},
             {"name": "Josephine Lagu", "role": "Minister of Interior"},
             {"name": "Onyoti Adigo Nyikwec", "role": "Minister of Agriculture"},
+            {"name": "Puot Kang Chol", "role": "Minister of Petroleum"},
+            {"name": "Dier Tong Ngor", "role": "Minister of Trade and Industry"},
+            {"name": "Jemma Nunu Kumba", "role": "Speaker of the Transitional National Legislative Assembly"},
+            {"name": "Moses Makur Deng", "role": "Governor, Bank of South Sudan"},
+            {"name": "Johnson Olony Thabo", "role": "Chief of General Staff, SSPDF"},
+            {"name": "Chan Reec Madut", "role": "Chief Justice, Supreme Court"},
+            {"name": "Barnaba Marial Benjamin", "role": "Minister of East African Affairs"},
+            {"name": "Stephen Dhieu Dau", "role": "Minister of Cabinet Affairs"},
+            {"name": "Lam Akol Ajawin", "role": "Former Foreign Minister, Opposition Leader"},
+            {"name": "Pagan Amum Okiech", "role": "Former Secretary General, SPLM"},
         ]
         records = []
         for o in officials:

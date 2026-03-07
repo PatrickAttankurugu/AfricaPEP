@@ -94,18 +94,41 @@ class EthiopiaPresidencyScraper(BaseScraper):
     def _synthetic_fixture(self) -> list[RawPersonRecord]:
         now = datetime.utcnow()
         cabinet = [
+            # Executive
+            {"name": "Taye Atske Selassie", "title": "President of the Federal Republic of Ethiopia"},
             {"name": "Abiy Ahmed Ali", "title": "Prime Minister"},
-            {"name": "Taye Atske Selassie", "title": "Deputy Prime Minister / Minister of Foreign Affairs"},
             {"name": "Temesgen Tiruneh", "title": "Head, National Intelligence and Security Service"},
+            # Cabinet Ministers
+            {"name": "Demeke Mekonnen", "title": "Deputy Prime Minister / Minister of Foreign Affairs"},
             {"name": "Abraham Belay", "title": "Minister of Defence"},
             {"name": "Kenea Yadeta", "title": "Minister of Justice"},
             {"name": "Ahmed Shide", "title": "Minister of Finance"},
             {"name": "Fetlework Gebregziabher", "title": "Minister of Health"},
             {"name": "Berhanu Nega", "title": "Minister of Education"},
             {"name": "Aisha Mohammed", "title": "Minister of Industry"},
-            {"name": "Dagmawit Moges", "title": "Minister of Transport"},
+            {"name": "Dagmawit Moges", "title": "Minister of Transport and Logistics"},
             {"name": "Muferiat Kamil", "title": "Minister of Labour and Social Affairs"},
             {"name": "Habtamu Itefa", "title": "Minister of Water and Energy"},
+            {"name": "Belete Molla", "title": "Minister of Innovation and Technology"},
+            {"name": "Gedion Timothewos", "title": "Attorney General / Minister of Justice"},
+            {"name": "Adanech Abiebie", "title": "Mayor of Addis Ababa"},
+            {"name": "Ergogie Tesfaye", "title": "Minister of Women and Social Affairs"},
+            {"name": "Sileshi Bekele", "title": "Minister of Water, Irrigation and Energy"},
+            {"name": "Shumete Gizaw", "title": "Minister of Trade and Regional Integration"},
+            {"name": "Redwan Hussein", "title": "National Security Advisor"},
+            # Judiciary
+            {"name": "Meaza Ashenafi", "title": "Former Chief Justice of Ethiopia"},
+            # Central Bank
+            {"name": "Mamo Esmelealem Mihretu", "title": "Governor, National Bank of Ethiopia"},
+            # Parliament
+            {"name": "Tagesse Chafo", "title": "Speaker of the House of Peoples' Representatives"},
+            {"name": "Agegnehu Teshager", "title": "President of the House of Federation"},
+            # Military
+            {"name": "Birhanu Jula", "title": "Chief of Staff, Ethiopian National Defence Force"},
+            # Opposition
+            {"name": "Birtukan Mideksa", "title": "Chairperson, National Election Board"},
+            {"name": "Jawar Mohammed", "title": "Opposition Political Figure"},
+            {"name": "Lidetu Ayalew", "title": "Leader of the Ethiopian Democratic Party"},
         ]
         return [
             RawPersonRecord(

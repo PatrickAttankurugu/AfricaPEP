@@ -153,30 +153,51 @@ class SouthAfricaPresidencyScraper(BaseScraper):
         now = datetime.utcnow()
 
         cabinet = [
+            # President and Deputy
             {"name": "Cyril Ramaphosa", "title": "President of the Republic of South Africa", "party": "ANC"},
             {"name": "Paul Mashatile", "title": "Deputy President", "party": "ANC"},
+            # ANC Ministers
             {"name": "Enoch Godongwana", "title": "Minister of Finance", "party": "ANC"},
             {"name": "Ronald Lamola", "title": "Minister of International Relations and Cooperation", "party": "ANC"},
             {"name": "Angie Motshekga", "title": "Minister of Defence and Military Veterans", "party": "ANC"},
             {"name": "Senzo Mchunu", "title": "Minister of Police", "party": "ANC"},
-            {"name": "John Steenhuisen", "title": "Minister of Agriculture", "party": "DA"},
-            {"name": "Dean Macpherson", "title": "Minister of Public Works and Infrastructure", "party": "DA"},
-            {"name": "Pieter Groenewald", "title": "Minister of Correctional Services", "party": "FF+"},
-            {"name": "Gayton McKenzie", "title": "Minister of Sports, Arts and Culture", "party": "PA"},
             {"name": "Parks Tau", "title": "Minister of Trade, Industry and Competition", "party": "ANC"},
-            {"name": "Blade Nzimande", "title": "Minister of Higher Education, Science and Innovation", "party": "SACP"},
-            {"name": "Thembi Nkadimeng", "title": "Minister of Home Affairs", "party": "ANC"},
             {"name": "Khumbudzo Ntshavheni", "title": "Minister in the Presidency", "party": "ANC"},
             {"name": "Aaron Motsoaledi", "title": "Minister of Health", "party": "ANC"},
             {"name": "Sindisiwe Chikunga", "title": "Minister of Transport", "party": "ANC"},
+            {"name": "Mmamoloko Kubayi", "title": "Minister of Human Settlements", "party": "ANC"},
+            {"name": "Gwede Mantashe", "title": "Minister of Mineral Resources and Energy", "party": "ANC"},
+            {"name": "Nkosazana Dlamini-Zuma", "title": "Minister of Cooperative Governance and Traditional Affairs", "party": "ANC"},
+            {"name": "Naledi Pandor", "title": "Minister of Science and Innovation", "party": "ANC"},
+            {"name": "Thembi Nkadimeng", "title": "Minister of Water and Sanitation", "party": "ANC"},
+            {"name": "Pemmy Majodina", "title": "Minister of Public Service and Administration", "party": "ANC"},
+            {"name": "Barbara Creecy", "title": "Minister of Forestry, Fisheries and the Environment", "party": "ANC"},
+            # DA Ministers (GNU coalition)
+            {"name": "John Steenhuisen", "title": "Minister of Agriculture", "party": "DA"},
+            {"name": "Dean Macpherson", "title": "Minister of Public Works and Infrastructure", "party": "DA"},
             {"name": "Leon Schreiber", "title": "Minister of Home Affairs", "party": "DA"},
             {"name": "Solly Malatsi", "title": "Minister of Communications and Digital Technologies", "party": "DA"},
-            {"name": "Mmamoloko Kubayi", "title": "Minister of Human Settlements", "party": "ANC"},
+            {"name": "Siviwe Gwarube", "title": "Minister of Basic Education", "party": "DA"},
+            # Other coalition parties
+            {"name": "Pieter Groenewald", "title": "Minister of Correctional Services", "party": "FF+"},
+            {"name": "Gayton McKenzie", "title": "Minister of Sports, Arts and Culture", "party": "PA"},
+            {"name": "Blade Nzimande", "title": "Minister of Higher Education, Science and Innovation", "party": "SACP"},
+            # Judiciary
             {"name": "Mandisa Maya", "title": "Chief Justice of South Africa", "party": ""},
+            {"name": "Steven Majiedt", "title": "Deputy Chief Justice of South Africa", "party": ""},
+            # Reserve Bank
+            {"name": "Lesetja Kganyago", "title": "Governor, South African Reserve Bank", "party": ""},
+            # Military
+            {"name": "Rudzani Maphwanya", "title": "Chief of the SANDF", "party": ""},
+            # Parliament
+            {"name": "Thoko Didiza", "title": "Speaker of the National Assembly", "party": "ANC"},
+            {"name": "Refilwe Mtsweni-Tsipane", "title": "Chairperson of the NCOP", "party": "ANC"},
+            # Former Presidents
             {"name": "Thabo Mbeki", "title": "Former President of South Africa", "party": "ANC"},
             {"name": "Jacob Zuma", "title": "Former President of South Africa", "party": "MK"},
-            {"name": "Pravin Gordhan", "title": "Former Minister of Public Enterprises", "party": "ANC"},
-            {"name": "Gwede Mantashe", "title": "Minister of Mineral Resources and Energy", "party": "ANC"},
+            {"name": "F.W. de Klerk Foundation (legacy)", "title": "Former President of South Africa (deceased 2021)", "party": ""},
+            # Opposition
+            {"name": "Julius Malema", "title": "Leader of the EFF", "party": "EFF"},
         ]
 
         return [

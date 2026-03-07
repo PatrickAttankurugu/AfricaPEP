@@ -59,18 +59,41 @@ class ZimbabweParliamentScraper(BaseScraper):
     def _synthetic_fixture(self) -> list[RawPersonRecord]:
         now = datetime.utcnow()
         officials = [
+            # Executive
             {"name": "Emmerson Mnangagwa", "role": "President of the Republic of Zimbabwe", "party": "ZANU-PF"},
-            {"name": "Constantino Chiwenga", "role": "Vice President", "party": "ZANU-PF"},
+            {"name": "Constantino Chiwenga", "role": "Vice President and Minister of Health", "party": "ZANU-PF"},
+            {"name": "Kembo Mohadi", "role": "Vice President", "party": "ZANU-PF"},
+            # Parliament
             {"name": "Jacob Mudenda", "role": "Speaker of the National Assembly", "party": "ZANU-PF"},
+            {"name": "Mabel Chinomona", "role": "President of the Senate", "party": "ZANU-PF"},
+            # Cabinet Ministers
             {"name": "Mthuli Ncube", "role": "Minister of Finance", "party": "Independent"},
             {"name": "Frederick Shava", "role": "Minister of Foreign Affairs", "party": "ZANU-PF"},
             {"name": "Kazembe Kazembe", "role": "Minister of Home Affairs", "party": "ZANU-PF"},
             {"name": "Oppah Muchinguri-Kashiri", "role": "Minister of Defence", "party": "ZANU-PF"},
-            {"name": "Ziyambi Ziyambi", "role": "Minister of Justice", "party": "ZANU-PF"},
+            {"name": "Ziyambi Ziyambi", "role": "Minister of Justice, Legal and Parliamentary Affairs", "party": "ZANU-PF"},
             {"name": "July Moyo", "role": "Minister of Local Government", "party": "ZANU-PF"},
             {"name": "Monica Mutsvangwa", "role": "Minister of Information", "party": "ZANU-PF"},
             {"name": "Anxious Masuka", "role": "Minister of Agriculture", "party": "ZANU-PF"},
-            {"name": "Nelson Chamisa", "role": "Leader of the Opposition", "party": "CCC"},
+            {"name": "Sithembiso Nyoni", "role": "Minister of Industry and Commerce", "party": "ZANU-PF"},
+            {"name": "Zhemu Soda", "role": "Minister of Energy and Power Development", "party": "ZANU-PF"},
+            {"name": "Felix Mhona", "role": "Minister of Transport and Infrastructural Development", "party": "ZANU-PF"},
+            {"name": "Amon Murwira", "role": "Minister of Higher Education, Innovation and Science", "party": "ZANU-PF"},
+            {"name": "Evelyn Ndlovu", "role": "Minister of Primary and Secondary Education", "party": "ZANU-PF"},
+            {"name": "Winston Chitando", "role": "Minister of Mines and Mining Development", "party": "ZANU-PF"},
+            {"name": "Jenfan Muswere", "role": "Minister of ICT, Postal and Courier Services", "party": "ZANU-PF"},
+            {"name": "Sithembiso Gwaradzimba Nyoni", "role": "Minister of Women Affairs", "party": "ZANU-PF"},
+            # Judiciary
+            {"name": "Luke Malaba", "role": "Chief Justice of Zimbabwe", "party": ""},
+            # Reserve Bank
+            {"name": "John Panonetsa Mangudya", "role": "Governor, Reserve Bank of Zimbabwe", "party": ""},
+            # Military
+            {"name": "Valerio Sibanda", "role": "Commander, Zimbabwe Defence Forces", "party": ""},
+            # Opposition
+            {"name": "Nelson Chamisa", "role": "Former Leader of CCC", "party": "CCC"},
+            {"name": "Douglas Mwonzora", "role": "Leader of MDC-T", "party": "MDC-T"},
+            # Former (legacy)
+            {"name": "Robert Mugabe (legacy)", "role": "Former President of Zimbabwe (deceased 2019)", "party": "ZANU-PF"},
         ]
         records = []
         for o in officials:

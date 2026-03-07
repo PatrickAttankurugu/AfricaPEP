@@ -65,6 +65,8 @@ class SudanPresidencyScraper(BaseScraper):
         now = datetime.utcnow()
         officials = [
             {"name": "Abdel Fattah al-Burhan", "role": "Chairman of the Sovereignty Council"},
+            {"name": "Malik Agar", "role": "Deputy Chairman of Sovereignty Council"},
+            {"name": "Shams al-Din Kabashi", "role": "Member of Sovereignty Council"},
             {"name": "Osman Hussein", "role": "Minister of Foreign Affairs"},
             {"name": "Ibrahim Jabir", "role": "Minister of Finance"},
             {"name": "Yasin Ibrahim Yasin", "role": "Minister of Defence"},
@@ -74,8 +76,19 @@ class SudanPresidencyScraper(BaseScraper):
             {"name": "Mohamed al-Amin al-Toum", "role": "Minister of Education"},
             {"name": "Abu Bakr al-Sadiq al-Nour", "role": "Minister of Agriculture"},
             {"name": "Gibril Ibrahim", "role": "Minister of Finance (Former)"},
-            {"name": "Malik Agar", "role": "Deputy Chairman of Sovereignty Council"},
-            {"name": "Shams al-Din Kabashi", "role": "Member of Sovereignty Council"},
+            {"name": "Mohamed Hamdan Dagalo", "role": "Former Deputy Chairman of Sovereignty Council / RSF Commander"},
+            {"name": "Omar al-Bashir", "role": "Former President of Sudan (1989-2019)"},
+            {"name": "Sadiq al-Mahdi", "role": "Former Prime Minister, Umma Party Leader"},
+            {"name": "Abdalla Hamdok", "role": "Former Prime Minister (Transitional Government)"},
+            {"name": "Ibrahim al-Sheikh", "role": "Member of Sovereignty Council"},
+            {"name": "Aisha Musa al-Said", "role": "Member of Sovereignty Council"},
+            {"name": "Mohamed Osman al-Hussein", "role": "Governor, Central Bank of Sudan"},
+            {"name": "Nemat Abdullah Mohamed Khair", "role": "Chief Justice, Supreme Court"},
+            {"name": "Ibrahim Ahmed Omar", "role": "Speaker of the National Assembly (Former)"},
+            {"name": "Yasser al-Atta", "role": "Deputy Commander-in-Chief of the Armed Forces"},
+            {"name": "Maryam al-Sadiq al-Mahdi", "role": "Former Minister of Foreign Affairs"},
+            {"name": "Mohamed al-Faki Suleiman", "role": "Member of Sovereignty Council"},
+            {"name": "Minni Minnawi", "role": "Former Governor of Darfur / SLM Leader"},
         ]
         records = []
         for o in officials:

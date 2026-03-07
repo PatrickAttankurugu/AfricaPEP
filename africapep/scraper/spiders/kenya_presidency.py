@@ -92,28 +92,43 @@ class KenyaPresidencyScraper(BaseScraper):
         now = datetime.utcnow()
         cabinet = [
             {"name": "William Samoei Ruto", "title": "President of the Republic of Kenya"},
-            {"name": "Rigathi Gachagua", "title": "Deputy President"},
+            {"name": "Kithure Kindiki", "title": "Deputy President"},
             {"name": "Musalia Mudavadi", "title": "Prime Cabinet Secretary and CS Foreign Affairs"},
-            {"name": "Kithure Kindiki", "title": "Cabinet Secretary for Interior"},
-            {"name": "Njuguna Ndung'u", "title": "Cabinet Secretary for Treasury"},
             {"name": "Aden Duale", "title": "Cabinet Secretary for Defence"},
             {"name": "Justin Muturi", "title": "Attorney General"},
+            {"name": "Njuguna Ndung'u", "title": "Cabinet Secretary for Treasury"},
             {"name": "Alfred Mutua", "title": "Cabinet Secretary for Tourism"},
-            {"name": "Moses Kuria", "title": "Cabinet Secretary for Investment"},
             {"name": "Ezekiel Machogu", "title": "Cabinet Secretary for Education"},
-            {"name": "Aisha Jumwa", "title": "Cabinet Secretary for Gender"},
             {"name": "Susan Nakhumicha", "title": "Cabinet Secretary for Health"},
             {"name": "Davis Chirchir", "title": "Cabinet Secretary for Energy"},
-            {"name": "Kipchumba Murkomen", "title": "Cabinet Secretary for Roads and Transport"},
-            {"name": "Rebecca Miano", "title": "Cabinet Secretary for Lands"},
-            {"name": "Salim Mvurya", "title": "Cabinet Secretary for Mining"},
-            {"name": "Florence Bore", "title": "Cabinet Secretary for Labour"},
+            {"name": "Kipchumba Murkomen", "title": "Cabinet Secretary for Youth Affairs and Sports"},
+            {"name": "Rebecca Miano", "title": "Cabinet Secretary for Investments, Trade and Industry"},
+            {"name": "Salim Mvurya", "title": "Cabinet Secretary for Mining, Blue Economy and Maritime Affairs"},
+            {"name": "Florence Bore", "title": "Cabinet Secretary for Labour and Social Protection"},
             {"name": "Mithika Linturi", "title": "Cabinet Secretary for Agriculture"},
-            {"name": "Uhuru Kenyatta", "title": "Former President of Kenya"},
-            {"name": "Raila Odinga", "title": "Former Prime Minister and AU Commission Chairperson Candidate"},
+            {"name": "Roselinda Soipan Tuya", "title": "Cabinet Secretary for Environment"},
+            {"name": "Opiyo Wandayi", "title": "Cabinet Secretary for Energy and Petroleum"},
+            {"name": "John Mbadi", "title": "Cabinet Secretary for National Treasury"},
+            {"name": "Hassan Joho", "title": "Cabinet Secretary for Mining"},
+            {"name": "Wycliffe Oparanya", "title": "Cabinet Secretary for Cooperatives"},
+            {"name": "Alice Wahome", "title": "Cabinet Secretary for Water"},
+            {"name": "Margaret Ndung'u", "title": "Cabinet Secretary for ICT and Digital Economy"},
+            {"name": "Eric Mugaa", "title": "Cabinet Secretary for Lands and Urban Planning"},
+            # Judiciary
             {"name": "Martha Koome", "title": "Chief Justice of Kenya"},
+            {"name": "Philomena Mwilu", "title": "Deputy Chief Justice of Kenya"},
+            # Central Bank
+            {"name": "Kamau Thugge", "title": "Governor, Central Bank of Kenya"},
+            # Security Chiefs
+            {"name": "Charles Muriu Kahariri", "title": "Chief of Defence Forces, Kenya Defence Forces"},
+            {"name": "Japhet Koome", "title": "Inspector General of National Police Service"},
+            # Parliament
             {"name": "Amason Kingi", "title": "Speaker of the Senate"},
             {"name": "Moses Wetangula", "title": "Speaker of the National Assembly"},
+            # Former Presidents and Opposition
+            {"name": "Uhuru Kenyatta", "title": "Former President of Kenya"},
+            {"name": "Raila Odinga", "title": "Former Prime Minister and AU Commission Chairperson"},
+            {"name": "Rigathi Gachagua", "title": "Former Deputy President"},
         ]
         return [
             RawPersonRecord(

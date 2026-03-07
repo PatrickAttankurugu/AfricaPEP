@@ -64,18 +64,40 @@ class LesothoPresidencyScraper(BaseScraper):
     def _synthetic_fixture(self) -> list[RawPersonRecord]:
         now = datetime.utcnow()
         officials = [
+            # Head of State
             {"name": "Letsie III", "role": "King of Lesotho"},
+            # Executive
             {"name": "Sam Matekane", "role": "Prime Minister"},
-            {"name": "Limpho Tau", "role": "Minister of Foreign Affairs"},
+            {"name": "Ntsokoane Matekane", "role": "Deputy Prime Minister"},
+            # Cabinet Ministers
+            {"name": "Limpho Tau", "role": "Minister of Foreign Affairs and International Relations"},
             {"name": "Tšele Chakela", "role": "Minister of Home Affairs"},
             {"name": "Retšelisitsoe Matlanyane", "role": "Minister of Finance"},
-            {"name": "Nthoateng Lebona", "role": "Minister of Defence"},
+            {"name": "Nthoateng Lebona", "role": "Minister of Defence and National Security"},
             {"name": "Lekhetho Rakuoane", "role": "Minister of Law and Justice"},
             {"name": "Selibe Mochoboroane", "role": "Minister of Health"},
-            {"name": "Nthati Moorosi", "role": "Minister of Education"},
-            {"name": "Motlatsi Maqelepo", "role": "Minister of Agriculture"},
-            {"name": "Mokhele Moletsane", "role": "Minister of Energy"},
-            {"name": "Lejone Mpotjoane", "role": "Minister of Public Works"},
+            {"name": "Nthati Moorosi", "role": "Minister of Education and Training"},
+            {"name": "Motlatsi Maqelepo", "role": "Minister of Agriculture and Food Security"},
+            {"name": "Mokhele Moletsane", "role": "Minister of Energy and Meteorology"},
+            {"name": "Lejone Mpotjoane", "role": "Minister of Public Works and Transport"},
+            {"name": "Serialong Qoo", "role": "Minister of Communications, Science and Technology"},
+            {"name": "Machesetsa Mofomobe", "role": "Minister of Local Government and Chieftainship"},
+            {"name": "Ntlhoi Motsamai", "role": "Minister of Gender, Youth and Social Development"},
+            {"name": "Lehlohonolo Moramotse", "role": "Minister of Mining"},
+            {"name": "Libe Mokotso", "role": "Minister of Tourism, Environment and Culture"},
+            {"name": "Kemiso Mosenene", "role": "Minister of Trade and Industry"},
+            {"name": "Lebohang Rapapa", "role": "Minister of Labour and Employment"},
+            # Parliament
+            {"name": "Tlohang Sekhamane", "role": "Speaker of the National Assembly"},
+            # Judiciary
+            {"name": "Sakoane Sakoane", "role": "Chief Justice of Lesotho"},
+            # Central Bank
+            {"name": "Maluke Letete", "role": "Governor, Central Bank of Lesotho"},
+            # Military
+            {"name": "Mojalefa Letsoela", "role": "Commander, Lesotho Defence Force"},
+            # Opposition
+            {"name": "Mathibeli Mokhothu", "role": "Leader of Democratic Congress"},
+            {"name": "Thomas Thabane", "role": "Former Prime Minister of Lesotho"},
         ]
         records = []
         for o in officials:

@@ -64,18 +64,37 @@ class ComorosPresidencyScraper(BaseScraper):
     def _synthetic_fixture(self) -> list[RawPersonRecord]:
         now = datetime.utcnow()
         officials = [
-            {"name": "Azali Assoumani", "role": "President of the Union"},
+            # Executive
+            {"name": "Azali Assoumani", "role": "President of the Union of the Comoros"},
             {"name": "Moustadroine Abdou", "role": "Vice President"},
-            {"name": "Dhoifir Dhoulkamal", "role": "Minister of Foreign Affairs"},
+            # Cabinet Ministers
+            {"name": "Dhoifir Dhoulkamal", "role": "Minister of Foreign Affairs and International Cooperation"},
             {"name": "Youssouf Mohamed Ali", "role": "Minister of Interior"},
-            {"name": "Mze Abdou Mohamed Chanfiou", "role": "Minister of Finance"},
+            {"name": "Mze Abdou Mohamed Chanfiou", "role": "Minister of Finance and Budget"},
             {"name": "Loub Yakouti Athoumani", "role": "Minister of Defence"},
-            {"name": "Affane Mohamed", "role": "Minister of Health"},
-            {"name": "Maoulida Dhoihirou", "role": "Minister of Education"},
+            {"name": "Affane Mohamed", "role": "Minister of Health and Solidarity"},
+            {"name": "Maoulida Dhoihirou", "role": "Minister of National Education"},
             {"name": "Ahmed Ali Bazi", "role": "Minister of Justice"},
-            {"name": "Houmed Msaidié", "role": "Minister of Agriculture"},
-            {"name": "Ali Mbae", "role": "Minister of Transport"},
+            {"name": "Houmed Msaidié", "role": "Minister of Agriculture, Fisheries and Environment"},
+            {"name": "Ali Mbae", "role": "Minister of Transport and Tourism"},
             {"name": "Fatima Ahamada", "role": "Minister of Youth and Sports"},
+            {"name": "Said Ali Said Chayhane", "role": "Secretary General of the Government"},
+            {"name": "Nourdine Bourhane", "role": "Minister of Energy and Water"},
+            {"name": "Hassani Hamadi", "role": "Minister of Urbanism, Land and Housing"},
+            {"name": "Abdou Nassur Madi", "role": "Minister of Employment and Labour"},
+            {"name": "Souef Mohamed El-Amine", "role": "Minister of Economy and Planning"},
+            {"name": "Oumouri Mmadi Hassane", "role": "Minister of Telecommunications and Digital Economy"},
+            {"name": "Ali Bazi Selim", "role": "Minister of Production and Industry"},
+            # Judiciary
+            {"name": "Abdou Djabir", "role": "President of the Supreme Court"},
+            # Central Bank
+            {"name": "Younoussa Imani", "role": "Governor, Central Bank of the Comoros"},
+            # Parliament
+            {"name": "Moustadroine Abdou", "role": "President of the Assembly of the Union"},
+            # Island Governors
+            {"name": "Anissi Chamsidine", "role": "Governor of Anjouan"},
+            {"name": "Said Ali Chayhane", "role": "Governor of Mohéli"},
+            {"name": "Hassani Hamadi Madi Bolero", "role": "Governor of Grande Comore"},
         ]
         records = []
         for o in officials:

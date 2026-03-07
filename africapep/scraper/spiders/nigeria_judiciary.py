@@ -111,14 +111,34 @@ class NigeriaJudiciaryScraper(BaseScraper):
             {"name": "Stephen Jonah Adah", "title": "Justice of the Supreme Court", "court": "Supreme Court"},
             {"name": "Abdu Aboki", "title": "Justice of the Supreme Court", "court": "Supreme Court"},
             {"name": "Habeeb Adewale Olumuyiwa Abiru", "title": "Justice of the Supreme Court", "court": "Supreme Court"},
+            {"name": "John Inyang Okoro", "title": "Justice of the Supreme Court", "court": "Supreme Court"},
+            {"name": "Chima Centus Nweze", "title": "Justice of the Supreme Court", "court": "Supreme Court"},
+            {"name": "Amina Adamu Augie", "title": "Justice of the Supreme Court", "court": "Supreme Court"},
+            {"name": "Samuel Chukwudumebi Oseji", "title": "Justice of the Supreme Court", "court": "Supreme Court"},
+            {"name": "Musa Dattijo Muhammad", "title": "Justice of the Supreme Court (retired)", "court": "Supreme Court"},
             # ── Court of Appeal ──
             {"name": "Monica Bolna'an Dongban-Mensem", "title": "President, Court of Appeal", "court": "Court of Appeal"},
             {"name": "Uchechukwu Onyemenam", "title": "Justice of the Court of Appeal", "court": "Court of Appeal"},
             {"name": "Elfrieda Oluwayemisi Williams-Dawodu", "title": "Justice of the Court of Appeal", "court": "Court of Appeal"},
             {"name": "Biobele Abraham Georgewill", "title": "Justice of the Court of Appeal", "court": "Court of Appeal"},
             {"name": "Hamma Akawu Barka", "title": "Justice of the Court of Appeal", "court": "Court of Appeal"},
+            {"name": "Jummai Hannatu Sankey", "title": "Justice of the Court of Appeal", "court": "Court of Appeal"},
+            {"name": "Ugochukwu Anthony Ogakwu", "title": "Justice of the Court of Appeal", "court": "Court of Appeal"},
+            {"name": "Ebiowei Tobi", "title": "Justice of the Court of Appeal", "court": "Court of Appeal"},
+            {"name": "Peter Olabisi Ige", "title": "Justice of the Court of Appeal", "court": "Court of Appeal"},
+            {"name": "Oludotun Adebola Adefope-Okojie", "title": "Justice of the Court of Appeal", "court": "Court of Appeal"},
+            {"name": "Bitrus Gyarazama Sanga", "title": "Justice of the Court of Appeal", "court": "Court of Appeal"},
+            {"name": "Mohammed Baba Idris", "title": "Justice of the Court of Appeal", "court": "Court of Appeal"},
             # ── Federal High Court ──
             {"name": "John Tsoho", "title": "Chief Judge, Federal High Court", "court": "Federal High Court"},
+            {"name": "Inyang Ekwo", "title": "Judge, Federal High Court", "court": "Federal High Court"},
+            {"name": "Ahmed Ramat Mohammed", "title": "Judge, Federal High Court", "court": "Federal High Court"},
+            # ── National Industrial Court ──
+            {"name": "Benedict Bakwaph Kanyip", "title": "President, National Industrial Court", "court": "National Industrial Court"},
+            # ── Former Chief Justices of Nigeria ──
+            {"name": "Walter Samuel Nkanu Onnoghen", "title": "Former Chief Justice of Nigeria", "court": "Supreme Court"},
+            {"name": "Ibrahim Tanko Muhammad", "title": "Former Chief Justice of Nigeria", "court": "Supreme Court"},
+            {"name": "Olukayode Ariwoola", "title": "Former Chief Justice of Nigeria", "court": "Supreme Court"},
         ]
         return [
             RawPersonRecord(

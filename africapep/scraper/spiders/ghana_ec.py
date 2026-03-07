@@ -213,14 +213,37 @@ class GhanaECScraper(BaseScraper):
         """Realistic synthetic data using real Ghana EC commissioner and candidate names."""
         now = datetime.utcnow()
         entries = [
-            ("Jean Mensa", "Chairperson, Electoral Commission of Ghana", "NPP", "", "Declared"),
-            ("Samuel Tettey", "Deputy Chairperson, Electoral Commission", "NPP", "", ""),
+            # Electoral Commission Officials
+            ("Jean Mensa", "Chairperson, Electoral Commission of Ghana", "", "", ""),
+            ("Samuel Tettey", "Deputy Chairperson, Electoral Commission", "", "", ""),
             ("Dr Eric Bossman Asare", "Deputy Chairperson, Electoral Commission", "", "", ""),
+            ("Serebour Quaicoe", "Director of Electoral Services, Electoral Commission", "", "", ""),
+            ("Sylvia Annoh", "Director of Communications, Electoral Commission", "", "", ""),
+            ("Dr Yaw Ofori Adjei", "Commissioner, Electoral Commission", "", "", ""),
+            ("Samuel Akuamoah Boateng", "Commissioner, Electoral Commission", "", "", ""),
+            # 2024 Presidential Candidates
+            ("John Dramani Mahama", "Presidential Candidate – 2024", "NDC", "6,328,397", "Winner"),
+            ("Mahamudu Bawumia", "Presidential Candidate – 2024", "NPP", "4,657,304", ""),
+            ("Alan John Kwadwo Kyerematen", "Presidential Candidate – 2024 (Movement for Change)", "MFC", "83,212", ""),
+            ("Nana Kwame Bediako", "Presidential Candidate – 2024 (New Force)", "NF", "76,541", ""),
+            ("Christian Kwabena Andrews", "Presidential Candidate – 2024 (Ghana Union Movement)", "GUM", "15,892", ""),
+            ("Kofi Akpaloo", "Presidential Candidate – 2024 (Liberal Party of Ghana)", "LPG", "11,043", ""),
+            ("Akua Donkor", "Presidential Candidate – 2024 (Ghana Freedom Party, deceased)", "GFP", "", ""),
+            ("Hassan Ayariga", "Presidential Candidate – 2024 (All People's Congress)", "APC", "8,421", ""),
+            ("Mohammed Frimpong", "Presidential Candidate – 2024 (National Democratic Party)", "NDP", "5,612", ""),
+            ("Percival Kofi Akpaloo", "Presidential Candidate – 2024 (Liberal Party of Ghana)", "LPG", "6,103", ""),
+            ("George Twum-Barima-Adu", "Presidential Candidate – 2024 (RPP)", "RPP", "3,211", ""),
+            # 2024 Parliamentary Winners (selected prominent constituencies)
             ("Patrick Osei-Owusu", "Parliamentary Candidate – Bekwai", "NPP", "45,210", "Winner"),
             ("Lydia Seyram Alhassan", "Parliamentary Candidate – Ayawaso West Wuogon", "NPP", "52,301", "Winner"),
             ("Samuel Okudzeto Ablakwa", "Parliamentary Candidate – North Tongu", "NDC", "68,118", "Winner"),
             ("Haruna Iddrisu", "Parliamentary Candidate – Tamale South", "NDC", "55,702", "Winner"),
             ("Ursula Owusu-Ekuful", "Parliamentary Candidate – Ablekuma West", "NPP", "41,003", "Winner"),
+            ("Kennedy Ohene Agyapong", "Parliamentary Candidate – Assin Central", "NPP", "38,904", "Winner"),
+            ("Rockson-Nelson Dafeamekpor", "Parliamentary Candidate – South Dayi", "NDC", "31,220", "Winner"),
+            ("Muntaka Mubarak", "Parliamentary Candidate – Asawase", "NDC", "47,512", "Winner"),
+            ("Kojo Oppong Nkrumah", "Parliamentary Candidate – Ofoase-Ayirebi", "NPP", "29,815", "Winner"),
+            ("Samuel Nartey George", "Parliamentary Candidate – Ningo-Prampram", "NDC", "44,307", "Winner"),
         ]
         return [
             RawPersonRecord(

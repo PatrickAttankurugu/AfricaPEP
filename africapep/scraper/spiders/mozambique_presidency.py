@@ -64,18 +64,40 @@ class MozambiquePresidencyScraper(BaseScraper):
     def _synthetic_fixture(self) -> list[RawPersonRecord]:
         now = datetime.utcnow()
         officials = [
+            # Executive
             {"name": "Daniel Chapo", "role": "President of the Republic of Mozambique"},
             {"name": "Adriano Maleiane", "role": "Prime Minister"},
+            # Cabinet Ministers
             {"name": "Ernesto Max Tonela", "role": "Minister of Economy and Finance"},
             {"name": "Verónica Macamo", "role": "Minister of Foreign Affairs and Cooperation"},
             {"name": "Cristóvão Chume", "role": "Minister of National Defence"},
             {"name": "Arsenio Henriques", "role": "Minister of Interior"},
-            {"name": "Helena Kida", "role": "Minister of Justice"},
+            {"name": "Helena Kida", "role": "Minister of Justice, Constitutional and Religious Affairs"},
             {"name": "Armando Inroga", "role": "Minister of Health"},
             {"name": "Margarida Talapa", "role": "Minister of Education and Human Development"},
             {"name": "Carlos Mesquita", "role": "Minister of Transport and Communications"},
             {"name": "Celso Correia", "role": "Minister of Agriculture and Rural Development"},
-            {"name": "Max Tonela", "role": "Minister of Mineral Resources and Energy"},
+            {"name": "Carlos Zacarias", "role": "Minister of Mineral Resources and Energy"},
+            {"name": "Silvino Moreno", "role": "Minister of Public Works, Housing and Water Resources"},
+            {"name": "Eldevina Materula", "role": "Minister of Labour and Social Security"},
+            {"name": "Filimão Suaze", "role": "Minister of Land and Environment"},
+            {"name": "Edson Macuácua", "role": "Minister of Industry and Commerce"},
+            {"name": "Felisbela Gaspar", "role": "Minister of Gender, Children and Social Welfare"},
+            {"name": "Lucia Maximiano do Amaral", "role": "Minister of State Administration"},
+            {"name": "Idalina Sá Nogueira", "role": "Minister of Culture and Tourism"},
+            # Judiciary
+            {"name": "Adelino Manuel Muchanga", "role": "Chief Justice of Mozambique"},
+            # Central Bank
+            {"name": "Rogério Zandamela", "role": "Governor, Bank of Mozambique"},
+            # Parliament
+            {"name": "Esperança Bias", "role": "Speaker of the Assembly of the Republic"},
+            # Former Presidents
+            {"name": "Filipe Nyusi", "role": "Former President of Mozambique"},
+            {"name": "Armando Guebuza", "role": "Former President of Mozambique"},
+            {"name": "Joaquim Chissano", "role": "Former President of Mozambique"},
+            # Opposition
+            {"name": "Ossufo Momade", "role": "Leader of RENAMO"},
+            {"name": "Venâncio Mondlane", "role": "Opposition Leader"},
         ]
         records = []
         for o in officials:

@@ -144,18 +144,44 @@ class UgandaParliamentScraper(BaseScraper):
     def _synthetic_fixture(self) -> list[RawPersonRecord]:
         now = datetime.utcnow()
         mps = [
+            # Executive
+            {"name": "Yoweri Kaguta Museveni", "constituency": "National", "party": "NRM", "title": "President of the Republic of Uganda"},
+            {"name": "Jessica Rose Epel Alupo", "constituency": "National", "party": "NRM", "title": "Vice President"},
+            {"name": "Robinah Nabbanja", "constituency": "Kakumiro", "party": "NRM", "title": "Prime Minister"},
+            {"name": "Rebecca Kadaga", "constituency": "Kamuli", "party": "NRM", "title": "First Deputy PM"},
+            # Parliament Leadership
             {"name": "Anita Annet Among", "constituency": "Bukedea", "party": "NRM", "title": "Speaker of Parliament"},
             {"name": "Thomas Tayebwa", "constituency": "Ruhinda North", "party": "NRM", "title": "Deputy Speaker"},
-            {"name": "Robinah Nabbanja", "constituency": "Kakumiro", "party": "NRM", "title": "Prime Minister"},
+            # Cabinet Ministers
+            {"name": "Jeje Odongo", "constituency": "Kumi County", "party": "NRM", "title": "Minister of Foreign Affairs"},
+            {"name": "Vincent Bamulangaki Ssempijja", "constituency": "Kalungu East", "party": "NRM", "title": "Minister of Defence"},
+            {"name": "Kahinda Otafiire", "constituency": "Ruhinda", "party": "NRM", "title": "Minister of Internal Affairs"},
+            {"name": "Matia Kasaija", "constituency": "Buyanja", "party": "NRM", "title": "Minister of Finance"},
+            {"name": "Janet Kataaha Museveni", "constituency": "Ruhaama", "party": "NRM", "title": "Minister of Education and Sports"},
+            {"name": "Jane Ruth Aceng", "constituency": "Lira City", "party": "NRM", "title": "Minister of Health"},
+            {"name": "Judith Nabakooba", "constituency": "Mityana", "party": "NRM", "title": "Minister of Lands"},
+            {"name": "Kirunda Kivejinja", "constituency": "Budadiri West", "party": "NRM", "title": "Minister of East African Affairs"},
+            {"name": "Frank Tumwebaze", "constituency": "Kibale East", "party": "NRM", "title": "Minister of Agriculture"},
+            {"name": "Amelia Kyambadde", "constituency": "Mawokota South", "party": "NRM", "title": "Minister of Trade"},
+            {"name": "Mary Karooro Okurut", "constituency": "Bushenyi", "party": "NRM", "title": "Minister of Gender"},
+            # Judiciary
+            {"name": "Alfonse Chigamoy Owiny-Dollo", "constituency": "National", "party": "", "title": "Chief Justice of Uganda"},
+            # Central Bank
+            {"name": "Michael Atingi-Ego", "constituency": "National", "party": "", "title": "Deputy Governor, Bank of Uganda"},
+            # Military
+            {"name": "Wilson Mbadi Mbasu", "constituency": "National", "party": "", "title": "Chief of Defence Forces, UPDF"},
+            # Opposition
+            {"name": "Bobi Wine Kyagulanyi", "constituency": "Kyadondo East", "party": "NUP", "title": "President of NUP"},
             {"name": "Mathias Mpuuga", "constituency": "Nyendo-Mukungwe", "party": "NUP", "title": "Leader of Opposition"},
             {"name": "Joel Ssenyonyi", "constituency": "Nakawa West", "party": "NUP", "title": "Member of Parliament"},
-            {"name": "Bobi Wine Kyagulanyi", "constituency": "Kyadondo East", "party": "NUP", "title": "Member of Parliament"},
             {"name": "Muwanga Kivumbi", "constituency": "Butambala", "party": "NUP", "title": "Member of Parliament"},
             {"name": "Medard Sseggona", "constituency": "Busiro East", "party": "NUP", "title": "Member of Parliament"},
             {"name": "Betty Nambooze", "constituency": "Mukono Municipality", "party": "NUP", "title": "Member of Parliament"},
-            {"name": "Patrick Oboi Amuriat", "constituency": "Kumi Municipality", "party": "FDC", "title": "Member of Parliament"},
-            {"name": "Rebecca Kadaga", "constituency": "Kamuli", "party": "NRM", "title": "First Deputy PM"},
+            {"name": "Patrick Oboi Amuriat", "constituency": "Kumi Municipality", "party": "FDC", "title": "FDC President"},
             {"name": "David Bahati", "constituency": "Ndorwa West", "party": "NRM", "title": "Member of Parliament"},
+            {"name": "Nobert Mao", "constituency": "Gulu Municipality", "party": "DP", "title": "Minister of Justice"},
+            {"name": "Abed Bwanika", "constituency": "Kimanya-Kabonera", "party": "NRM", "title": "Member of Parliament"},
+            {"name": "Francis Zaake", "constituency": "Mityana Municipality", "party": "NUP", "title": "Member of Parliament"},
         ]
         return [
             RawPersonRecord(

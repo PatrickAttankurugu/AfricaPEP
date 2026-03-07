@@ -114,14 +114,39 @@ class GhanaJudiciaryScraper(BaseScraper):
     def _synthetic_fixture(self) -> list[RawPersonRecord]:
         now = datetime.utcnow()
         justices = [
-            {"name": "Paul Baffoe-Bonnie", "title": "Chief Justice", "court": "Supreme Court of Ghana"},
+            # Current Chief Justice
+            {"name": "Gertrude Sackey Torkornoo", "title": "Chief Justice", "court": "Supreme Court of Ghana"},
+            # Supreme Court Justices
+            {"name": "Paul Baffoe-Bonnie", "title": "Justice of the Supreme Court", "court": "Supreme Court of Ghana"},
             {"name": "Gabriel Pwamang", "title": "Justice of the Supreme Court", "court": "Supreme Court of Ghana"},
             {"name": "Avril Lovelace Johnson", "title": "Justice of the Supreme Court", "court": "Supreme Court of Ghana"},
             {"name": "Issifu Omoro Tanko Amadu", "title": "Justice of the Supreme Court", "court": "Supreme Court of Ghana"},
             {"name": "Henrietta Joy Abena Nyarko Mensa-Bonsu", "title": "Justice of the Supreme Court", "court": "Supreme Court of Ghana"},
             {"name": "Emmanuel Yonny Kulendi", "title": "Justice of the Supreme Court", "court": "Supreme Court of Ghana"},
+            {"name": "Samuel Kwame Adibu Asiedu", "title": "Justice of the Supreme Court", "court": "Supreme Court of Ghana"},
+            {"name": "Prof Nii Ashie Kotey", "title": "Justice of the Supreme Court", "court": "Supreme Court of Ghana"},
+            {"name": "Agnes Mercy Abla Dordzie", "title": "Justice of the Supreme Court", "court": "Supreme Court of Ghana"},
+            {"name": "Cyra Pamela Koranteng", "title": "Justice of the Supreme Court", "court": "Supreme Court of Ghana"},
+            {"name": "Mariama Owusu", "title": "Justice of the Supreme Court", "court": "Supreme Court of Ghana"},
+            {"name": "Yaw Darko Asare", "title": "Justice of the Supreme Court", "court": "Supreme Court of Ghana"},
+            {"name": "Ernest Gaewu Tanko", "title": "Justice of the Supreme Court", "court": "Supreme Court of Ghana"},
+            {"name": "George Kingsley Koomson", "title": "Justice of the Supreme Court", "court": "Supreme Court of Ghana"},
+            # Court of Appeal Justices
             {"name": "Mabel Maame Agyemang", "title": "Justice of the Court of Appeal", "court": "Court of Appeal of Ghana"},
             {"name": "Anthony Oppong", "title": "Justice of the Court of Appeal", "court": "Court of Appeal of Ghana"},
+            {"name": "Irene Charity Larbi", "title": "Justice of the Court of Appeal", "court": "Court of Appeal of Ghana"},
+            {"name": "George Koomson", "title": "Justice of the Court of Appeal", "court": "Court of Appeal of Ghana"},
+            {"name": "Alex Poku-Acheampong", "title": "Justice of the Court of Appeal", "court": "Court of Appeal of Ghana"},
+            {"name": "Novisi Aryene", "title": "Justice of the Court of Appeal", "court": "Court of Appeal of Ghana"},
+            {"name": "Eric Kyei Baffour", "title": "Justice of the Court of Appeal", "court": "Court of Appeal of Ghana"},
+            {"name": "Barbara Ackah-Yensu", "title": "Justice of the Court of Appeal", "court": "Court of Appeal of Ghana"},
+            # Former Chief Justices (historical PEPs)
+            {"name": "Sophia Akuffo", "title": "Former Chief Justice of Ghana", "court": "Supreme Court of Ghana"},
+            {"name": "Georgina Theodora Wood", "title": "Former Chief Justice of Ghana", "court": "Supreme Court of Ghana"},
+            {"name": "Anin Yeboah", "title": "Former Chief Justice of Ghana", "court": "Supreme Court of Ghana"},
+            # High Court Division Chiefs
+            {"name": "Justice Eric Baah", "title": "Chief Justice of the High Court, Commercial Division", "court": "High Court of Ghana"},
+            {"name": "Justice Elfreda Dankyi", "title": "Chief Justice of the High Court, Criminal Division", "court": "High Court of Ghana"},
         ]
         return [
             RawPersonRecord(

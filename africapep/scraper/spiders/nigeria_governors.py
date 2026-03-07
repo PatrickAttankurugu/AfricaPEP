@@ -383,6 +383,111 @@ class NigeriaGovernorsScraper(BaseScraper):
                 "deputy": "",
                 "since": "Former Vice President (1999-2007); perennial presidential candidate",
             },
+            {
+                "name": "Rotimi Chibuike Amaechi",
+                "state": "Rivers",
+                "party": "APC",
+                "deputy": "",
+                "since": "2007-2015 (former governor, former Minister of Transportation)",
+            },
+            {
+                "name": "Nasir Ahmad el-Rufai",
+                "state": "Kaduna",
+                "party": "APC",
+                "deputy": "",
+                "since": "2015-2023 (former governor)",
+            },
+            {
+                "name": "Kayode Fayemi",
+                "state": "Ekiti",
+                "party": "APC",
+                "deputy": "",
+                "since": "2018-2022 (former governor, NGF chairman)",
+            },
+            {
+                "name": "Ibikunle Amosun",
+                "state": "Ogun",
+                "party": "APC",
+                "deputy": "",
+                "since": "2011-2019 (former governor, current senator)",
+            },
+            {
+                "name": "Akinwunmi Ambode",
+                "state": "Lagos",
+                "party": "APC",
+                "deputy": "",
+                "since": "2015-2019 (former governor)",
+            },
+            {
+                "name": "Rabiu Musa Kwankwaso",
+                "state": "Kano",
+                "party": "NNPP",
+                "deputy": "",
+                "since": "1999-2003, 2011-2015 (former governor, NNPP presidential candidate)",
+            },
+            {
+                "name": "Rochas Anayo Okorocha",
+                "state": "Imo",
+                "party": "APC",
+                "deputy": "",
+                "since": "2011-2019 (former governor, current senator)",
+            },
+            {
+                "name": "Adams Aliyu Oshiomhole",
+                "state": "Edo",
+                "party": "APC",
+                "deputy": "",
+                "since": "2008-2016 (former governor, former APC chairman, current senator)",
+            },
+            {
+                "name": "Babatunde Raji Fashola",
+                "state": "Lagos",
+                "party": "APC",
+                "deputy": "",
+                "since": "2007-2015 (former governor, former minister of Works/Power/Housing)",
+            },
+            {
+                "name": "Peter Obi",
+                "state": "Anambra",
+                "party": "LP",
+                "deputy": "",
+                "since": "2006-2014 (former governor, LP presidential candidate 2023)",
+            },
+            {
+                "name": "Nyesom Ezenwo Wike",
+                "state": "Rivers",
+                "party": "PDP",
+                "deputy": "",
+                "since": "2015-2023 (former governor, now FCT Minister)",
+            },
+            {
+                "name": "Abdulaziz Abubakar Yari",
+                "state": "Zamfara",
+                "party": "APC",
+                "deputy": "",
+                "since": "2011-2019 (former governor)",
+            },
+            {
+                "name": "Bello Mohammed Matawalle",
+                "state": "Zamfara",
+                "party": "APC",
+                "deputy": "",
+                "since": "2019-2023 (former governor, now Minister of Defence)",
+            },
+            {
+                "name": "Ben Ayade",
+                "state": "Cross River",
+                "party": "APC",
+                "deputy": "",
+                "since": "2015-2023 (former governor)",
+            },
+            {
+                "name": "Yahaya Bello",
+                "state": "Kogi",
+                "party": "APC",
+                "deputy": "",
+                "since": "2016-2024 (former governor)",
+            },
         ]
 
         records: list[RawPersonRecord] = []
@@ -441,6 +546,58 @@ class NigeriaGovernorsScraper(BaseScraper):
                         },
                     )
                 )
+
+        # ── Federal Agency Heads, Military Chiefs, Security Chiefs ──
+        federal_officials = [
+            # Former Presidents
+            ("Olusegun Obasanjo", "Former President of Nigeria", "Federal Government of Nigeria"),
+            ("Goodluck Ebele Jonathan", "Former President of Nigeria", "Federal Government of Nigeria"),
+            ("Muhammadu Buhari", "Former President of Nigeria", "Federal Government of Nigeria"),
+            # Former VPs
+            ("Yemi Osinbajo", "Former Vice President of Nigeria", "Federal Government of Nigeria"),
+            ("Namadi Sambo", "Former Vice President of Nigeria", "Federal Government of Nigeria"),
+            # Central Bank
+            ("Olayemi Michael Cardoso", "Governor of the Central Bank of Nigeria", "Central Bank of Nigeria"),
+            ("Godwin Emefiele", "Former Governor of the Central Bank of Nigeria", "Central Bank of Nigeria"),
+            ("Muhammad Nami", "Deputy Governor, Central Bank of Nigeria", "Central Bank of Nigeria"),
+            ("Aishah Ahmad", "Deputy Governor, Central Bank of Nigeria", "Central Bank of Nigeria"),
+            # Military Chiefs
+            ("Christopher Gwabin Musa", "Chief of Defence Staff", "Nigerian Armed Forces"),
+            ("Taoreed Abiodun Lagbaja", "Chief of Army Staff", "Nigerian Army"),
+            ("Emmanuel Ikechukwu Ogalla", "Chief of Naval Staff", "Nigerian Navy"),
+            ("Hasan Abubakar", "Chief of Air Staff", "Nigerian Air Force"),
+            # Police & Security
+            ("Kayode Adeolu Egbetokun", "Inspector General of Police", "Nigeria Police Force"),
+            ("Nuhu Ribadu", "National Security Adviser", "Office of the National Security Adviser"),
+            # EFCC & Anti-corruption
+            ("Ola Olukoyede", "Chairman, Economic and Financial Crimes Commission", "EFCC"),
+            ("Musa Aliyu Abubakar", "Chairman, Independent Corrupt Practices Commission", "ICPC"),
+            # Key Federal Agencies
+            ("Mele Kolo Kyari", "Group Chief Executive Officer, NNPC Limited", "Nigerian National Petroleum Company"),
+            ("Zacch Adedeji", "Executive Chairman, Federal Inland Revenue Service", "FIRS"),
+            ("Bashir Jamoh", "Director General, Nigerian Maritime Administration and Safety Agency", "NIMASA"),
+            ("Mohammed Bello-Koko", "Managing Director, Nigerian Ports Authority", "NPA"),
+            ("Folashade Yemi-Esan", "Head of the Civil Service of the Federation", "Federal Civil Service"),
+            ("Mahmood Yakubu", "Chairman, Independent National Electoral Commission", "INEC"),
+        ]
+
+        for name, title, institution in federal_officials:
+            records.append(
+                RawPersonRecord(
+                    full_name=name,
+                    title=title,
+                    institution=institution,
+                    country_code=self.country_code,
+                    source_type=self.source_type,
+                    source_url=GOVERNORS_URL,
+                    raw_text=f"{name} – {title}",
+                    scraped_at=now,
+                    extra_fields={
+                        "category": "federal_official",
+                        "fixture": True,
+                    },
+                )
+            )
 
         logger.info("governors.synthetic_fixture.loaded", count=len(records))
         return records

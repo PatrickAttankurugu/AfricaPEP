@@ -64,18 +64,39 @@ class BurundiPresidencyScraper(BaseScraper):
     def _synthetic_fixture(self) -> list[RawPersonRecord]:
         now = datetime.utcnow()
         officials = [
+            # Executive
             {"name": "Évariste Ndayishimiye", "role": "President of the Republic"},
-            {"name": "Gervais Ndirakobuca", "role": "Prime Minister"},
-            {"name": "Albert Shingiro", "role": "Minister of Foreign Affairs"},
-            {"name": "Blaise Didace Nzeyimana", "role": "Minister of Interior"},
-            {"name": "Audace Niyonzima", "role": "Minister of Finance"},
-            {"name": "Alain Guillaume Bunyoni", "role": "Minister of Defence"},
             {"name": "Prosper Bazombanza", "role": "First Vice President"},
+            {"name": "Gervais Ndirakobuca", "role": "Prime Minister"},
+            # Cabinet Ministers
+            {"name": "Albert Shingiro", "role": "Minister of Foreign Affairs and Development Cooperation"},
+            {"name": "Blaise Didace Nzeyimana", "role": "Minister of Interior, Community Development and Public Security"},
+            {"name": "Audace Niyonzima", "role": "Minister of Finance, Budget and Economic Planning"},
+            {"name": "Alain Guillaume Bunyoni", "role": "Minister of National Defence and Veterans Affairs"},
             {"name": "Thérence Sinunguruza", "role": "Minister of Justice"},
-            {"name": "Thaddée Ndikumana", "role": "Minister of Health"},
-            {"name": "François Havyarimana", "role": "Minister of Education"},
-            {"name": "Déo Guide Rurema", "role": "Minister of Agriculture"},
-            {"name": "Ezéchiel Nibigira", "role": "Minister of Trade"},
+            {"name": "Thaddée Ndikumana", "role": "Minister of Public Health and AIDS Control"},
+            {"name": "François Havyarimana", "role": "Minister of Education and Scientific Research"},
+            {"name": "Déo Guide Rurema", "role": "Minister of Agriculture and Livestock"},
+            {"name": "Ezéchiel Nibigira", "role": "Minister of Trade, Transport, Industry and Tourism"},
+            {"name": "Ibrahim Uwizeye", "role": "Minister of Energy and Mines"},
+            {"name": "Imelde Sabushimike", "role": "Minister of National Solidarity, Social Affairs, Human Rights"},
+            {"name": "Diomède Ntirhinyirwa", "role": "Minister of Hydraulics, Energy and Mines"},
+            {"name": "Léonidas Sindayigaya", "role": "Minister of Environment, Agriculture and Livestock"},
+            {"name": "Gaspard Banyankimbona", "role": "Minister of Higher Education and Scientific Research"},
+            {"name": "Olivier Nkurunziza", "role": "Minister of Public Works and Equipment"},
+            {"name": "Gordien Nduwimana", "role": "Minister of Communication and Media"},
+            {"name": "Révérien Ndikuriyo", "role": "Secretary General of CNDD-FDD"},
+            # Parliament
+            {"name": "Gélase Daniel Ndabirabe", "role": "Speaker of the National Assembly"},
+            {"name": "Emmanuel Sinzohagera", "role": "President of the Senate"},
+            # Judiciary
+            {"name": "Emmanuel Gateretse", "role": "President of the Supreme Court"},
+            # Central Bank
+            {"name": "Dieudonné Murengerantwari", "role": "Governor, Bank of the Republic of Burundi"},
+            # Military
+            {"name": "Prime Niyongabo", "role": "Chief of General Staff, Burundi National Defence Force"},
+            # Opposition / Former
+            {"name": "Agathon Rwasa", "role": "Leader of CNL (Opposition)"},
         ]
         records = []
         for o in officials:

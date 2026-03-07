@@ -104,7 +104,6 @@ class TanzaniaParliamentScraper(BaseScraper):
     def _synthetic_fixture(self) -> list[RawPersonRecord]:
         now = datetime.utcnow()
         mps = [
-            {"name": "Samia Suluhu Hassan", "constituency": "Special Seats", "party": "CCM", "member_type": "Special Seats"},
             {"name": "January Yusuf Makamba", "constituency": "Bumbuli", "party": "CCM", "member_type": "Constituency"},
             {"name": "Nape Moses Nnauye", "constituency": "Mtama", "party": "CCM", "member_type": "Constituency"},
             {"name": "Abdallah Jafari Bulembo", "constituency": "Buchosa", "party": "CCM", "member_type": "Constituency"},
@@ -116,6 +115,25 @@ class TanzaniaParliamentScraper(BaseScraper):
             {"name": "Godbless Jonathan Lema", "constituency": "Arusha Mjini", "party": "CHADEMA", "member_type": "Constituency"},
             {"name": "Josephat Sinkamba Gwajima", "constituency": "Kawe", "party": "CCM", "member_type": "Constituency"},
             {"name": "Mwita Mwikabe Waitara", "constituency": "Ukonga", "party": "CCM", "member_type": "Constituency"},
+            {"name": "Hussein Bashe", "constituency": "Nzega Mjini", "party": "CCM", "member_type": "Constituency"},
+            {"name": "Doto Mashaka Biteko", "constituency": "Bukombe", "party": "CCM", "member_type": "Constituency"},
+            {"name": "Mwigulu Lameck Nchemba", "constituency": "Iramba Mashariki", "party": "CCM", "member_type": "Constituency"},
+            {"name": "Innocent Bashungwa", "constituency": "Karagwe", "party": "CCM", "member_type": "Constituency"},
+            {"name": "Damas Daniel Ndumbaro", "constituency": "Songea Mjini", "party": "CCM", "member_type": "Constituency"},
+            {"name": "George Simbachawene", "constituency": "Kibakwe", "party": "CCM", "member_type": "Constituency"},
+            {"name": "Richard Mbogo Sapi", "constituency": "Tunduru Kaskazini", "party": "CCM", "member_type": "Constituency"},
+            {"name": "John Heche", "constituency": "Tarime Mjini", "party": "CHADEMA", "member_type": "Constituency"},
+            {"name": "Salome Makamba", "constituency": "Special Seats", "party": "CHADEMA", "member_type": "Special Seats"},
+            {"name": "Cecilia Daniel Paresso", "constituency": "Special Seats", "party": "CHADEMA", "member_type": "Special Seats"},
+            {"name": "Aysah Abdallah Omar", "constituency": "Special Seats", "party": "CUF", "member_type": "Special Seats"},
+            {"name": "Boniphace Mwita Getere", "constituency": "Bunda", "party": "CCM", "member_type": "Constituency"},
+            {"name": "Anatropia Lwehikila Theonest", "constituency": "Special Seats", "party": "CCM", "member_type": "Special Seats"},
+            {"name": "Ally Saleh Ally", "constituency": "Malindi", "party": "CUF", "member_type": "Constituency"},
+            {"name": "David Ernest Silinde", "constituency": "Momba", "party": "CHADEMA", "member_type": "Constituency"},
+            {"name": "Joseph Kasheku Musukuma", "constituency": "Geita Mjini", "party": "CCM", "member_type": "Constituency"},
+            {"name": "Anthony Peter Mavunde", "constituency": "Dodoma Mjini", "party": "CCM", "member_type": "Constituency"},
+            {"name": "Eliezer Feleshi", "constituency": "Mbeya Mjini", "party": "CCM", "member_type": "Constituency"},
+            {"name": "Angelina Adam Malembeka", "constituency": "Special Seats", "party": "CCM", "member_type": "Special Seats"},
         ]
         return [
             RawPersonRecord(

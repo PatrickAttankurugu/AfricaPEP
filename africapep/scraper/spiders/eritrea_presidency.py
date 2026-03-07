@@ -64,18 +64,36 @@ class EritreaPresidencyScraper(BaseScraper):
     def _synthetic_fixture(self) -> list[RawPersonRecord]:
         now = datetime.utcnow()
         officials = [
+            # Executive
             {"name": "Isaias Afwerki", "role": "President of the State of Eritrea"},
+            # Cabinet Ministers
             {"name": "Osman Saleh Mohammed", "role": "Minister of Foreign Affairs"},
-            {"name": "Abraha Kassa", "role": "Minister of Interior"},
-            {"name": "Berhane Habtemariam", "role": "Minister of Finance"},
+            {"name": "Abraha Kassa", "role": "Minister of Local Government"},
+            {"name": "Berhane Habtemariam", "role": "Minister of Finance and National Development"},
             {"name": "Filipos Woldeyohannes", "role": "Minister of Defence"},
             {"name": "Fauzia Hashim", "role": "Minister of Justice"},
             {"name": "Amina Nurhusein", "role": "Minister of Health"},
             {"name": "Semere Russom", "role": "Minister of Education"},
             {"name": "Arefaine Berhe", "role": "Minister of Agriculture"},
             {"name": "Ahmed Haj Ali", "role": "Minister of Energy and Mines"},
-            {"name": "Salma Hassen", "role": "Minister of Labour"},
+            {"name": "Salma Hassen", "role": "Minister of Labour and Human Welfare"},
             {"name": "Yemane Ghebreab", "role": "Head of Political Affairs, PFDJ"},
+            {"name": "Yemane Ghebremeskel", "role": "Minister of Information"},
+            {"name": "Woldenkiel Gebremariam", "role": "Minister of Trade and Industry"},
+            {"name": "Tesfai Ghebreselassie", "role": "Minister of Land, Water and Environment"},
+            {"name": "Woldemichael Abraha", "role": "Minister of Maritime Resources"},
+            {"name": "Giorgis Teklemichael", "role": "Minister of National Development"},
+            {"name": "Askalu Menkerios", "role": "Minister of Tourism"},
+            {"name": "Fozia Hashim", "role": "Advisor to the President on Legal Affairs"},
+            {"name": "Araia Desta", "role": "Governor of the Bank of Eritrea"},
+            {"name": "Hagos Gebrehiwet", "role": "Economic Advisor to the President"},
+            # Military
+            {"name": "Sebhat Ephrem", "role": "Former Minister of Defence"},
+            {"name": "Philipos Woldeyohannes", "role": "Chief of Staff, Eritrean Defence Forces"},
+            # Senior PFDJ Officials
+            {"name": "Al-Amin Mohammed Said", "role": "Secretary of PFDJ"},
+            {"name": "Ramadan Osman Awliyay", "role": "PFDJ Political Bureau Member"},
+            {"name": "Abdella Jaber", "role": "PFDJ Central Office Head"},
         ]
         records = []
         for o in officials:

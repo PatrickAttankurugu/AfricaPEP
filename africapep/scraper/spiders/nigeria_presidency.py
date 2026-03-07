@@ -161,7 +161,7 @@ class NigeriaPresidencyScraper(BaseScraper):
                 "role": "Vice President of the Federal Republic of Nigeria",
                 "category": "Vice President",
             },
-            # ── Key Cabinet Ministers ──
+            # ── Cabinet Ministers ──
             {
                 "name": "Nyesom Wike",
                 "title": "Minister",
@@ -276,6 +276,139 @@ class NigeriaPresidencyScraper(BaseScraper):
                 "role": "Minister of Foreign Affairs",
                 "category": "Cabinet Ministers",
             },
+            {
+                "name": "Adebayo Adelabu",
+                "title": "Minister",
+                "role": "Minister of Power",
+                "category": "Cabinet Ministers",
+            },
+            {
+                "name": "Shuaibu Husseini Audu",
+                "title": "Minister",
+                "role": "Minister of Steel Development",
+                "category": "Cabinet Ministers",
+            },
+            {
+                "name": "Heineken Lokpobiri",
+                "title": "Minister of State",
+                "role": "Minister of State for Petroleum Resources (Oil)",
+                "category": "Cabinet Ministers",
+            },
+            {
+                "name": "Ekperikpe Ekpo",
+                "title": "Minister of State",
+                "role": "Minister of State for Petroleum Resources (Gas)",
+                "category": "Cabinet Ministers",
+            },
+            {
+                "name": "John Enoh",
+                "title": "Minister",
+                "role": "Minister of Sports Development",
+                "category": "Cabinet Ministers",
+            },
+            {
+                "name": "Uche Nnaji",
+                "title": "Minister",
+                "role": "Minister of Innovation, Science and Technology",
+                "category": "Cabinet Ministers",
+            },
+            {
+                "name": "Joseph Utsev",
+                "title": "Minister",
+                "role": "Minister of Water Resources and Sanitation",
+                "category": "Cabinet Ministers",
+            },
+            {
+                "name": "Ahmed Dangiwa",
+                "title": "Minister",
+                "role": "Minister of Housing and Urban Development",
+                "category": "Cabinet Ministers",
+            },
+            {
+                "name": "Balarabe Abbas Lawal",
+                "title": "Minister",
+                "role": "Minister of Environment",
+                "category": "Cabinet Ministers",
+            },
+            {
+                "name": "Betta Edu",
+                "title": "Minister",
+                "role": "Minister of Humanitarian Affairs and Poverty Reduction",
+                "category": "Cabinet Ministers",
+            },
+            {
+                "name": "Lola Ade-John",
+                "title": "Minister",
+                "role": "Minister of Tourism",
+                "category": "Cabinet Ministers",
+            },
+            {
+                "name": "Ayodele Olawande",
+                "title": "Minister",
+                "role": "Minister of Youth Development",
+                "category": "Cabinet Ministers",
+            },
+            {
+                "name": "Doris Anite",
+                "title": "Minister",
+                "role": "Minister of Industry, Trade and Investment",
+                "category": "Cabinet Ministers",
+            },
+            {
+                "name": "Saidu Ahmed Alkali",
+                "title": "Minister",
+                "role": "Minister of Transportation",
+                "category": "Cabinet Ministers",
+            },
+            {
+                "name": "Abubakar Kyari",
+                "title": "Minister",
+                "role": "Minister of Agriculture and Food Security",
+                "category": "Cabinet Ministers",
+            },
+            {
+                "name": "Nyesom Ezenwo Wike",
+                "title": "Minister",
+                "role": "Minister of the Federal Capital Territory",
+                "category": "Cabinet Ministers",
+            },
+            # ── Ministers of State ──
+            {
+                "name": "Mariya Mahmoud Bunkure",
+                "title": "Minister of State",
+                "role": "Minister of State for Defence",
+                "category": "Cabinet Ministers",
+            },
+            {
+                "name": "Bianca Odumegwu-Ojukwu",
+                "title": "Minister of State",
+                "role": "Minister of State for Foreign Affairs",
+                "category": "Cabinet Ministers",
+            },
+            {
+                "name": "Uba Maigari Ahmadu",
+                "title": "Minister of State",
+                "role": "Minister of State for Health",
+                "category": "Cabinet Ministers",
+            },
+            {
+                "name": "Imaan Sulaiman-Ibrahim",
+                "title": "Minister of State",
+                "role": "Minister of State for Police Affairs",
+                "category": "Cabinet Ministers",
+            },
+            {
+                "name": "Yusuf Abdullahi Ata",
+                "title": "Minister of State",
+                "role": "Minister of State for Housing and Urban Development",
+                "category": "Cabinet Ministers",
+            },
+            {
+                "name": "Tijjani Muhammad-Bande",
+                "title": "Minister of State",
+                "role": "Minister of State for Education",
+                "category": "Cabinet Ministers",
+            },
             # ── Special Advisers ──
             {
                 "name": "Hadiza Bala Usman",
@@ -293,6 +426,24 @@ class NigeriaPresidencyScraper(BaseScraper):
                 "name": "Daniel Bwala",
                 "title": "Special Adviser",
                 "role": "Special Adviser to the President on Media and Public Communication",
+                "category": "Special Advisers",
+            },
+            {
+                "name": "Ibrahim Masari",
+                "title": "Special Adviser",
+                "role": "Special Adviser on National Assembly Matters (Senate)",
+                "category": "Special Advisers",
+            },
+            {
+                "name": "Abdullahi Abbas",
+                "title": "Special Adviser",
+                "role": "Special Adviser on National Assembly Matters (House of Representatives)",
+                "category": "Special Advisers",
+            },
+            {
+                "name": "Nuhu Ribadu",
+                "title": "Special Adviser",
+                "role": "National Security Adviser",
                 "category": "Special Advisers",
             },
             # ── Senior Staff ──
@@ -319,6 +470,55 @@ class NigeriaPresidencyScraper(BaseScraper):
                 "title": "Senior Staff",
                 "role": "Special Adviser on Public Communication and National Orientation",
                 "category": "Senior Staff",
+            },
+            {
+                "name": "Folasade Yemi-Esan",
+                "title": "Senior Staff",
+                "role": "Head of the Civil Service of the Federation",
+                "category": "Senior Staff",
+            },
+            {
+                "name": "Olayemi Cardoso",
+                "title": "Senior Staff",
+                "role": "Governor of the Central Bank of Nigeria",
+                "category": "Senior Staff",
+            },
+            # ── Former Presidents & Vice Presidents ──
+            {
+                "name": "Olusegun Obasanjo",
+                "title": "Former President",
+                "role": "Former President of Nigeria (1999-2007)",
+                "category": "Former Leaders",
+            },
+            {
+                "name": "Umaru Musa Yar'Adua",
+                "title": "Former President (deceased)",
+                "role": "Former President of Nigeria (2007-2010, deceased)",
+                "category": "Former Leaders",
+            },
+            {
+                "name": "Goodluck Ebele Jonathan",
+                "title": "Former President",
+                "role": "Former President of Nigeria (2010-2015)",
+                "category": "Former Leaders",
+            },
+            {
+                "name": "Muhammadu Buhari",
+                "title": "Former President",
+                "role": "Former President of Nigeria (2015-2023)",
+                "category": "Former Leaders",
+            },
+            {
+                "name": "Namadi Sambo",
+                "title": "Former Vice President",
+                "role": "Former Vice President of Nigeria (2010-2015)",
+                "category": "Former Leaders",
+            },
+            {
+                "name": "Yemi Osinbajo",
+                "title": "Former Vice President",
+                "role": "Former Vice President of Nigeria (2015-2023)",
+                "category": "Former Leaders",
             },
         ]
 

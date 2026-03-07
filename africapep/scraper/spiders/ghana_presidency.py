@@ -151,8 +151,10 @@ class GhanaPresidencyScraper(BaseScraper):
         """Realistic synthetic cabinet data using real Ghana minister names."""
         now = datetime.utcnow()
         ministers = [
+            # Current President and Vice President
             ("John Dramani Mahama", "President of the Republic of Ghana", "7 January 2025"),
             ("Naana Jane Opoku-Agyemang", "Vice President of the Republic of Ghana", "7 January 2025"),
+            # Cabinet Ministers
             ("Dr Cassiel Ato Forson", "Minister for Finance", "7 January 2025"),
             ("John Abdulai Jinapor", "Minister for Energy", "7 January 2025"),
             ("Edward Omane Boamah", "Minister for Defence", "7 January 2025"),
@@ -163,14 +165,56 @@ class GhanaPresidencyScraper(BaseScraper):
             ("Dr Zanetor Agyeman-Rawlings", "Minister for Health", "7 January 2025"),
             ("Governs Kwame Agbodza", "Minister for Roads and Highways", "7 January 2025"),
             ("Haruna Iddrisu", "Minister for Employment and Labour Relations", "7 January 2025"),
-            ("Alban Sumana Kingsford Bagbin", "Speaker of Parliament", "7 January 2021"),
-            ("Nana Addo Dankwa Akufo-Addo", "Former President of Ghana", "7 January 2017"),
-            ("Gertrude Sackey Torkornoo", "Chief Justice of Ghana", "7 June 2023"),
             ("Mahama Ayariga", "Minister for Information", "7 January 2025"),
             ("Fiifi Kwetey", "Minister for Food and Agriculture", "7 January 2025"),
             ("Emmanuel Armah-Kofi Buah", "Minister for Lands and Natural Resources", "7 January 2025"),
-            ("Dr Kwabena Duffuor", "Former Governor of Bank of Ghana", ""),
-            ("Kofi Annan", "Former UN Secretary General (Ghanaian)", ""),
+            ("Kwame Governs Agbodza", "Minister for Transport", "7 January 2025"),
+            ("Ato Forson", "Minister for Communication and Digitalisation", "7 January 2025"),
+            ("Abdulai Iddrisu", "Minister for Local Government, Decentralisation and Rural Development", "7 January 2025"),
+            ("Ebenezer Kojo Kum", "Minister for Environment, Science, Technology and Innovation", "7 January 2025"),
+            ("Mark Okraku-Mantey", "Minister for Tourism, Arts and Culture", "7 January 2025"),
+            ("Kobina Woyome", "Minister for Youth and Sports", "7 January 2025"),
+            ("Darkoa Newman", "Minister for Gender, Children and Social Protection", "7 January 2025"),
+            ("Hawa Koomson", "Minister for Fisheries and Aquaculture Development", "7 January 2025"),
+            ("Francis Asenso-Boakye", "Minister for Works and Housing", "7 January 2025"),
+            ("Joe Ghartey", "Minister for Railway Development", "7 January 2025"),
+            ("Cecilia Abena Dapaah", "Minister for Sanitation and Water Resources", "7 January 2025"),
+            ("Dan Kwaku Botwe", "Minister for Regional Reorganisation and Development", "7 January 2025"),
+            ("Osei Kyei-Mensah-Bonsu", "Minister for Parliamentary Affairs", "7 January 2025"),
+            ("Dr Matthew Opoku Prempeh", "Minister for Education", "7 January 2025"),
+            # Ministers of State
+            ("Mohammed Amin Adam", "Minister of State at the Ministry of Finance", "7 January 2025"),
+            ("Thomas Musah", "Minister of State at the Ministry of the Interior", "7 January 2025"),
+            ("Herbert Krapa", "Minister of State at the Ministry of Energy", "7 January 2025"),
+            # Speaker of Parliament
+            ("Alban Sumana Kingsford Bagbin", "Speaker of Parliament", "7 January 2021"),
+            # Chief Justice
+            ("Gertrude Sackey Torkornoo", "Chief Justice of Ghana", "7 June 2023"),
+            # Bank of Ghana
+            ("Dr Ernest Addison", "Governor of the Bank of Ghana", ""),
+            ("Dr Maxwell Opoku-Afari", "First Deputy Governor, Bank of Ghana", ""),
+            ("Elsie Addo Awadzi", "Second Deputy Governor, Bank of Ghana", ""),
+            # Former Presidents
+            ("Nana Addo Dankwa Akufo-Addo", "Former President of Ghana (2017-2025)", "7 January 2017"),
+            ("John Agyekum Kufuor", "Former President of Ghana (2001-2009)", "7 January 2001"),
+            ("Jerry John Rawlings", "Former President of Ghana (deceased)", "7 January 1993"),
+            ("John Evans Atta Mills", "Former President of Ghana (deceased)", "7 January 2009"),
+            # Former Vice Presidents
+            ("Mahamudu Bawumia", "Former Vice President of Ghana (2017-2025)", "7 January 2017"),
+            ("Kwesi Amissah-Arthur", "Former Vice President of Ghana (deceased)", "7 January 2013"),
+            # Military Chiefs
+            ("Vice Admiral Seth Amoama", "Chief of the Defence Staff, Ghana Armed Forces", ""),
+            ("Major General Thomas Oppong-Peprah", "Chief of the Army Staff", ""),
+            ("Rear Admiral Issah Adam Yakubu", "Chief of the Naval Staff", ""),
+            ("Air Vice Marshal Frederick Asare Kwasi Bekoe", "Chief of the Air Staff", ""),
+            # Inspector General of Police
+            ("Dr George Akuffo Dampare", "Inspector General of Police", ""),
+            # National Security
+            ("Edward Kwaku Asomani", "National Security Coordinator", "7 January 2025"),
+            # Council of State
+            ("Nana Otuo Siriboe II", "Chairman of the Council of State", ""),
+            ("Sam Okudzeto", "Member of the Council of State", ""),
+            ("Lt Gen Emmanuel Alexander Erskine", "Member of the Council of State", ""),
         ]
         return [
             RawPersonRecord(

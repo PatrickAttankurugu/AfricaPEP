@@ -76,6 +76,19 @@ class DjiboutiPresidencyScraper(BaseScraper):
             {"name": "Yonis Ali Guedi", "role": "Minister of Energy"},
             {"name": "Mohamed Ahmed Awaleh", "role": "Minister of Agriculture"},
             {"name": "Nabil Mohamed Ahmed", "role": "Minister of Communication"},
+            {"name": "Osman Abdi Djama", "role": "Minister of Transport"},
+            {"name": "Mohamed Abdoulkader Hassan", "role": "Minister of Labour"},
+            {"name": "Aden Houssein Abdillahi", "role": "Minister of Trade"},
+            {"name": "Amina Abdi Aden", "role": "Minister of Women and Family"},
+            {"name": "Charmarke Omar Chirdon", "role": "Minister of Housing and Urban Planning"},
+            {"name": "Idriss Arnaud Ali", "role": "Minister of Islamic Affairs"},
+            {"name": "Ahmed Osman Mohamed", "role": "Governor, Central Bank of Djibouti"},
+            {"name": "Ibrahim Hassan Adou", "role": "Chief of Staff of the Armed Forces"},
+            {"name": "Mohamed Djama Elabe", "role": "Speaker of the National Assembly"},
+            {"name": "Hassan Ibrahim Aptidon", "role": "Former President (1977-1999)"},
+            {"name": "Omar Elmi Khaireh", "role": "Chief Justice, Supreme Court"},
+            {"name": "Abdourahman Boreh", "role": "Former Head of Djibouti Ports Authority"},
+            {"name": "Abdoulkader Waberi Askar", "role": "Minister of Environment"},
         ]
         records = []
         for o in officials:

@@ -83,6 +83,7 @@ class CameroonPresidencyScraper(BaseScraper):
     def _synthetic_fixture(self) -> list[RawPersonRecord]:
         now = datetime.utcnow()
         officials = [
+            {"name": "Paul Biya", "role": "President of the Republic of Cameroon"},
             {"name": "Joseph Dion Ngute", "role": "Prime Minister, Head of Government"},
             {"name": "Laurent Esso", "role": "Minister of State, Justice and Keeper of the Seals"},
             {"name": "Ferdinand Ngoh Ngoh", "role": "Minister of State, Secretary General of the Presidency"},
@@ -101,6 +102,17 @@ class CameroonPresidencyScraper(BaseScraper):
             {"name": "Gaston Eloundou Essomba", "role": "Minister of Water Resources and Energy"},
             {"name": "Jean Ernest Massena Ngalle Bibehe", "role": "Minister of Transport"},
             {"name": "Minette Libom Li Likeng", "role": "Minister of Posts and Telecommunications"},
+            {"name": "Laurent Serge Etoundi Ngoa", "role": "Minister of Basic Education"},
+            {"name": "Mounouna Foutsou", "role": "Minister of Youth and Civic Education"},
+            {"name": "Narcisse Mouelle Kombi", "role": "Minister of Arts and Culture"},
+            {"name": "Cavaye Yeguie Djibril", "role": "Speaker of the National Assembly"},
+            {"name": "Marcel Niat Njifenji", "role": "President of the Senate"},
+            {"name": "Daniel Mekobe Sone", "role": "Chief Justice, Supreme Court"},
+            {"name": "Abbas Mahamat Tolli", "role": "Governor, Bank of Central African States (BEAC)"},
+            {"name": "Général René Claude Meka", "role": "Chief of Defence Staff"},
+            {"name": "Martin Mbarga Nguele", "role": "Delegate General of National Security"},
+            {"name": "John Fru Ndi", "role": "Opposition Leader, SDF (deceased 2023)"},
+            {"name": "Maurice Kamto", "role": "Opposition Leader, MRC"},
         ]
 
         records = []

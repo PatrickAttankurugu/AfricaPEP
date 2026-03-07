@@ -64,18 +64,36 @@ class SeychellesPresidencyScraper(BaseScraper):
     def _synthetic_fixture(self) -> list[RawPersonRecord]:
         now = datetime.utcnow()
         officials = [
+            # Executive
             {"name": "Wavel Ramkalawan", "role": "President of the Republic"},
-            {"name": "Ahmed Afif", "role": "Vice President"},
-            {"name": "Sylvestre Radegonde", "role": "Minister of Foreign Affairs"},
+            {"name": "Ahmed Afif", "role": "Vice President and Minister of Finance"},
+            # Cabinet Ministers
+            {"name": "Sylvestre Radegonde", "role": "Minister of Foreign Affairs and Tourism"},
             {"name": "Errol Fonseka", "role": "Minister of Internal Affairs"},
-            {"name": "Naadir Hassan", "role": "Minister of Finance"},
+            {"name": "Naadir Hassan", "role": "Minister of Finance, National Planning and Trade"},
             {"name": "Peggy Vidot", "role": "Minister of Health"},
-            {"name": "Justin Valentin", "role": "Minister of Agriculture"},
-            {"name": "Flavien Joubert", "role": "Minister of Fisheries"},
-            {"name": "Devika Vidot", "role": "Minister of Youth and Sports"},
-            {"name": "Myrina Bonne", "role": "Minister of Family Affairs"},
-            {"name": "Roger Mancienne", "role": "Speaker of National Assembly"},
-            {"name": "Jean-François Ferrari", "role": "Minister of Tourism"},
+            {"name": "Justin Valentin", "role": "Minister of Agriculture, Climate Change and Environment"},
+            {"name": "Jean-François Ferrari", "role": "Minister of Fisheries and the Blue Economy"},
+            {"name": "Devika Vidot", "role": "Minister of Youth, Sports and Family"},
+            {"name": "Myrina Bonne", "role": "Minister of Local Government and Community Affairs"},
+            {"name": "Flavien Joubert", "role": "Minister of Investment, Entrepreneurship and Industry"},
+            {"name": "Patricia Francourt", "role": "Minister of Education"},
+            {"name": "Charles Bastienne", "role": "Minister of Lands, Housing and Transport"},
+            {"name": "Jude Gedeon", "role": "Public Health Commissioner"},
+            {"name": "Marie-Celine Zialor", "role": "Minister of Employment and Social Affairs"},
+            # Parliament
+            {"name": "Roger Mancienne", "role": "Speaker of the National Assembly"},
+            # Judiciary
+            {"name": "Rony Govinden", "role": "Chief Justice of the Supreme Court"},
+            # Central Bank
+            {"name": "Caroline Abel", "role": "Governor, Central Bank of Seychelles"},
+            # Military
+            {"name": "Michael Rosette", "role": "Chief of Seychelles People's Defence Forces"},
+            # Attorney General
+            {"name": "Frank Ally", "role": "Attorney General"},
+            # Opposition
+            {"name": "Danny Faure", "role": "Former President of Seychelles"},
+            {"name": "James Michel", "role": "Former President of Seychelles"},
         ]
         records = []
         for o in officials:

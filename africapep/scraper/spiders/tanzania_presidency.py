@@ -202,17 +202,36 @@ class TanzaniaPresidencyScraper(BaseScraper):
             {"name": "January Yusuf Makamba", "title": "Minister of Foreign Affairs"},
             {"name": "Stergomena Lawrence Tax", "title": "Minister of Defence"},
             {"name": "Hamad Masauni", "title": "Minister of Home Affairs"},
-            {"name": "Emmanuel Mwenyemlare Tutuba", "title": "Minister of Finance"},
-            {"name": "Adolf Faustine Mkenda", "title": "Minister of Education"},
-            {"name": "Liberata Mulamula", "title": "Minister of Information"},
-            {"name": "Angellah Jasmine Kairuki", "title": "Minister of State, PM's Office"},
+            {"name": "Mwigulu Lameck Nchemba", "title": "Minister of Finance and Planning"},
+            {"name": "Adolf Faustine Mkenda", "title": "Minister of Education, Science and Technology"},
+            {"name": "Nape Moses Nnauye", "title": "Minister of Information, Communication and IT"},
+            {"name": "Angellah Jasmine Kairuki", "title": "Minister of State, PM's Office (Investment)"},
             {"name": "Ummy Ally Mwalimu", "title": "Minister of Health"},
             {"name": "Pindi Chana", "title": "Minister of Natural Resources and Tourism"},
             {"name": "Hussein Bashe", "title": "Minister of Agriculture"},
-            {"name": "Tulia Ackson", "title": "Speaker of the National Assembly"},
+            {"name": "Innocent Bashungwa", "title": "Minister of Minerals"},
+            {"name": "Profesa Kitila Mkumbo", "title": "Minister of Constitution and Legal Affairs"},
+            {"name": "Dorothy Gwajima", "title": "Minister of Community Development, Gender and Children"},
+            {"name": "Eliezer Feleshi", "title": "Minister of Water"},
+            {"name": "Liberata Mulamula", "title": "Minister of State, Union Affairs"},
+            {"name": "George Simbachawene", "title": "Minister of State, PM's Office (Policy and Parliamentary Affairs)"},
+            {"name": "Abdallah Ulega", "title": "Minister of Works and Transport"},
+            {"name": "Damas Daniel Ndumbaro", "title": "Minister of Lands, Housing and Human Settlements"},
+            {"name": "Anthony Peter Mavunde", "title": "Minister of State, PM's Office (Labour, Youth and Employment)"},
+            # Judiciary
             {"name": "Ibrahim Mahamed Juma", "title": "Chief Justice of Tanzania"},
+            # Central Bank
+            {"name": "Emmanuel Mpawe Tutuba", "title": "Governor, Bank of Tanzania"},
+            # Parliament
+            {"name": "Tulia Ackson", "title": "Speaker of the National Assembly"},
+            # Military
+            {"name": "Jacob John Mkunda", "title": "Chief of Defence Forces, TPDF"},
+            # Former Presidents
             {"name": "Jakaya Kikwete", "title": "Former President of Tanzania"},
-            {"name": "Benjamin Mkapa", "title": "Former President of Tanzania"},
+            {"name": "Ali Hassan Mwinyi", "title": "Former President of Tanzania"},
+            # Opposition
+            {"name": "Freeman Aikaeli Mbowe", "title": "Leader of CHADEMA"},
+            {"name": "Tundu Antiphas Lissu", "title": "CHADEMA Vice Chairman"},
         ]
         return [
             RawPersonRecord(

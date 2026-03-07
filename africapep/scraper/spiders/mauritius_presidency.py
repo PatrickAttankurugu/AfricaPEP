@@ -64,18 +64,38 @@ class MauritiusPresidencyScraper(BaseScraper):
     def _synthetic_fixture(self) -> list[RawPersonRecord]:
         now = datetime.utcnow()
         officials = [
+            # Executive
             {"name": "Prithvirajsing Roopun", "role": "President of the Republic"},
             {"name": "Navinchandra Ramgoolam", "role": "Prime Minister"},
+            # Cabinet Ministers
             {"name": "Dhananjay Ramful", "role": "Minister of Foreign Affairs"},
             {"name": "Reza Uteem", "role": "Attorney General"},
-            {"name": "Renganaden Padayachy", "role": "Minister of Finance"},
+            {"name": "Renganaden Padayachy", "role": "Minister of Finance, Economic Planning and Development"},
             {"name": "Avinash Teeluck", "role": "Minister of Arts and Cultural Heritage"},
-            {"name": "Kalpana Koonjoo-Shah", "role": "Minister of Gender Equality"},
+            {"name": "Kalpana Koonjoo-Shah", "role": "Minister of Gender Equality and Family Welfare"},
             {"name": "Fazila Jeewa-Daureeawoo", "role": "Minister of Social Integration"},
-            {"name": "Soodesh Callichurn", "role": "Minister of Labour"},
-            {"name": "Mahen Kumar Seeruttun", "role": "Minister of Agriculture"},
-            {"name": "Leela Devi Dookun-Luchoomun", "role": "Minister of Education"},
-            {"name": "Alan Ganoo", "role": "Minister of Land Transport"},
+            {"name": "Soodesh Callichurn", "role": "Minister of Labour, Industrial Relations and Employment"},
+            {"name": "Mahen Kumar Seeruttun", "role": "Minister of Agriculture, Food Technology and Natural Resources"},
+            {"name": "Leela Devi Dookun-Luchoomun", "role": "Minister of Education, Tertiary Education and Science"},
+            {"name": "Alan Ganoo", "role": "Minister of Land Transport and Light Rail"},
+            {"name": "Nando Bodha", "role": "Minister of Tourism"},
+            {"name": "Arvin Boolell", "role": "Minister of Health and Wellness"},
+            {"name": "Rajesh Bhagwan", "role": "Minister of Environment and Climate Change"},
+            {"name": "Shakeel Mohamed", "role": "Minister of Housing and Land Use Planning"},
+            {"name": "Joe Lesjongard", "role": "Minister of Energy and Public Utilities"},
+            {"name": "Bobby Hurreeram", "role": "Minister of National Infrastructure"},
+            {"name": "Kavy Ramano", "role": "Minister of Information Technology and Telecommunications"},
+            {"name": "Vikram Hurdoyal", "role": "Minister of Public Service"},
+            # Judiciary
+            {"name": "Achilles Nunkoo", "role": "Chief Justice of Mauritius"},
+            # Central Bank
+            {"name": "Harvesh Kumar Seegolam", "role": "Governor, Bank of Mauritius"},
+            # Parliament
+            {"name": "Sooroojdev Phokeer", "role": "Speaker of the National Assembly"},
+            # Opposition
+            {"name": "Pravind Jugnauth", "role": "Former Prime Minister and Leader of MSM"},
+            {"name": "Paul Bérenger", "role": "Leader of MMM"},
+            {"name": "Xavier-Luc Duval", "role": "Leader of PMSD"},
         ]
         records = []
         for o in officials:

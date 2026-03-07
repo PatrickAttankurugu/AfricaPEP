@@ -62,18 +62,39 @@ class BotswanaParliamentScraper(BaseScraper):
     def _synthetic_fixture(self) -> list[RawPersonRecord]:
         now = datetime.utcnow()
         officials = [
+            # Executive
             {"name": "Duma Boko", "role": "President of the Republic of Botswana", "party": "UDC"},
-            {"name": "Ndaba Gaolathe", "role": "Vice President", "party": "UDC"},
+            {"name": "Ndaba Gaolathe", "role": "Vice President and Minister of Finance", "party": "UDC"},
+            # Parliament
             {"name": "Phandu Skelemani", "role": "Speaker of the National Assembly", "party": "UDC"},
-            {"name": "Mokgweetsi Masisi", "role": "Leader of the Opposition", "party": "BDP"},
+            # Cabinet Ministers
             {"name": "Peggy Serame", "role": "Minister of Finance", "party": "UDC"},
             {"name": "Mbulelo Toteng", "role": "Minister of Health", "party": "UDC"},
-            {"name": "Ketlhalefile Motshegwa", "role": "Minister of Defence", "party": "UDC"},
-            {"name": "Taolo Lucas", "role": "Minister of Lands", "party": "BCP"},
+            {"name": "Ketlhalefile Motshegwa", "role": "Minister of Defence and Security", "party": "UDC"},
+            {"name": "Taolo Lucas", "role": "Minister of Lands and Water Affairs", "party": "BCP"},
             {"name": "Tebelelo Seretse", "role": "Attorney General", "party": "UDC"},
             {"name": "Kenewendo Bogolo", "role": "Minister of Trade and Industry", "party": "UDC"},
-            {"name": "Dumelang Saleshando", "role": "Minister of Education", "party": "BCP"},
-            {"name": "Mephato Reatile", "role": "Minister of Transport", "party": "UDC"},
+            {"name": "Dumelang Saleshando", "role": "Minister of Education and Skills Development", "party": "BCP"},
+            {"name": "Mephato Reatile", "role": "Minister of Transport and Public Works", "party": "UDC"},
+            {"name": "Phenyo Butale", "role": "Minister of International Affairs and Cooperation", "party": "AP"},
+            {"name": "Tshenolo Mabeo", "role": "Minister of Minerals and Energy", "party": "UDC"},
+            {"name": "Lefoko Moagi", "role": "Minister of Agriculture", "party": "UDC"},
+            {"name": "Setlhomo Lelatisitswe", "role": "Minister of Local Government", "party": "UDC"},
+            {"name": "Thulagano Segokgo", "role": "Minister of Labour and Home Affairs", "party": "UDC"},
+            {"name": "Kesitegile Gobotswang", "role": "Minister of Environment and Tourism", "party": "UDC"},
+            {"name": "Kabo Morwaeng", "role": "Minister of Infrastructure and Housing", "party": "BCP"},
+            {"name": "Gaolathe Molapisi", "role": "Minister of Youth, Gender and Culture", "party": "UDC"},
+            # Judiciary
+            {"name": "Terrence Rannowane", "role": "Chief Justice of Botswana", "party": ""},
+            # Central Bank
+            {"name": "Moses Pelaelo", "role": "Governor, Bank of Botswana", "party": ""},
+            # Military
+            {"name": "Placid Segokgo", "role": "Commander, Botswana Defence Force", "party": ""},
+            # Opposition
+            {"name": "Mokgweetsi Masisi", "role": "Former President and Leader of the Opposition (BDP)", "party": "BDP"},
+            {"name": "Ian Khama", "role": "Former President of Botswana", "party": "BPF"},
+            # Former President
+            {"name": "Festus Mogae", "role": "Former President of Botswana", "party": "BDP"},
         ]
         records = []
         for o in officials:
