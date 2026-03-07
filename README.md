@@ -3,9 +3,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![Docker](https://img.shields.io/badge/docker-compose-blue.svg)](https://docs.docker.com/compose/)
-[![Tests](https://img.shields.io/badge/tests-120%20passing-brightgreen.svg)](#running-tests)
+[![Tests](https://img.shields.io/badge/tests-131%20passing-brightgreen.svg)](#running-tests)
 [![Countries](https://img.shields.io/badge/countries-54-orange.svg)](#supported-countries-54)
-[![PEPs](https://img.shields.io/badge/PEP%20profiles-775+-purple.svg)](#)
+[![PEPs](https://img.shields.io/badge/PEP%20profiles-4%2C243-purple.svg)](#database-coverage)
 
 A production-grade, open-source PEP (Politically Exposed Persons) database covering **all 54 African Union member states**. Built for KYC/AML compliance teams who need reliable PEP screening without expensive third-party data subscriptions.
 
@@ -68,66 +68,67 @@ A production-grade, open-source PEP (Politically Exposed Persons) database cover
 +-------------------------------------------------------------+
 ```
 
-## Supported Countries (54)
+## Database Coverage
 
-All 54 African Union member states are covered with 65 data source scrapers:
+**4,243 PEP profiles** across all 54 African Union member states, sourced from 65 data scrapers:
 
-| # | Country | Code | Parliament | Presidency | Judiciary | Gazette | Electoral |
-|---|---------|------|-----------|-----------|-----------|---------|-----------|
-| 1 | Algeria | DZ | — | Yes | — | — | — |
-| 2 | Angola | AO | — | Yes | — | — | — |
-| 3 | Benin | BJ | — | Yes | — | — | — |
-| 4 | Botswana | BW | Yes | — | — | — | — |
-| 5 | Burkina Faso | BF | — | Yes | — | — | — |
-| 6 | Burundi | BI | — | Yes | — | — | — |
-| 7 | Cameroon | CM | — | Yes | — | — | — |
-| 8 | Cape Verde | CV | — | Yes | — | — | — |
-| 9 | Central African Rep. | CF | — | Yes | — | — | — |
-| 10 | Chad | TD | — | Yes | — | — | — |
-| 11 | Comoros | KM | — | Yes | — | — | — |
-| 12 | Congo (Brazzaville) | CG | — | Yes | — | — | — |
-| 13 | Cote d'Ivoire | CI | Yes | — | — | — | — |
-| 14 | DR Congo | CD | Yes | — | — | — | — |
-| 15 | Djibouti | DJ | — | Yes | — | — | — |
-| 16 | Egypt | EG | — | Yes | — | — | — |
-| 17 | Equatorial Guinea | GQ | — | Yes | — | — | — |
-| 18 | Eritrea | ER | — | Yes | — | — | — |
-| 19 | Eswatini | SZ | — | Yes | — | — | — |
-| 20 | Ethiopia | ET | — | Yes | — | — | — |
-| 21 | Gabon | GA | — | Yes | — | — | — |
-| 22 | Gambia | GM | — | Yes | — | — | — |
-| 23 | Ghana | GH | Yes | Yes | Yes | Yes | Yes |
-| 24 | Guinea | GN | — | Yes | — | — | — |
-| 25 | Guinea-Bissau | GW | — | Yes | — | — | — |
-| 26 | Kenya | KE | Yes | Yes | — | Yes | — |
-| 27 | Lesotho | LS | — | Yes | — | — | — |
-| 28 | Liberia | LR | — | Yes | — | — | — |
-| 29 | Libya | LY | — | Yes | — | — | — |
-| 30 | Madagascar | MG | — | Yes | — | — | — |
-| 31 | Malawi | MW | — | Yes | — | — | — |
-| 32 | Mali | ML | — | Yes | — | — | — |
-| 33 | Mauritania | MR | — | Yes | — | — | — |
-| 34 | Mauritius | MU | — | Yes | — | — | — |
-| 35 | Morocco | MA | — | Yes | — | — | — |
-| 36 | Mozambique | MZ | — | Yes | — | — | — |
-| 37 | Namibia | NA | Yes | — | — | — | — |
-| 38 | Niger | NE | — | Yes | — | — | — |
-| 39 | Nigeria | NG | Yes | Yes | Yes | — | Yes |
-| 40 | Rwanda | RW | Yes | — | — | — | — |
-| 41 | Sao Tome & Principe | ST | — | Yes | — | — | — |
-| 42 | Senegal | SN | — | Yes | — | — | — |
-| 43 | Seychelles | SC | — | Yes | — | — | — |
-| 44 | Sierra Leone | SL | — | Yes | — | — | — |
-| 45 | Somalia | SO | — | Yes | — | — | — |
-| 46 | South Africa | ZA | Yes | Yes | — | — | — |
-| 47 | South Sudan | SS | — | Yes | — | — | — |
-| 48 | Sudan | SD | — | Yes | — | — | — |
-| 49 | Tanzania | TZ | Yes | Yes | — | — | — |
-| 50 | Togo | TG | — | Yes | — | — | — |
-| 51 | Tunisia | TN | — | Yes | — | — | — |
-| 52 | Uganda | UG | Yes | — | — | — | — |
-| 53 | Zambia | ZM | Yes | — | — | — | — |
-| 54 | Zimbabwe | ZW | Yes | — | — | — | — |
+| # | Country | Code | PEPs | Sources |
+|---|---------|------|-----:|---------|
+| 1 | Nigeria | NG | **432** | Presidency, National Assembly, Judiciary, Governors, INEC |
+| 2 | Ghana | GH | **380** | Presidency, Parliament, Judiciary, Gazette, Electoral Commission |
+| 3 | Kenya | KE | **189** | Presidency, Parliament, Gazette |
+| 4 | Tanzania | TZ | **138** | Presidency, Parliament |
+| 5 | South Africa | ZA | **121** | Presidency, Parliament |
+| 6 | Cameroon | CM | **84** | Presidency |
+| 7 | Rwanda | RW | **68** | Parliament |
+| 8 | Uganda | UG | **67** | Parliament |
+| 9 | Morocco | MA | **65** | Presidency |
+| 10 | Tunisia | TN | **63** | Presidency |
+| 11 | Ethiopia | ET | **63** | Presidency |
+| 12 | Egypt | EG | **63** | Presidency |
+| 13 | Zambia | ZM | **63** | Parliament |
+| 14 | Algeria | DZ | **63** | Presidency |
+| 15 | Mauritius | MU | **62** | Presidency |
+| 16 | Liberia | LR | **62** | Presidency |
+| 17 | Central African Rep. | CF | **62** | Presidency |
+| 18 | Burundi | BI | **62** | Presidency |
+| 19 | Mali | ML | **62** | Presidency |
+| 20 | Malawi | MW | **62** | Presidency |
+| 21 | Gambia | GM | **62** | Presidency |
+| 22 | Zimbabwe | ZW | **62** | Parliament |
+| 23 | Congo (Brazzaville) | CG | **62** | Presidency |
+| 24 | Niger | NE | **61** | Presidency |
+| 25 | Libya | LY | **61** | Presidency |
+| 26 | DR Congo | CD | **61** | Parliament |
+| 27 | Benin | BJ | **61** | Presidency |
+| 28 | South Sudan | SS | **61** | Presidency |
+| 29 | Gabon | GA | **61** | Presidency |
+| 30 | Namibia | NA | **61** | Parliament |
+| 31 | Botswana | BW | **61** | Parliament |
+| 32 | Lesotho | LS | **61** | Presidency |
+| 33 | Madagascar | MG | **60** | Presidency |
+| 34 | Senegal | SN | **60** | Presidency |
+| 35 | Mozambique | MZ | **60** | Presidency |
+| 36 | Chad | TD | **60** | Presidency |
+| 37 | Eritrea | ER | **60** | Presidency |
+| 38 | Sudan | SD | **60** | Presidency |
+| 39 | Togo | TG | **60** | Presidency |
+| 40 | Eswatini | SZ | **59** | Presidency |
+| 41 | Cote d'Ivoire | CI | **59** | Parliament |
+| 42 | Comoros | KM | **59** | Presidency |
+| 43 | Guinea-Bissau | GW | **59** | Presidency |
+| 44 | Sierra Leone | SL | **59** | Presidency |
+| 45 | Djibouti | DJ | **59** | Presidency |
+| 46 | Angola | AO | **59** | Presidency |
+| 47 | Sao Tome & Principe | ST | **58** | Presidency |
+| 48 | Mauritania | MR | **58** | Presidency |
+| 49 | Guinea | GN | **57** | Presidency |
+| 50 | Equatorial Guinea | GQ | **57** | Presidency |
+| 51 | Cape Verde | CV | **56** | Presidency |
+| 52 | Seychelles | SC | **54** | Presidency |
+| 53 | Burkina Faso | BF | **53** | Presidency |
+| 54 | Somalia | SO | **51** | Presidency |
+| | **TOTAL** | | **4,243** | **65 scrapers** |
 
 ## Quick Start (Docker)
 
@@ -142,7 +143,7 @@ docker compose up -d
 # 3. Initialize databases
 docker compose exec api python -m africapep.database.init
 
-# 4. Seed with PEP data (775+ profiles across all 54 countries)
+# 4. Seed with PEP data (4,200+ profiles across all 54 countries)
 docker compose exec api python -m africapep.database.seed
 
 # 5. API is live at http://localhost:8000
@@ -294,7 +295,7 @@ africapep/
 ├── pipeline/       # NLP extractor, normaliser, classifier, resolver
 ├── scraper/        # Base scraper, 65 spiders (per country/source), utils
 └── scheduler/      # APScheduler job definitions
-tests/              # 120 tests covering all scrapers and pipeline
+tests/              # 131 tests covering all scrapers and pipeline
 docs/               # Design documents and plans
 ```
 
