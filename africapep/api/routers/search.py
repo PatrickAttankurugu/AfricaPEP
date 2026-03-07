@@ -126,7 +126,7 @@ def get_stats():
             "SELECT COALESCE(pep_tier, 0) AS t, COUNT(*) AS n "
             "FROM pep_profiles GROUP BY pep_tier ORDER BY t"
         )).fetchall()
-        by_tier = {f"tier_{row.t}": row.n for row in tier_rows}
+        by_tier = {f"tier_{row.t}" if row.t else "unclassified": row.n for row in tier_rows}
 
         # Last updated
         last = db.execute(text(

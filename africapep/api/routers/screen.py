@@ -1,4 +1,5 @@
 """POST /api/v1/screen — fuzzy name screening against PEP database."""
+import json
 import uuid
 from datetime import datetime, timezone
 
@@ -119,13 +120,13 @@ def _log_screening(screening_id: str, query_name: str, matches: list[MatchResult
         with get_db() as db:
             db.execute(text("""
                 INSERT INTO screening_log (id, query_name, query_date, match_count, top_match_score, results)
-                VALUES (:id, :name, NOW(), :count, :top_score, :results::jsonb)
+                VALUES (:id, :name, NOW(), :count, :top_score, CAST(:results AS jsonb))
             """), {
                 "id": screening_id,
                 "name": query_name,
                 "count": len(matches),
                 "top_score": matches[0].match_score if matches else 0.0,
-                "results": str([m.model_dump() for m in matches[:5]]).replace("'", '"'),
+                "results": json.dumps([m.model_dump() for m in matches[:5]], default=str),
             })
     except Exception as e:
         log.error("screening_log_failed", error=str(e))

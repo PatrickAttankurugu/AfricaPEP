@@ -1,4 +1,5 @@
 """Sync Neo4j graph data to PostgreSQL search index."""
+import json
 import uuid
 from datetime import datetime, timezone
 from sqlalchemy import text
@@ -54,7 +55,7 @@ def sync_all():
                      country, updated_at)
                 VALUES
                     (:id, :neo4j_id, :full_name, :name_variants, :dob,
-                     :nationality, :pep_tier, :is_active, :positions::jsonb,
+                     :nationality, :pep_tier, :is_active, CAST(:positions AS jsonb),
                      :country, :updated_at)
                 ON CONFLICT (neo4j_id) DO UPDATE SET
                     full_name = EXCLUDED.full_name,
@@ -70,12 +71,12 @@ def sync_all():
                 "id": str(uuid.uuid4()),
                 "neo4j_id": neo4j_id,
                 "full_name": full_name,
-                "name_variants": name_variants,
-                "dob": str(dob) if dob else None,
+                "name_variants": list(name_variants) if name_variants else [],
+                "dob": _parse_date(dob),
                 "nationality": nationality,
                 "pep_tier": pep_tier,
                 "is_active": is_active,
-                "positions": str(positions).replace("'", '"') if positions else "[]",
+                "positions": json.dumps(positions),
                 "country": nationality,
                 "updated_at": datetime.now(timezone.utc).isoformat(),
             })
@@ -106,3 +107,17 @@ def sync_all():
 
     log.info("sync_complete", persons_synced=synced, sources_synced=len(sources))
     return synced
+
+
+def _parse_date(dob):
+    """Parse a date value into a string suitable for PostgreSQL DATE column."""
+    if not dob:
+        return None
+    dob_str = str(dob)
+    # Try common date formats
+    for fmt in ("%Y-%m-%d", "%Y-%m-%dT%H:%M:%S", "%d/%m/%Y", "%m/%d/%Y"):
+        try:
+            return datetime.strptime(dob_str.split("T")[0].split(" ")[0], fmt).date().isoformat()
+        except (ValueError, IndexError):
+            continue
+    return None

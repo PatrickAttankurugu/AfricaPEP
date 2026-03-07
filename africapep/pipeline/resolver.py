@@ -94,7 +94,7 @@ class EntityResolver:
             "source_url": record.source_url,
             "source_type": record.source_type,
             "raw_text": record.raw_text[:5000],
-            "scraped_at": record.scraped_at.isoformat(),
+            "scraped_at": record.scraped_at.isoformat() if hasattr(record.scraped_at, 'isoformat') else str(record.scraped_at),
             "country": record.country_code,
         }
 

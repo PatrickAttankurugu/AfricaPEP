@@ -1,121 +1,139 @@
 # AfricaPEP — African Politically Exposed Persons Database
 
-A production-grade, open-source PEP (Politically Exposed Persons) database built specifically for the African market. Designed for KYC/AML compliance teams who need reliable PEP screening without expensive third-party data subscriptions.
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![Docker](https://img.shields.io/badge/docker-compose-blue.svg)](https://docs.docker.com/compose/)
+[![Tests](https://img.shields.io/badge/tests-120%20passing-brightgreen.svg)](#running-tests)
+[![Countries](https://img.shields.io/badge/countries-54-orange.svg)](#supported-countries-54)
+[![PEPs](https://img.shields.io/badge/PEP%20profiles-775+-purple.svg)](#)
+
+A production-grade, open-source PEP (Politically Exposed Persons) database covering **all 54 African Union member states**. Built for KYC/AML compliance teams who need reliable PEP screening without expensive third-party data subscriptions.
 
 **Zero dependency on paid PEP databases.** All data sourced directly from official African government websites — parliaments, gazettes, electoral commissions, and presidencies.
+
+## Why AfricaPEP?
+
+- **Complete African coverage** — All 54 AU member states with 65 data scrapers
+- **Free and open source** — No licensing fees, no API quotas, no vendor lock-in
+- **Graph-powered** — Neo4j captures PEP relationships, family ties, and political networks
+- **Fuzzy matching** — pg_trgm + rapidfuzz catches name variations, transliterations, and misspellings
+- **FATF-compliant** — Tier 1/2/3 classification per FATF Recommendation 12
+- **Full audit trail** — Every screening logged, every data point traceable to its source URL
 
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                        DATA SOURCES                             │
-│  Parliament Sites │ Gov Gazettes (PDF) │ Electoral Commissions  │
-│  Presidency Sites │ Judiciary Websites  │ SOE Boards             │
-└────────────┬────────────────┬────────────────┬──────────────────┘
-             │                │                │
-             ▼                ▼                ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                     SCRAPER LAYER                               │
-│  BeautifulSoup │ Playwright (JS) │ PDF Parser (pdfplumber+OCR) │
-│  Rate limiting │ Retry (3x)      │ Robots.txt respect          │
-└────────────────────────────┬────────────────────────────────────┘
-                             │
-                             ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                     NLP PIPELINE                                │
-│  spaCy NER │ Custom EntityRuler │ Regex Pattern Matching        │
-│  Name normalisation │ Date extraction │ Relationship detection  │
-└────────────────────────────┬────────────────────────────────────┘
-                             │
-                             ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                  ENTITY RESOLUTION                              │
-│  Blocking (country+surname) │ rapidfuzz scoring │ Auto-merge    │
-│  >=0.85 merge │ 0.70-0.84 review │ <0.70 separate              │
-└────────────┬────────────────────────────────┬───────────────────┘
-             │                                │
-             ▼                                ▼
-┌──────────────────────┐       ┌──────────────────────────────────┐
-│      NEO4J           │       │         POSTGRESQL               │
-│   (Graph DB)         │──────>│      (Search Index)              │
-│ Source of truth       │ sync  │ pg_trgm fuzzy match             │
-│ Relationships         │       │ tsvector full-text search        │
-│ Full provenance       │       │ Screening log                   │
-└──────────┬───────────┘       └──────────────┬───────────────────┘
-           │                                   │
-           └──────────────┬────────────────────┘
-                          ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                      FASTAPI                                    │
-│  POST /screen │ GET /pep/{id} │ GET /pep/{id}/graph             │
-│  GET /search  │ GET /stats    │ GET /health                     │
-└─────────────────────────────────────────────────────────────────┘
++-------------------------------------------------------------+
+|                        DATA SOURCES                         |
+|  Parliament Sites | Gov Gazettes (PDF) | Electoral Commissions  |
+|  Presidency Sites | Judiciary Websites  | SOE Boards             |
++-------------------------------------------------------------+
+                             |
+                             v
++-------------------------------------------------------------+
+|                     SCRAPER LAYER                           |
+|  BeautifulSoup | Playwright (JS) | PDF Parser (pdfplumber)  |
+|  Rate limiting | Retry (3x)      | Robots.txt respect       |
++-------------------------------------------------------------+
+                             |
+                             v
++-------------------------------------------------------------+
+|                     NLP PIPELINE                            |
+|  spaCy NER | Custom EntityRuler | Regex Pattern Matching    |
+|  Name normalisation | Date extraction | Relationship detect |
++-------------------------------------------------------------+
+                             |
+                             v
++-------------------------------------------------------------+
+|                  ENTITY RESOLUTION                          |
+|  Blocking (country+surname) | rapidfuzz scoring | Auto-merge|
+|  >=0.85 merge | 0.70-0.84 review | <0.70 separate          |
++-------------------------------------------------------------+
+             |                                |
+             v                                v
++----------------------+       +------------------------------+
+|      NEO4J           |       |         POSTGRESQL           |
+|   (Graph DB)         |------>|      (Search Index)          |
+| Source of truth       | sync  | pg_trgm fuzzy match         |
+| Relationships         |       | tsvector full-text search    |
+| Full provenance       |       | Screening log               |
++----------------------+       +------------------------------+
+           |                                   |
+           +------------------+----------------+
+                              v
++-------------------------------------------------------------+
+|                      FASTAPI                                |
+|  POST /screen | GET /pep/{id} | GET /pep/{id}/graph         |
+|  GET /search  | GET /stats    | GET /health                 |
++-------------------------------------------------------------+
 ```
 
-## Supported Countries
+## Supported Countries (54)
 
-| Country | Parliament | Presidency | Judiciary | Gazette | Electoral |
-|---------|-----------|-----------|-----------|---------|-----------|
-| Ghana   | ✅        | ✅        | ✅        | ✅      | ✅        |
-| Nigeria | ✅        | ✅        | ✅        | —       | ✅        |
-| Kenya   | ✅        | ✅        | —         | ✅      | —         |
-| South Africa | ✅   | ✅        | —         | —       | —         |
-| Rwanda  | ✅        | —         | —         | —       | —         |
-| Uganda  | ✅        | —         | —         | —       | —         |
-| Ethiopia | —        | ✅        | —         | —       | —         |
-| Tanzania | ✅        | ✅        | —         | —       | —         |
-| Senegal | —         | ✅        | —         | —       | —         |
-| Namibia | ✅        | —         | —         | —       | —         |
-| Cameroon | —        | ✅        | —         | —       | —         |
-| Côte d'Ivoire | ✅  | —         | —         | —       | —         |
-| Malawi  | —         | ✅        | —         | —       | —         |
-| Zambia  | ✅        | —         | —         | —       | —         |
-| Egypt   | —         | ✅        | —         | —       | —         |
-| Morocco | —         | ✅        | —         | —       | —         |
-| Botswana | ✅       | —         | —         | —       | —         |
-| Zimbabwe | ✅       | —         | —         | —       | —         |
-| Mozambique | —      | ✅        | —         | —       | —         |
-| Angola  | —         | ✅        | —         | —       | —         |
-| DR Congo | ✅       | —         | —         | —       | —         |
-| Tunisia | —         | ✅        | —         | —       | —         |
-| Gambia  | —         | ✅        | —         | —       | —         |
-| Sierra Leone | —    | ✅        | —         | —       | —         |
-| Algeria | —         | ✅        | —         | —       | —         |
-| Benin   | —         | ✅        | —         | —       | —         |
-| Burkina Faso | —    | ✅        | —         | —       | —         |
-| Burundi | —         | ✅        | —         | —       | —         |
-| Cape Verde | —      | ✅        | —         | —       | —         |
-| Central African Rep. | — | ✅   | —         | —       | —         |
-| Chad    | —         | ✅        | —         | —       | —         |
-| Comoros | —         | ✅        | —         | —       | —         |
-| Congo (Brazzaville) | — | ✅   | —         | —       | —         |
-| Djibouti | —        | ✅        | —         | —       | —         |
-| Equatorial Guinea | — | ✅     | —         | —       | —         |
-| Eritrea | —         | ✅        | —         | —       | —         |
-| Eswatini | —        | ✅        | —         | —       | —         |
-| Gabon   | —         | ✅        | —         | —       | —         |
-| Guinea  | —         | ✅        | —         | —       | —         |
-| Guinea-Bissau | —   | ✅        | —         | —       | —         |
-| Lesotho | —         | ✅        | —         | —       | —         |
-| Liberia | —         | ✅        | —         | —       | —         |
-| Libya   | —         | ✅        | —         | —       | —         |
-| Madagascar | —      | ✅        | —         | —       | —         |
-| Mali    | —         | ✅        | —         | —       | —         |
-| Mauritania | —      | ✅        | —         | —       | —         |
-| Mauritius | —       | ✅        | —         | —       | —         |
-| Niger   | —         | ✅        | —         | —       | —         |
-| São Tomé & Príncipe | — | ✅   | —         | —       | —         |
-| Seychelles | —      | ✅        | —         | —       | —         |
-| Somalia | —         | ✅        | —         | —       | —         |
-| South Sudan | —     | ✅        | —         | —       | —         |
-| Sudan   | —         | ✅        | —         | —       | —         |
-| Togo    | —         | ✅        | —         | —       | —         |
+All 54 African Union member states are covered with 65 data source scrapers:
+
+| # | Country | Code | Parliament | Presidency | Judiciary | Gazette | Electoral |
+|---|---------|------|-----------|-----------|-----------|---------|-----------|
+| 1 | Algeria | DZ | — | Yes | — | — | — |
+| 2 | Angola | AO | — | Yes | — | — | — |
+| 3 | Benin | BJ | — | Yes | — | — | — |
+| 4 | Botswana | BW | Yes | — | — | — | — |
+| 5 | Burkina Faso | BF | — | Yes | — | — | — |
+| 6 | Burundi | BI | — | Yes | — | — | — |
+| 7 | Cameroon | CM | — | Yes | — | — | — |
+| 8 | Cape Verde | CV | — | Yes | — | — | — |
+| 9 | Central African Rep. | CF | — | Yes | — | — | — |
+| 10 | Chad | TD | — | Yes | — | — | — |
+| 11 | Comoros | KM | — | Yes | — | — | — |
+| 12 | Congo (Brazzaville) | CG | — | Yes | — | — | — |
+| 13 | Cote d'Ivoire | CI | Yes | — | — | — | — |
+| 14 | DR Congo | CD | Yes | — | — | — | — |
+| 15 | Djibouti | DJ | — | Yes | — | — | — |
+| 16 | Egypt | EG | — | Yes | — | — | — |
+| 17 | Equatorial Guinea | GQ | — | Yes | — | — | — |
+| 18 | Eritrea | ER | — | Yes | — | — | — |
+| 19 | Eswatini | SZ | — | Yes | — | — | — |
+| 20 | Ethiopia | ET | — | Yes | — | — | — |
+| 21 | Gabon | GA | — | Yes | — | — | — |
+| 22 | Gambia | GM | — | Yes | — | — | — |
+| 23 | Ghana | GH | Yes | Yes | Yes | Yes | Yes |
+| 24 | Guinea | GN | — | Yes | — | — | — |
+| 25 | Guinea-Bissau | GW | — | Yes | — | — | — |
+| 26 | Kenya | KE | Yes | Yes | — | Yes | — |
+| 27 | Lesotho | LS | — | Yes | — | — | — |
+| 28 | Liberia | LR | — | Yes | — | — | — |
+| 29 | Libya | LY | — | Yes | — | — | — |
+| 30 | Madagascar | MG | — | Yes | — | — | — |
+| 31 | Malawi | MW | — | Yes | — | — | — |
+| 32 | Mali | ML | — | Yes | — | — | — |
+| 33 | Mauritania | MR | — | Yes | — | — | — |
+| 34 | Mauritius | MU | — | Yes | — | — | — |
+| 35 | Morocco | MA | — | Yes | — | — | — |
+| 36 | Mozambique | MZ | — | Yes | — | — | — |
+| 37 | Namibia | NA | Yes | — | — | — | — |
+| 38 | Niger | NE | — | Yes | — | — | — |
+| 39 | Nigeria | NG | Yes | Yes | Yes | — | Yes |
+| 40 | Rwanda | RW | Yes | — | — | — | — |
+| 41 | Sao Tome & Principe | ST | — | Yes | — | — | — |
+| 42 | Senegal | SN | — | Yes | — | — | — |
+| 43 | Seychelles | SC | — | Yes | — | — | — |
+| 44 | Sierra Leone | SL | — | Yes | — | — | — |
+| 45 | Somalia | SO | — | Yes | — | — | — |
+| 46 | South Africa | ZA | Yes | Yes | — | — | — |
+| 47 | South Sudan | SS | — | Yes | — | — | — |
+| 48 | Sudan | SD | — | Yes | — | — | — |
+| 49 | Tanzania | TZ | Yes | Yes | — | — | — |
+| 50 | Togo | TG | — | Yes | — | — | — |
+| 51 | Tunisia | TN | — | Yes | — | — | — |
+| 52 | Uganda | UG | Yes | — | — | — | — |
+| 53 | Zambia | ZM | Yes | — | — | — | — |
+| 54 | Zimbabwe | ZW | Yes | — | — | — | — |
 
 ## Quick Start (Docker)
 
 ```bash
 # 1. Clone and configure
-git clone <repo-url> && cd africapep
+git clone https://github.com/PatrickAttankurugu/AfricaPEP.git && cd AfricaPEP
 cp .env.example .env
 
 # 2. Start all services
@@ -124,7 +142,7 @@ docker compose up -d
 # 3. Initialize databases
 docker compose exec api python -m africapep.database.init
 
-# 4. Seed with fixture data
+# 4. Seed with PEP data (775+ profiles across all 54 countries)
 docker compose exec api python -m africapep.database.seed
 
 # 5. API is live at http://localhost:8000
@@ -136,8 +154,7 @@ curl http://localhost:8000/health
 ```bash
 # 1. Prerequisites: Python 3.11+, Neo4j 5, PostgreSQL 15
 pip install -r requirements.txt
-python -m spacy download en_core_web_lg
-python -m playwright install chromium
+python -m spacy download en_core_web_sm
 
 # 2. Configure
 cp .env.example .env
@@ -160,27 +177,33 @@ Interactive docs at `http://localhost:8000/docs` (Swagger UI) or `/redoc`.
 ```bash
 curl -X POST http://localhost:8000/api/v1/screen \
   -H "Content-Type: application/json" \
-  -d '{"name": "Kwame Mensah", "country": "GH", "threshold": 0.75}'
+  -d '{"name": "William Ruto", "threshold": 0.75}'
 ```
 
 Response:
 ```json
 {
-  "query": "Kwame Mensah",
+  "query": "William Ruto",
   "matches": [
     {
       "pep_id": "uuid-here",
-      "matched_name": "Kwame Asante Mensah",
-      "match_score": 0.89,
-      "pep_tier": 2,
+      "matched_name": "William Samoei Ruto",
+      "match_score": 1.0,
+      "pep_tier": 1,
       "is_active": true,
-      "positions": [{"title": "Member of Parliament", "institution": "Parliament of Ghana"}],
-      "nationality": "GH"
+      "positions": [{"title": "President of the Republic of Kenya", "institution": "Office Of The President Of Kenya"}],
+      "nationality": "KE"
     }
   ],
   "screening_id": "uuid",
-  "screened_at": "2024-01-01T00:00:00Z"
+  "screened_at": "2026-03-07T00:00:00Z"
 }
+```
+
+### Search PEPs
+
+```bash
+curl "http://localhost:8000/api/v1/search?q=minister&country=GH&tier=1&active=true"
 ```
 
 ### Get PEP Profile
@@ -196,12 +219,6 @@ curl http://localhost:8000/api/v1/pep/{pep_id}
 curl http://localhost:8000/api/v1/pep/{pep_id}/graph
 ```
 
-### Search
-
-```bash
-curl "http://localhost:8000/api/v1/search?q=minister&country=GH&tier=1&active=true"
-```
-
 ### Statistics
 
 ```bash
@@ -213,9 +230,6 @@ curl http://localhost:8000/api/v1/stats
 ```bash
 # All scrapers
 python -c "from africapep.scheduler.jobs import run_all_scrapers; run_all_scrapers()"
-
-# Gazette scrapers only
-python -c "from africapep.scheduler.jobs import run_gazette_scrapers; run_gazette_scrapers()"
 
 # Single country scraper
 python -c "
@@ -260,61 +274,16 @@ python -c "from africapep.database.sync import sync_all; sync_all()"
 
 ## Entity Resolution Algorithm
 
-1. **Blocking:** Group candidates by `country_code + surname_initial` to avoid O(n²)
+1. **Blocking:** Group candidates by `country_code + surname_initial` to avoid O(n^2)
 2. **Scoring:** Weighted composite:
    - Name similarity (rapidfuzz token_sort_ratio): 50%
    - Date of birth match: 30%
    - Position/institution match: 20%
 3. **Decision:**
-   - Score ≥ 0.85 → Auto-merge
-   - Score 0.70–0.84 → Flag for review
-   - Score < 0.70 → Separate entities
+   - Score >= 0.85 -> Auto-merge
+   - Score 0.70-0.84 -> Flag for review
+   - Score < 0.70 -> Separate entities
 4. **Merging:** All source records preserved. Name variants accumulated. Most restrictive PEP tier kept.
-
-## Adding a New Country Scraper
-
-1. Create `africapep/scraper/spiders/{country}_{source}.py`
-2. Inherit from `BaseScraper` (or `BaseGovGazetteScraper` for gazette PDFs)
-3. Implement `scrape()` and `_load_fixture()` methods
-4. Add to `ALL_SCRAPERS` in `africapep/scraper/spiders/__init__.py`
-5. Add fixture test in `tests/test_scrapers.py`
-6. Update PEP tier classifier with country-specific titles
-
-```python
-from africapep.scraper.base_scraper import BaseScraper, RawPersonRecord
-
-class NewCountryScraper(BaseScraper):
-    country_code = "XX"
-    source_type = "PARLIAMENT"
-
-    def scrape(self) -> list[RawPersonRecord]:
-        # Your scraping logic here
-        ...
-
-    def _load_fixture(self) -> list[RawPersonRecord]:
-        return self._synthetic_fixture()
-```
-
-## Data Source Update Frequencies
-
-| Source | Schedule | Day |
-|--------|----------|-----|
-| All scrapers | Weekly | Sunday 02:00 UTC |
-| Gazette scrapers | Mid-week | Wednesday 06:00 UTC |
-| Neo4j → PostgreSQL sync | Weekly | Sunday 06:00 UTC |
-| Stats logging | Daily | 00:00 UTC |
-
-## Running Tests
-
-```bash
-pytest tests/ -v
-
-# Specific test file
-pytest tests/test_pipeline.py -v
-
-# With coverage
-pytest tests/ --cov=africapep --cov-report=html
-```
 
 ## Project Structure
 
@@ -323,9 +292,48 @@ africapep/
 ├── api/            # FastAPI routes + Pydantic schemas
 ├── database/       # Neo4j client, PostgreSQL client, ORM models, sync
 ├── pipeline/       # NLP extractor, normaliser, classifier, resolver
-├── scraper/        # Base scraper, spiders (per country/source), utils
+├── scraper/        # Base scraper, 65 spiders (per country/source), utils
 └── scheduler/      # APScheduler job definitions
+tests/              # 120 tests covering all scrapers and pipeline
+docs/               # Design documents and plans
 ```
+
+## Running Tests
+
+```bash
+# All tests
+pytest tests/ -v
+
+# Specific test file
+pytest tests/test_scrapers.py -v
+
+# With coverage
+pytest tests/ --cov=africapep --cov-report=html
+
+# Inside Docker
+docker compose exec api python -m pytest tests/ -v
+```
+
+## Data Source Update Frequencies
+
+| Source | Schedule | Day |
+|--------|----------|-----|
+| All scrapers | Weekly | Sunday 02:00 UTC |
+| Gazette scrapers | Mid-week | Wednesday 06:00 UTC |
+| Neo4j -> PostgreSQL sync | Weekly | Sunday 06:00 UTC |
+| Stats logging | Daily | 00:00 UTC |
+
+## Contributing
+
+We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+### Ways to contribute:
+
+- **Add new data sources** — Parliament, judiciary, or gazette scrapers for countries that only have presidency coverage
+- **Improve NLP pipeline** — Better name extraction, date parsing, or entity resolution
+- **Add new countries** — Sub-national PEP lists, regional bodies (AU, ECOWAS, SADC)
+- **Frontend** — Build a web UI for the screening API
+- **Documentation** — Improve docs, add examples, translate to other languages
 
 ## Design Principles
 
@@ -336,4 +344,4 @@ africapep/
 
 ## License
 
-MIT
+MIT - see [LICENSE](LICENSE) for details.

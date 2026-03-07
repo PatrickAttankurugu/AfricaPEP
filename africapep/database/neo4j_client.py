@@ -67,8 +67,8 @@ class Neo4jClient:
             p.gender = $gender,
             p.pep_tier = $pep_tier,
             p.is_active_pep = $is_active_pep,
-            p.updated_at = datetime()
-        ON CREATE SET p.created_at = datetime()
+            p.updated_at = datetime(),
+            p.created_at = coalesce(p.created_at, datetime())
         RETURN p.id AS id
         """
         result = self.run(query, person)
