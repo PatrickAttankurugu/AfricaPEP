@@ -33,7 +33,7 @@ class NigeriaNASSScraper(BaseScraper):
         for chamber, url in [("Senate", SENATE_URL), ("House of Representatives", HOUSE_URL)]:
             logger.info("nass.scrape.start", chamber=chamber, url=url)
             try:
-                html = get_page_content_sync(url, wait_seconds=5)
+                html = get_page_content_sync(url, timeout=30000)
                 chamber_records = self._parse_members(html, chamber)
                 records.extend(chamber_records)
                 logger.info(

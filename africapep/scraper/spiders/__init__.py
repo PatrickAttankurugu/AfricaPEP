@@ -14,6 +14,10 @@ from africapep.scraper.spiders.kenya_presidency import KenyaPresidencyScraper
 from africapep.scraper.spiders.kenya_gazette import KenyaGazetteScraper
 from africapep.scraper.spiders.southafrica_parliament import SouthAfricaParliamentScraper
 from africapep.scraper.spiders.rwanda_parliament import RwandaParliamentScraper
+from africapep.scraper.spiders.southafrica_presidency import SouthAfricaPresidencyScraper
+from africapep.scraper.spiders.ethiopia_presidency import EthiopiaPresidencyScraper
+from africapep.scraper.spiders.tanzania_presidency import TanzaniaPresidencyScraper
+from africapep.scraper.spiders.senegal_presidency import SenegalPresidencyScraper
 from africapep.scraper.spiders.uganda_parliament import UgandaParliamentScraper
 
 ALL_SCRAPERS = [
@@ -31,5 +35,9 @@ ALL_SCRAPERS = [
     KenyaGazetteScraper,
     SouthAfricaParliamentScraper,
     RwandaParliamentScraper,
+    SouthAfricaPresidencyScraper,
     UgandaParliamentScraper,
+    EthiopiaPresidencyScraper,
+    TanzaniaPresidencyScraper,
+    SenegalPresidencyScraper,
 ]

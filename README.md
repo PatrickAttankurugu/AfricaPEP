@@ -59,9 +59,12 @@ A production-grade, open-source PEP (Politically Exposed Persons) database built
 | Ghana   | ✅        | ✅        | ✅        | ✅      | ✅        |
 | Nigeria | ✅        | ✅        | ✅        | —       | ✅        |
 | Kenya   | ✅        | ✅        | —         | ✅      | —         |
-| South Africa | ✅   | —         | —         | —       | —         |
+| South Africa | ✅   | ✅        | —         | —       | —         |
 | Rwanda  | ✅        | —         | —         | —       | —         |
 | Uganda  | ✅        | —         | —         | —       | —         |
+| Ethiopia | —        | ✅        | —         | —       | —         |
+| Tanzania | —        | ✅        | —         | —       | —         |
+| Senegal | —         | ✅        | —         | —       | —         |
 
 ## Quick Start (Docker)
 

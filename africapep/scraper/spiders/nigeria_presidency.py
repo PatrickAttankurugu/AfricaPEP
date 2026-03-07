@@ -41,7 +41,7 @@ class NigeriaPresidencyScraper(BaseScraper):
         for category, url, default_title in page_configs:
             logger.info("presidency.scrape.start", category=category, url=url)
             try:
-                html = get_page_content_sync(url, wait_seconds=5)
+                html = get_page_content_sync(url, timeout=30000)
                 parsed = self._parse_officials(html, category, default_title, url)
                 records.extend(parsed)
                 logger.info(

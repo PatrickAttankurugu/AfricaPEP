@@ -210,12 +210,64 @@ def test_uganda_parliament_fixture():
         assert r.source_type == "PARLIAMENT"
 
 
+# ── South Africa Presidency ──
+
+def test_southafrica_presidency_fixture():
+    from africapep.scraper.spiders.southafrica_presidency import SouthAfricaPresidencyScraper
+
+    records = SouthAfricaPresidencyScraper(use_fixture=True).run()
+    assert isinstance(records, list)
+    assert len(records) >= 5
+    for r in records:
+        assert r.country_code == "ZA"
+        assert r.source_type == "PRESIDENCY"
+
+
+# ── Ethiopia Presidency ──
+
+def test_ethiopia_presidency_fixture():
+    from africapep.scraper.spiders.ethiopia_presidency import EthiopiaPresidencyScraper
+
+    records = EthiopiaPresidencyScraper(use_fixture=True).run()
+    assert isinstance(records, list)
+    assert len(records) >= 5
+    for r in records:
+        assert r.country_code == "ET"
+        assert r.source_type == "PRESIDENCY"
+
+
+# ── Tanzania Presidency ──
+
+def test_tanzania_presidency_fixture():
+    from africapep.scraper.spiders.tanzania_presidency import TanzaniaPresidencyScraper
+
+    records = TanzaniaPresidencyScraper(use_fixture=True).run()
+    assert isinstance(records, list)
+    assert len(records) >= 5
+    for r in records:
+        assert r.country_code == "TZ"
+        assert r.source_type == "PRESIDENCY"
+
+
+# ── Senegal Presidency ──
+
+def test_senegal_presidency_fixture():
+    from africapep.scraper.spiders.senegal_presidency import SenegalPresidencyScraper
+
+    records = SenegalPresidencyScraper(use_fixture=True).run()
+    assert isinstance(records, list)
+    assert len(records) >= 5
+    for r in records:
+        assert r.country_code == "SN"
+        assert r.source_type == "PRESIDENCY"
+
+
 # ── ALL_SCRAPERS registry ──
 
 def test_all_scrapers_registry():
     from africapep.scraper.spiders import ALL_SCRAPERS
 
-    assert len(ALL_SCRAPERS) >= 15, "Should have at least 15 scrapers registered"
+    assert len(ALL_SCRAPERS) >= 19, "Should have at least 19 scrapers registered"
     for cls in ALL_SCRAPERS:
         scraper = cls(use_fixture=True)
         records = scraper.run()

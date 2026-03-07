@@ -47,7 +47,7 @@ class NigeriaINECScraper(BaseScraper):
         records: list[RawPersonRecord] = []
 
         try:
-            html = get_page_content_sync(CANDIDATES_URL, wait_seconds=5)
+            html = get_page_content_sync(CANDIDATES_URL, timeout=30000)
             records = self._parse_candidates_page(html)
             logger.info("inec.scrape_candidates.complete", count=len(records))
         except Exception:
@@ -122,7 +122,7 @@ class NigeriaINECScraper(BaseScraper):
         records: list[RawPersonRecord] = []
 
         try:
-            html = get_page_content_sync(ELECTION_RESULTS_URL, wait_seconds=5)
+            html = get_page_content_sync(ELECTION_RESULTS_URL, timeout=30000)
             soup = BeautifulSoup(html, "html.parser")
 
             pdf_links = []
