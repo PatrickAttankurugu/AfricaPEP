@@ -1,4 +1,7 @@
 """GET /api/v1/countries — list all supported African countries with PEP counts."""
+import asyncio
+import time as _time
+
 from fastapi import APIRouter
 from sqlalchemy import text
 import structlog
@@ -7,6 +10,10 @@ from africapep.database.postgres_client import get_db
 
 log = structlog.get_logger()
 router = APIRouter()
+
+# ── Simple in-memory TTL cache ──
+_COUNTRIES_CACHE_TTL = 600  # 10 minutes
+_countries_cache: dict = {"data": None, "expires_at": 0.0}
 
 REGIONS = {
     "DZ": "North", "EG": "North", "LY": "North", "MA": "North", "TN": "North", "SD": "North",
@@ -39,10 +46,8 @@ COUNTRY_NAMES = {
 }
 
 
-@router.get("/countries")
-def list_countries():
-    """List all 54 supported African countries with PEP counts and regions."""
-    # Get PEP counts per country from database
+def _fetch_country_counts():
+    """Fetch PEP counts per country from the database (sync)."""
     counts = {}
     try:
         with get_db() as db:
@@ -53,6 +58,21 @@ def list_countries():
             counts = {row[0]: row[1] for row in rows}
     except Exception:
         pass
+    return counts
+
+
+@router.get("/countries")
+async def list_countries():
+    """List all 54 supported African countries with PEP counts and regions.
+
+    Results are cached in-memory for 10 minutes.
+    """
+    now = _time.monotonic()
+    if _countries_cache["data"] is not None and now < _countries_cache["expires_at"]:
+        return _countries_cache["data"]
+
+    # Get PEP counts per country from database
+    counts = await asyncio.to_thread(_fetch_country_counts)
 
     countries = []
     for code, name in sorted(COUNTRY_NAMES.items(), key=lambda x: x[1]):
@@ -63,7 +83,12 @@ def list_countries():
             "pep_count": counts.get(code, 0),
         })
 
-    return {
+    result = {
         "total_countries": len(countries),
         "countries": countries,
     }
+
+    _countries_cache["data"] = result
+    _countries_cache["expires_at"] = now + _COUNTRIES_CACHE_TTL
+
+    return result

@@ -141,19 +141,9 @@ def classify_pep_tier(title: str, institution: str = "") -> int:
     inst_lower = institution.lower().strip() if institution else ""
     combined = f"{title_lower} {inst_lower}"
 
-    # Check Tier 3 FIRST for deputy/acting/assistant prefixes that would
-    # otherwise match Tier 1 "minister of" patterns
-    for pattern in TIER_3_TITLES:
-        if pattern in combined:
-            log.debug("tier_classified", tier=3, title=title, match=pattern)
-            return 3
-
-    for pattern in TIER_3_INSTITUTIONS:
-        if pattern in inst_lower:
-            log.debug("tier_classified", tier=3, institution=institution, match=pattern)
-            return 3
-
-    # Check Tier 1
+    # Check from highest risk to lowest: Tier 1 -> Tier 2 -> Tier 3
+    # This ensures "Deputy Governor of the Central Bank" matches
+    # "central bank" (Tier 1) before "deputy" (Tier 2/3).
     for pattern in TIER_1_TITLES:
         if pattern in combined:
             log.debug("tier_classified", tier=1, title=title, match=pattern)
@@ -164,7 +154,6 @@ def classify_pep_tier(title: str, institution: str = "") -> int:
             log.debug("tier_classified", tier=1, institution=institution, match=pattern)
             return 1
 
-    # Check Tier 2
     for pattern in TIER_2_TITLES:
         if pattern in combined:
             log.debug("tier_classified", tier=2, title=title, match=pattern)
@@ -174,6 +163,16 @@ def classify_pep_tier(title: str, institution: str = "") -> int:
         if pattern in inst_lower:
             log.debug("tier_classified", tier=2, institution=institution, match=pattern)
             return 2
+
+    for pattern in TIER_3_TITLES:
+        if pattern in combined:
+            log.debug("tier_classified", tier=3, title=title, match=pattern)
+            return 3
+
+    for pattern in TIER_3_INSTITUTIONS:
+        if pattern in inst_lower:
+            log.debug("tier_classified", tier=3, institution=institution, match=pattern)
+            return 3
 
     # Default: if we have any title or institution, classify as tier 2
     # (conservative approach — better to over-classify than miss)

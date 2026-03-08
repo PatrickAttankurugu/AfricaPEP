@@ -23,6 +23,12 @@ def client():
     mock_db.__enter__ = MagicMock(return_value=mock_db)
     mock_db.__exit__ = MagicMock(return_value=False)
 
+    # Ensure scalar() returns an int (not MagicMock) for COUNT queries
+    mock_result = MagicMock()
+    mock_result.scalar.return_value = 0
+    mock_result.fetchall.return_value = []
+    mock_db.execute.return_value = mock_result
+
     # Pre-populate the module in sys.modules with our mock before importing the app
     mock_neo4j_module = MagicMock()
     mock_neo4j_module.Neo4jClient = MagicMock(return_value=mock_neo4j)
@@ -143,6 +149,100 @@ class TestSearchPaginationHeaders:
         link_header = resp.headers["Link"]
         # On page 2, should have prev link
         assert 'rel="prev"' in link_header
+
+
+class TestAPIKeySecurity:
+    """Test API key authentication middleware."""
+
+    def test_public_endpoints_accessible_without_key(self, client):
+        """Health and root endpoints should always be accessible."""
+        assert client.get("/health").status_code == 200
+        assert client.get("/").status_code == 200
+
+    def test_api_endpoints_accessible_when_auth_disabled(self, client):
+        """When API_KEY_ENABLED=false, all endpoints are open."""
+        resp = client.get("/api/v1/search?q=test")
+        assert resp.status_code == 200
+
+    def test_api_key_rejected_when_enabled(self):
+        """When API_KEY_ENABLED=true, requests without key get 401."""
+        from africapep.config import settings
+        original_enabled = settings.api_key_enabled
+        original_key = settings.api_key
+        try:
+            settings.api_key_enabled = True
+            settings.api_key = "test-secret-key"
+
+            mock_neo4j = MagicMock()
+            mock_neo4j.verify_connectivity.return_value = True
+            mock_neo4j_module = MagicMock()
+            mock_neo4j_module.neo4j_client = mock_neo4j
+
+            mock_db = MagicMock()
+            mock_db.__enter__ = MagicMock(return_value=mock_db)
+            mock_db.__exit__ = MagicMock(return_value=False)
+            mock_result = MagicMock()
+            mock_result.scalar.return_value = 0
+            mock_result.fetchall.return_value = []
+            mock_db.execute.return_value = mock_result
+
+            with patch.dict(sys.modules, {"africapep.database.neo4j_client": mock_neo4j_module}):
+                with patch("africapep.database.postgres_client.get_db", return_value=mock_db):
+                    from fastapi.testclient import TestClient
+                    from africapep.api.main import app
+                    tc = TestClient(app)
+                    # Without key -> 401
+                    resp = tc.get("/api/v1/search?q=test")
+                    assert resp.status_code == 401
+                    assert resp.json()["code"] == "UNAUTHORIZED"
+
+                    # With correct key -> 200
+                    resp = tc.get("/api/v1/search?q=test", headers={"X-API-Key": "test-secret-key"})
+                    assert resp.status_code == 200
+        finally:
+            settings.api_key_enabled = original_enabled
+            settings.api_key = original_key
+
+
+class TestRequestSizeLimit:
+    """Test request body size limit middleware."""
+
+    def test_oversized_request_rejected(self, client):
+        """Requests exceeding MAX_REQUEST_SIZE should get 413."""
+        from africapep.config import settings
+        original = settings.max_request_size
+        try:
+            settings.max_request_size = 100  # 100 bytes
+            resp = client.post(
+                "/api/v1/screen",
+                json={"name": "A" * 200},
+            )
+            assert resp.status_code == 413
+        finally:
+            settings.max_request_size = original
+
+
+class TestGDPRHashing:
+    """Test GDPR-compliant query name hashing."""
+
+    def test_hash_function(self):
+        """Verify the hashing function works correctly."""
+        from africapep.api.routers.screen import _maybe_hash_name
+        from africapep.config import settings
+
+        original = settings.hash_screening_queries
+        try:
+            settings.hash_screening_queries = False
+            assert _maybe_hash_name("John Doe") == "John Doe"
+
+            settings.hash_screening_queries = True
+            hashed = _maybe_hash_name("John Doe")
+            assert hashed != "John Doe"
+            assert len(hashed) == 64  # SHA-256 hex digest
+            # Same input -> same hash
+            assert _maybe_hash_name("John Doe") == hashed
+        finally:
+            settings.hash_screening_queries = original
 
 
 class TestSchemaValidation:

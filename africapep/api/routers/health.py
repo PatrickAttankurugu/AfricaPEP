@@ -1,4 +1,6 @@
 """GET /health — system health check."""
+import asyncio
+
 from fastapi import APIRouter
 
 from africapep.api.schemas import HealthResponse
@@ -9,9 +11,14 @@ router = APIRouter()
 
 
 @router.get("/health", response_model=HealthResponse)
-def health_check():
-    neo4j_status = "connected" if neo4j_client.verify_connectivity() else "disconnected"
-    pg_status = "connected" if pg_verify() else "disconnected"
+async def health_check():
+    neo4j_ok, pg_ok = await asyncio.gather(
+        asyncio.to_thread(neo4j_client.verify_connectivity),
+        asyncio.to_thread(pg_verify),
+    )
+
+    neo4j_status = "connected" if neo4j_ok else "disconnected"
+    pg_status = "connected" if pg_ok else "disconnected"
 
     overall = "healthy" if neo4j_status == "connected" and pg_status == "connected" else "degraded"
 

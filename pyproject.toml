@@ -29,6 +29,7 @@ Issues = "https://github.com/PatrickAttankurugu/AfricaPEP/issues"
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_functions = ["test_*"]
+addopts = "--cov=africapep --cov-report=term-missing --ignore=tests/test_entity_resolution.py"
 markers = [
     "integration: marks tests requiring database connections",
     "slow: marks slow-running tests",

@@ -1,5 +1,5 @@
 """Tests for scraper base classes and WikidataScraper."""
-from datetime import datetime
+from datetime import datetime, timezone
 from unittest.mock import patch, MagicMock
 
 import pytest
@@ -18,7 +18,7 @@ def test_raw_person_record_fields():
         source_url="https://parliament.gh",
         source_type="PARLIAMENT",
         raw_text="Kwame Mensah MP for Accra",
-        scraped_at=datetime.utcnow(),
+        scraped_at=datetime.now(timezone.utc),
         extra_fields={"party": "NDC"},
     )
     assert r.full_name == "Kwame Mensah"
@@ -38,7 +38,7 @@ def test_raw_person_record_defaults():
         source_url="http://example.com",
         source_type="TEST",
         raw_text="",
-        scraped_at=datetime.utcnow(),
+        scraped_at=datetime.now(timezone.utc),
     )
     assert r.extra_fields == {}
 
@@ -140,10 +140,10 @@ def test_wikidata_scraper_scrape_with_mock():
         }
     }
 
-    with patch("africapep.scraper.spiders.wikidata_scraper.requests.get", return_value=mock_response):
-        with patch("africapep.scraper.spiders.wikidata_scraper.time.sleep"):
-            scraper = WikidataScraper(country_code="NG")
-            records = scraper.scrape()
+    with patch("africapep.scraper.spiders.wikidata_scraper.time.sleep"):
+        scraper = WikidataScraper(country_code="NG")
+        scraper.session.get = MagicMock(return_value=mock_response)
+        records = scraper.scrape()
 
     # Should have 2 records (Q12345 entry filtered out)
     assert len(records) == 2
@@ -180,10 +180,10 @@ def test_wikidata_scraper_deduplicates():
         }
     }
 
-    with patch("africapep.scraper.spiders.wikidata_scraper.requests.get", return_value=mock_response):
-        with patch("africapep.scraper.spiders.wikidata_scraper.time.sleep"):
-            scraper = WikidataScraper(country_code="GH")
-            records = scraper.scrape()
+    with patch("africapep.scraper.spiders.wikidata_scraper.time.sleep"):
+        scraper = WikidataScraper(country_code="GH")
+        scraper.session.get = MagicMock(return_value=mock_response)
+        records = scraper.scrape()
 
     # Same person+position should be deduplicated, different position kept
     assert len(records) == 2
@@ -192,11 +192,11 @@ def test_wikidata_scraper_deduplicates():
 def test_wikidata_scraper_handles_api_error():
     from africapep.scraper.spiders.wikidata_scraper import WikidataScraper
 
-    with patch("africapep.scraper.spiders.wikidata_scraper.requests.get", side_effect=Exception("API timeout")):
-        with patch("africapep.scraper.spiders.wikidata_scraper.time.sleep"):
-            scraper = WikidataScraper(country_code="GH")
-            # run() catches exceptions and returns []
-            records = scraper.run()
+    with patch("africapep.scraper.spiders.wikidata_scraper.time.sleep"):
+        scraper = WikidataScraper(country_code="GH")
+        scraper.session.get = MagicMock(side_effect=Exception("API timeout"))
+        # run() catches exceptions and returns []
+        records = scraper.run()
 
     assert records == []
 
@@ -208,10 +208,10 @@ def test_wikidata_scraper_run_returns_list():
     mock_response.status_code = 200
     mock_response.json.return_value = {"results": {"bindings": []}}
 
-    with patch("africapep.scraper.spiders.wikidata_scraper.requests.get", return_value=mock_response):
-        with patch("africapep.scraper.spiders.wikidata_scraper.time.sleep"):
-            scraper = WikidataScraper(country_code="GH")
-            records = scraper.run()
+    with patch("africapep.scraper.spiders.wikidata_scraper.time.sleep"):
+        scraper = WikidataScraper(country_code="GH")
+        scraper.session.get = MagicMock(return_value=mock_response)
+        records = scraper.run()
 
     assert isinstance(records, list)
 

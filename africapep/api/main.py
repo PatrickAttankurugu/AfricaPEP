@@ -28,6 +28,8 @@ tags_metadata = [
     {"name": "Graph", "description": "Graph traversal for relationship exploration"},
 ]
 
+is_production = settings.environment == "production"
+
 app = FastAPI(
     title="AfricaPEP API",
     description=(
@@ -43,8 +45,9 @@ app = FastAPI(
         "- **Dual Database** — Neo4j graph + PostgreSQL for fast search\n"
     ),
     version="1.0.0",
-    docs_url="/docs" if settings.environment != "production" else None,
-    redoc_url="/redoc" if settings.environment != "production" else None,
+    docs_url=None if is_production else "/docs",
+    redoc_url=None if is_production else "/redoc",
+    openapi_url=None if is_production else "/openapi.json",
     openapi_tags=tags_metadata,
     contact={"name": "Patrick Attankurugu", "url": "https://github.com/PatrickAttankurugu/AfricaPEP"},
     license_info={"name": "MIT", "url": "https://opensource.org/licenses/MIT"},
@@ -52,17 +55,65 @@ app = FastAPI(
 
 app.state.limiter = limiter
 
-# ── CORS ──
+# ── CORS (configurable via env) ──
+_default_origins = ["https://pep.patrickaiafrica.com"]
+if not is_production:
+    _default_origins.append("http://localhost:3000")
+
+if settings.cors_origins:
+    cors_origins = [o.strip() for o in settings.cors_origins.split(",") if o.strip()]
+else:
+    cors_origins = _default_origins
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://pep.patrickaiafrica.com",
-        "http://localhost:3000",
-    ],
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["Content-Type", "Authorization", "X-API-Key"],
 )
+
+
+# ── Request body size limit middleware ──
+@app.middleware("http")
+async def request_size_limit_middleware(request: Request, call_next):
+    content_length = request.headers.get("content-length")
+    if content_length and int(content_length) > settings.max_request_size:
+        return JSONResponse(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            content={
+                "detail": f"Request body too large. Maximum size is {settings.max_request_size} bytes.",
+                "code": "REQUEST_TOO_LARGE",
+            },
+        )
+    return await call_next(request)
+
+
+# ── API key authentication middleware ──
+# Public endpoints that don't require authentication
+_PUBLIC_PATHS = {"/", "/health", "/docs", "/redoc", "/openapi.json"}
+
+
+@app.middleware("http")
+async def api_key_auth_middleware(request: Request, call_next):
+    if not settings.api_key_enabled or not settings.api_key:
+        return await call_next(request)
+
+    path = request.url.path
+    if path in _PUBLIC_PATHS or request.method == "OPTIONS":
+        return await call_next(request)
+
+    api_key = request.headers.get("X-API-Key")
+    if not api_key or api_key != settings.api_key:
+        return JSONResponse(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            content={
+                "detail": "Invalid or missing API key. Provide a valid key via the X-API-Key header.",
+                "code": "UNAUTHORIZED",
+            },
+        )
+
+    return await call_next(request)
 
 
 # ── Request logging middleware ──

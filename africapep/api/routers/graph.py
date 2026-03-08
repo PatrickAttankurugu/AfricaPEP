@@ -1,4 +1,6 @@
 """GET /api/v1/pep/{id}/graph — relationship graph for D3.js/vis.js rendering."""
+import asyncio
+
 from fastapi import APIRouter, HTTPException
 import structlog
 
@@ -10,7 +12,7 @@ router = APIRouter()
 
 
 @router.get("/pep/{pep_id}/graph", response_model=GraphResponse)
-def get_pep_graph(pep_id: str):
+async def get_pep_graph(pep_id: str):
     """Get person + all connected nodes as JSON graph suitable for D3.js/vis.js.
 
     Returns nodes (person, positions, organisations, family, associates)
@@ -34,7 +36,7 @@ def get_pep_graph(pep_id: str):
            collect(DISTINCT src) AS sources
     """
 
-    results = neo4j_client.run(query, {"id": pep_id})
+    results = await asyncio.to_thread(neo4j_client.run, query, {"id": pep_id})
 
     if not results:
         raise HTTPException(status_code=404, detail="PEP not found")

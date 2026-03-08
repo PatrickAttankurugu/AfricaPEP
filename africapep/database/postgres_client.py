@@ -7,17 +7,26 @@ from africapep.config import settings
 
 log = structlog.get_logger()
 
-engine = create_engine(
-    settings.postgres_url,
-    pool_size=10,
-    max_overflow=20,
-    pool_pre_ping=True,
-)
-SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False)
+engine = None
+SessionLocal = None
+
+
+def _ensure_engine():
+    """Lazily create the SQLAlchemy engine and sessionmaker on first use."""
+    global engine, SessionLocal
+    if engine is None:
+        engine = create_engine(
+            settings.postgres_url,
+            pool_size=10,
+            max_overflow=20,
+            pool_pre_ping=True,
+        )
+        SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False)
 
 
 @contextmanager
 def get_db() -> Session:
+    _ensure_engine()
     db = SessionLocal()
     try:
         yield db

@@ -1,5 +1,5 @@
 """Tests for entity resolution: merge/no-merge decisions, scoring, deduplication."""
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 
@@ -18,7 +18,7 @@ def _make_record(name, title="Member of Parliament", institution="Parliament",
         source_url="https://example.com",
         source_type="PARLIAMENT",
         raw_text=f"{name} {title}",
-        scraped_at=datetime.utcnow(),
+        scraped_at=datetime.now(timezone.utc),
         extra_fields={},
     )
 

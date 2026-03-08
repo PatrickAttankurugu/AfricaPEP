@@ -39,83 +39,54 @@ def _log_job(job_name: str, started: datetime, records: int,
         log.error("scheduler_log_failed", job=job_name, error=str(e))
 
 
-def run_all_scrapers():
-    """Run all scrapers, process through pipeline, write to Neo4j."""
+def run_wikidata_scraper():
+    """Run Wikidata SPARQL scraper for all 54 African countries."""
     started = datetime.now(timezone.utc)
-    log.info("job_started", job="run_all_scrapers")
+    log.info("job_started", job="run_wikidata_scraper")
     total_records = 0
 
     try:
-        from africapep.scraper.spiders import ALL_SCRAPERS
-
+        from africapep.scraper.spiders.wikidata_scraper import WikidataScraper, COUNTRY_QIDS
         from africapep.pipeline.normaliser import normalise_record
         from africapep.pipeline.classifier import classify_pep_tier
         from africapep.pipeline.resolver import EntityResolver
         from africapep.database.neo4j_client import neo4j_client
 
-        scrapers = [cls() for cls in ALL_SCRAPERS]
-
         resolver = EntityResolver()
-        for scraper in scrapers:
+
+        for country_code in COUNTRY_QIDS:
             try:
-                records = scraper.run()
+                scraper = WikidataScraper(country_code=country_code)
+                records = scraper.scrape()
                 for record in records:
                     normalised = normalise_record(record)
                     tier = classify_pep_tier(normalised.title, normalised.institution)
                     resolver.add(normalised, tier)
                 total_records += len(records)
-                log.info("scraper_batch_done", scraper=scraper.__class__.__name__,
+                log.info("scraper_country_done", country=country_code,
                          records=len(records))
             except Exception as e:
-                log.error("scraper_job_failed", scraper=scraper.__class__.__name__,
+                log.error("scraper_country_failed", country=country_code,
                           error=str(e))
 
         written = resolver.flush_to_neo4j(neo4j_client)
-        log.info("job_finished", job="run_all_scrapers",
+        log.info("job_finished", job="run_wikidata_scraper",
                  total_records=total_records, written=written)
 
-        _log_job("run_all_scrapers", started, total_records, "SUCCESS")
+        # Immediately sync Neo4j -> PostgreSQL instead of waiting for
+        # the separate scheduled job hours later.
+        log.info("post_scrape_sync_start")
+        try:
+            synced = sync_all()
+            log.info("post_scrape_sync_done", synced=synced)
+        except Exception as sync_err:
+            log.error("post_scrape_sync_failed", error=str(sync_err))
+
+        _log_job("run_wikidata_scraper", started, total_records, "SUCCESS")
 
     except Exception as e:
-        log.error("job_failed", job="run_all_scrapers", error=str(e))
-        _log_job("run_all_scrapers", started, total_records, "FAILED", str(e))
-
-
-def run_gazette_scrapers():
-    """Run gazette-specific scrapers (published mid-week)."""
-    started = datetime.now(timezone.utc)
-    log.info("job_started", job="run_gazette_scrapers")
-    total_records = 0
-
-    try:
-        from africapep.scraper.spiders.ghana_gazette import GhanaGazetteScraper
-        from africapep.scraper.spiders.kenya_gazette import KenyaGazetteScraper
-        from africapep.pipeline.normaliser import normalise_record
-        from africapep.pipeline.classifier import classify_pep_tier
-        from africapep.pipeline.resolver import EntityResolver
-        from africapep.database.neo4j_client import neo4j_client
-
-        scrapers = [GhanaGazetteScraper(), KenyaGazetteScraper()]
-        resolver = EntityResolver()
-
-        for scraper in scrapers:
-            try:
-                records = scraper.run()
-                for record in records:
-                    normalised = normalise_record(record)
-                    tier = classify_pep_tier(normalised.title, normalised.institution)
-                    resolver.add(normalised, tier)
-                total_records += len(records)
-            except Exception as e:
-                log.error("gazette_scraper_failed", scraper=scraper.__class__.__name__,
-                          error=str(e))
-
-        resolver.flush_to_neo4j(neo4j_client)
-        _log_job("run_gazette_scrapers", started, total_records, "SUCCESS")
-
-    except Exception as e:
-        log.error("job_failed", job="run_gazette_scrapers", error=str(e))
-        _log_job("run_gazette_scrapers", started, total_records, "FAILED", str(e))
+        log.error("job_failed", job="run_wikidata_scraper", error=str(e))
+        _log_job("run_wikidata_scraper", started, total_records, "FAILED", str(e))
 
 
 def sync_neo4j_to_postgres():
@@ -156,21 +127,12 @@ def log_database_stats():
 
 def setup_scheduler():
     """Configure all scheduled jobs."""
-    # Run all scrapers every Sunday at 02:00 UTC
+    # Run Wikidata scraper every Sunday at 02:00 UTC
     scheduler.add_job(
-        run_all_scrapers,
+        run_wikidata_scraper,
         CronTrigger(day_of_week="sun", hour=2, minute=0),
-        id="run_all_scrapers",
-        name="Run all scrapers",
-        replace_existing=True,
-    )
-
-    # Run gazette scrapers every Wednesday at 06:00 UTC
-    scheduler.add_job(
-        run_gazette_scrapers,
-        CronTrigger(day_of_week="wed", hour=6, minute=0),
-        id="run_gazette_scrapers",
-        name="Run gazette scrapers",
+        id="run_wikidata_scraper",
+        name="Run Wikidata scraper",
         replace_existing=True,
     )
 
@@ -198,8 +160,7 @@ def setup_scheduler():
 if __name__ == "__main__":
     print("AfricaPEP Scheduler starting...")
     print("Jobs:")
-    print("  - run_all_scrapers: Sunday 02:00 UTC")
-    print("  - run_gazette_scrapers: Wednesday 06:00 UTC")
+    print("  - run_wikidata_scraper: Sunday 02:00 UTC")
     print("  - sync_neo4j_to_postgres: Sunday 06:00 UTC")
     print("  - log_database_stats: Daily 00:00 UTC")
     print()

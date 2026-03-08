@@ -1,6 +1,8 @@
 """POST /api/v1/screen — fuzzy name screening against PEP database.
 POST /api/v1/screen/batch — batch screening for multiple names.
 """
+import asyncio
+import hashlib
 import json
 import uuid
 from datetime import datetime, timezone
@@ -20,16 +22,24 @@ from africapep.api.schemas import (
     BatchScreeningRequest, BatchScreeningResponse, BatchScreeningResultItem,
     tier_to_risk_level,
 )
+from africapep.config import settings
 from africapep.database.postgres_client import get_db
 
 log = structlog.get_logger()
+
+
+def _maybe_hash_name(name: str) -> str:
+    """Hash the query name for GDPR compliance if configured."""
+    if settings.hash_screening_queries:
+        return hashlib.sha256(name.encode()).hexdigest()
+    return name
 router = APIRouter()
 limiter = Limiter(key_func=get_remote_address)
 
 
 @router.post("/screen", response_model=ScreeningResponse)
 @limiter.limit("60/minute")
-def screen_name(request: ScreeningRequest, req: Request):
+async def screen_name(request: ScreeningRequest, req: Request):
     """Screen a name against the PEP database using fuzzy matching.
 
     Uses PostgreSQL pg_trgm similarity for initial candidate retrieval,
@@ -47,7 +57,9 @@ def screen_name(request: ScreeningRequest, req: Request):
     screened_at = datetime.now(timezone.utc).isoformat()
 
     try:
-        matches = _find_matches(request.name, request.country, request.threshold)
+        matches = await asyncio.to_thread(
+            _find_matches, request.name, request.country, request.threshold
+        )
     except (OperationalError, InterfaceError) as e:
         log.error("screening_db_unavailable", query=request.name, error=str(e))
         raise HTTPException(
@@ -59,7 +71,7 @@ def screen_name(request: ScreeningRequest, req: Request):
         raise HTTPException(status_code=500, detail="Screening failed")
 
     # Log the screening (non-critical, don't fail if this errors)
-    _log_screening(screening_id, request.name, matches)
+    await asyncio.to_thread(_log_screening, screening_id, request.name, matches)
 
     return ScreeningResponse(
         query=request.name,
@@ -73,7 +85,7 @@ def screen_name(request: ScreeningRequest, req: Request):
 
 @router.post("/screen/batch", response_model=BatchScreeningResponse)
 @limiter.limit("20/minute")
-def screen_batch(request: BatchScreeningRequest, req: Request):
+async def screen_batch(request: BatchScreeningRequest, req: Request):
     """Screen multiple names against the PEP database in a single request.
 
     Accepts up to 50 names per batch. Returns an array of screening results.
@@ -96,7 +108,9 @@ def screen_batch(request: BatchScreeningRequest, req: Request):
         screening_id = str(uuid.uuid4())
 
         try:
-            matches = _find_matches(entry.name, entry.country, request.threshold)
+            matches = await asyncio.to_thread(
+                _find_matches, entry.name, entry.country, request.threshold
+            )
         except (OperationalError, InterfaceError) as e:
             log.error("batch_screening_db_unavailable", query=entry.name, error=str(e))
             raise HTTPException(
@@ -111,7 +125,7 @@ def screen_batch(request: BatchScreeningRequest, req: Request):
         total_matches += len(matches)
 
         # Log each screening (non-critical)
-        _log_screening(screening_id, entry.name, matches)
+        await asyncio.to_thread(_log_screening, screening_id, entry.name, matches)
 
         results.append(BatchScreeningResultItem(
             query_name=entry.name,
@@ -233,7 +247,11 @@ def _find_matches(query_name: str, country: str = None,
 
 
 def _log_screening(screening_id: str, query_name: str, matches: list[MatchResult]):
-    """Log screening query and results to screening_log table."""
+    """Log screening query and results to screening_log table.
+
+    If HASH_SCREENING_QUERIES is enabled, the query name is SHA-256 hashed
+    before storage for GDPR compliance.
+    """
     try:
         with get_db() as db:
             db.execute(text("""
@@ -241,7 +259,7 @@ def _log_screening(screening_id: str, query_name: str, matches: list[MatchResult
                 VALUES (:id, :name, NOW(), :count, :top_score, CAST(:results AS jsonb))
             """), {
                 "id": screening_id,
-                "name": query_name,
+                "name": _maybe_hash_name(query_name),
                 "count": len(matches),
                 "top_score": matches[0].match_score if matches else 0.0,
                 "results": json.dumps([m.model_dump() for m in matches[:5]], default=str),

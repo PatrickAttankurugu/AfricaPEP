@@ -11,7 +11,7 @@ Usage:
 from __future__ import annotations
 
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Optional
 
 import requests
@@ -41,28 +41,88 @@ COUNTRY_QIDS: Dict[str, str] = {
     "ZM": "Q953", "ZW": "Q954",
 }
 
+# Wikidata QIDs for African regional organisations
+REGIONAL_BODY_QIDS: Dict[str, str] = {
+    "AU": "Q7159",       # African Union
+    "ECOWAS": "Q166546", # Economic Community of West African States
+    "SADC": "Q170552",   # Southern African Development Community
+    "EAC": "Q190571",    # East African Community
+}
 
-def _build_query(country_qid: str) -> str:
+
+def _build_regional_query(org_qid: str) -> str:
+    """Build SPARQL query for officials of a regional organisation.
+
+    Fetches people who hold/held positions (P39) in the given organisation,
+    or positions that are part of (P361) the organisation.
+    """
+    return f"""
+SELECT DISTINCT ?personLabel ?positionLabel ?start ?end
+       ?dob ?dod ?partyLabel ?nationalityLabel WHERE {{
+  {{
+    ?person wdt:P39 ?position .
+    ?position wdt:P361* wd:{org_qid} .
+  }} UNION {{
+    ?person p:P39 ?stmt .
+    ?stmt ps:P39 ?position .
+    ?stmt pq:P642 wd:{org_qid} .
+  }}
+  OPTIONAL {{
+    ?person p:P39 ?stmt2 .
+    ?stmt2 ps:P39 ?position .
+    OPTIONAL {{ ?stmt2 pq:P580 ?start }}
+    OPTIONAL {{ ?stmt2 pq:P582 ?end }}
+  }}
+  OPTIONAL {{ ?person wdt:P569 ?dob }}
+  OPTIONAL {{ ?person wdt:P570 ?dod }}
+  OPTIONAL {{ ?person wdt:P102 ?party }}
+  OPTIONAL {{ ?person wdt:P27 ?nationality }}
+  SERVICE wikibase:label {{ bd:serviceParam wikibase:language "en" }}
+}}
+ORDER BY ?personLabel
+LIMIT 5000
+"""
+
+
+def _build_query(country_qid: str, since: Optional[str] = None) -> str:
     """Build SPARQL query to fetch politicians for a country.
 
     Returns people who hold/held positions (P39) in institutions
-    tied to the given country (P17). Includes position start/end dates.
+    tied to the given country (P17). Includes position start/end dates,
+    date of birth (P569), date of death (P570), and party affiliation (P102).
+
+    Args:
+        country_qid: Wikidata QID for the country.
+        since: Optional ISO date string (e.g. ``"2024-01-15"``).  When
+            provided an extra ``FILTER`` restricts results to items whose
+            Wikidata revision timestamp (``schema:dateModified``) is after
+            this date, enabling incremental scraping.
     """
+    modified_filter = ""
+    if since:
+        modified_filter = (
+            f'  ?person schema:dateModified ?modified .\n'
+            f'  FILTER(?modified >= "{since}T00:00:00Z"^^xsd:dateTime)\n'
+        )
     return f"""
-SELECT DISTINCT ?personLabel ?positionLabel ?institutionLabel ?start ?end WHERE {{
+SELECT DISTINCT ?personLabel ?positionLabel ?institutionLabel
+       ?start ?end ?dob ?dod ?partyLabel WHERE {{
   ?person wdt:P39 ?position .
   ?position wdt:P17 wd:{country_qid} .
-  OPTIONAL {{
+{modified_filter}  OPTIONAL {{
     ?person p:P39 ?stmt .
     ?stmt ps:P39 ?position .
     OPTIONAL {{ ?stmt pq:P580 ?start }}
     OPTIONAL {{ ?stmt pq:P582 ?end }}
   }}
   OPTIONAL {{ ?position wdt:P361 ?institution }}
+  OPTIONAL {{ ?person wdt:P569 ?dob }}
+  OPTIONAL {{ ?person wdt:P570 ?dod }}
+  OPTIONAL {{ ?person wdt:P102 ?party }}
   SERVICE wikibase:label {{ bd:serviceParam wikibase:language "en" }}
 }}
 ORDER BY ?personLabel
-LIMIT 2000
+LIMIT 10000
 """
 
 
@@ -71,9 +131,18 @@ class WikidataScraper(BaseScraper):
 
     source_type = "WIKIDATA"
 
-    def __init__(self, country_code: str):
+    def __init__(self, country_code: str, since: Optional[str] = None):
+        """
+        Args:
+            country_code: ISO 3166-1 alpha-2 country code.
+            since: Optional ISO date (``"YYYY-MM-DD"``).  When supplied the
+                SPARQL query includes a ``schema:dateModified`` filter so
+                that only items modified after this date are returned
+                (incremental scraping).
+        """
         super().__init__()
         self.country_code = country_code.upper()
+        self.since = since
         qid = COUNTRY_QIDS.get(self.country_code)
         if not qid:
             raise ValueError(f"Unknown country code: {self.country_code}")
@@ -96,22 +165,16 @@ class WikidataScraper(BaseScraper):
 
     def _query_sparql(self) -> List[RawPersonRecord]:
         """Execute SPARQL query and parse results into records."""
-        query = _build_query(self._country_qid)
-        now = datetime.utcnow()
+        query = _build_query(self._country_qid, since=self.since)
+        now = datetime.now(timezone.utc)
 
-        # Polite delay before querying
-        time.sleep(1)
-
-        resp = requests.get(
-            SPARQL_ENDPOINT,
-            params={"query": query, "format": "json"},
-            headers={
-                "User-Agent": "AfricaPEP/1.0 (KYC research; https://github.com/PatrickAttankurugu/AfricaPEP)",
-                "Accept": "application/json",
-            },
-            timeout=60,
+        # Use BaseScraper._get() for retry logic and rate limiting
+        encoded_params = requests.compat.urlencode(  # type: ignore[attr-defined]
+            {"query": query, "format": "json"}
         )
-        resp.raise_for_status()
+        url = f"{SPARQL_ENDPOINT}?{encoded_params}"
+        self.session.headers["Accept"] = "application/json"
+        resp = self._get(url)
         data = resp.json()
 
         records: List[RawPersonRecord] = []
@@ -135,7 +198,20 @@ class WikidataScraper(BaseScraper):
             # Parse dates
             start_date = _parse_date(binding.get("start", {}).get("value"))
             end_date = _parse_date(binding.get("end", {}).get("value"))
-            is_current = end_date is None
+            date_of_birth = _parse_date(binding.get("dob", {}).get("value"))
+            date_of_death = _parse_date(binding.get("dod", {}).get("value"))
+            party = binding.get("partyLabel", {}).get("value", "")
+            # Skip QID-only party labels
+            if party.startswith("Q"):
+                party = ""
+
+            # Determine is_current: not current if position has ended,
+            # or if the person has died (historical figures)
+            is_current = _determine_is_current(
+                end_date=end_date,
+                date_of_death=date_of_death,
+                start_date=start_date,
+            )
 
             records.append(
                 RawPersonRecord(
@@ -151,6 +227,9 @@ class WikidataScraper(BaseScraper):
                         "start_date": start_date,
                         "end_date": end_date,
                         "is_current": is_current,
+                        "date_of_birth": date_of_birth,
+                        "date_of_death": date_of_death,
+                        "party": party,
                         "wikidata_country_qid": self._country_qid,
                     },
                 )
@@ -167,6 +246,48 @@ def _parse_date(value: Optional[str]) -> Optional[str]:
         return value[:10]
     except (IndexError, TypeError):
         return None
+
+
+def _determine_is_current(
+    end_date: Optional[str],
+    date_of_death: Optional[str],
+    start_date: Optional[str],
+) -> bool:
+    """Determine if a position is currently held.
+
+    A position is NOT current if:
+    - It has an explicit end date, OR
+    - The person has died (date_of_death is set), OR
+    - The start date is very old (before 1900) with no other signals,
+      indicating a historical figure.
+    """
+    # Explicit end date means position has ended
+    if end_date is not None:
+        return False
+
+    # Deceased persons cannot currently hold positions
+    if date_of_death is not None:
+        return False
+
+    # Historical figures: positions starting before 1900 without end dates
+    # are almost certainly not current
+    if start_date is not None:
+        try:
+            year = int(start_date[:4])
+            if year < 1900:
+                return False
+        except (ValueError, IndexError):
+            pass
+
+    return True
+
+
+class _RegionalHelper(BaseScraper):
+    """Minimal BaseScraper subclass used only to access _get() with retry."""
+    source_type = "WIKIDATA"
+
+    def scrape(self) -> List[RawPersonRecord]:
+        return []  # pragma: no cover
 
 
 def scrape_all_countries() -> Dict[str, List[RawPersonRecord]]:
@@ -188,4 +309,94 @@ def scrape_all_countries() -> Dict[str, List[RawPersonRecord]]:
             results[code] = []
         # Polite delay between countries
         time.sleep(2)
+    return results
+
+
+def scrape_regional_bodies() -> Dict[str, List[RawPersonRecord]]:
+    """Scrape PEP data for AU, ECOWAS, SADC, EAC regional body officials.
+
+    Returns a dict keyed by org code (e.g. "AU", "ECOWAS").
+    """
+    results: Dict[str, List[RawPersonRecord]] = {}
+
+    # Use a lightweight BaseScraper-derived helper for _get() retry/rate-limiting
+    helper = _RegionalHelper()
+
+    for org_code, org_qid in sorted(REGIONAL_BODY_QIDS.items()):
+        log.info("wikidata.regional.start", org=org_code, qid=org_qid)
+        try:
+            query = _build_regional_query(org_qid)
+            now = datetime.now(timezone.utc)
+
+            encoded_params = requests.compat.urlencode(  # type: ignore[attr-defined]
+                {"query": query, "format": "json"}
+            )
+            url = f"{SPARQL_ENDPOINT}?{encoded_params}"
+            helper.session.headers["Accept"] = "application/json"
+            resp = helper._get(url)
+            data = resp.json()
+
+            records: List[RawPersonRecord] = []
+            seen: set = set()
+
+            for binding in data.get("results", {}).get("bindings", []):
+                name = binding.get("personLabel", {}).get("value", "")
+                position = binding.get("positionLabel", {}).get("value", "")
+
+                if not name or name.startswith("Q") or not position:
+                    continue
+
+                key = (name.lower(), position.lower())
+                if key in seen:
+                    continue
+                seen.add(key)
+
+                start_date = _parse_date(binding.get("start", {}).get("value"))
+                end_date = _parse_date(binding.get("end", {}).get("value"))
+                date_of_birth = _parse_date(binding.get("dob", {}).get("value"))
+                date_of_death = _parse_date(binding.get("dod", {}).get("value"))
+                party = binding.get("partyLabel", {}).get("value", "")
+                if party.startswith("Q"):
+                    party = ""
+                nationality = binding.get("nationalityLabel", {}).get("value", "")
+                if nationality.startswith("Q"):
+                    nationality = ""
+
+                is_current = _determine_is_current(
+                    end_date=end_date,
+                    date_of_death=date_of_death,
+                    start_date=start_date,
+                )
+
+                records.append(
+                    RawPersonRecord(
+                        full_name=name,
+                        title=position,
+                        institution=org_code,
+                        country_code=nationality or org_code,
+                        source_url=f"https://www.wikidata.org/wiki/{org_qid}",
+                        source_type="WIKIDATA",
+                        raw_text=f"{name} - {position} ({org_code})",
+                        scraped_at=now,
+                        extra_fields={
+                            "start_date": start_date,
+                            "end_date": end_date,
+                            "is_current": is_current,
+                            "date_of_birth": date_of_birth,
+                            "date_of_death": date_of_death,
+                            "party": party,
+                            "regional_body": org_code,
+                            "wikidata_org_qid": org_qid,
+                        },
+                    )
+                )
+
+            results[org_code] = records
+            log.info("wikidata.regional.done", org=org_code, count=len(records))
+        except Exception as exc:
+            log.error("wikidata.regional.failed", org=org_code, error=str(exc))
+            results[org_code] = []
+
+        time.sleep(2)
+
     return results

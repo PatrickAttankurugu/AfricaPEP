@@ -1,6 +1,6 @@
 """Sync Neo4j graph data to PostgreSQL search index."""
 import json
-import uuid
+import uuid as uuid_mod
 from datetime import datetime, timezone
 from sqlalchemy import text
 import structlog
@@ -9,6 +9,14 @@ from africapep.database.neo4j_client import neo4j_client
 from africapep.database.postgres_client import get_db
 
 log = structlog.get_logger()
+
+# Namespace UUID for generating deterministic IDs from neo4j_id
+_NAMESPACE = uuid_mod.UUID("a3bb189e-8bf9-3888-9912-ace4e6543002")
+
+
+def _deterministic_id(neo4j_id: str) -> str:
+    """Generate a stable UUID from a neo4j_id so IDs don't change on re-sync."""
+    return str(uuid_mod.uuid5(_NAMESPACE, neo4j_id))
 
 
 def sync_all():
@@ -48,15 +56,16 @@ def sync_all():
             # Filter out empty position dicts
             positions = [p for p in positions if p.get("title")]
 
+            now = datetime.now(timezone.utc).isoformat()
             db.execute(text("""
                 INSERT INTO pep_profiles
                     (id, neo4j_id, full_name, name_variants, date_of_birth,
                      nationality, pep_tier, is_active_pep, current_positions,
-                     country, updated_at)
+                     country, first_seen, last_seen, updated_at)
                 VALUES
                     (:id, :neo4j_id, :full_name, :name_variants, :dob,
                      :nationality, :pep_tier, :is_active, CAST(:positions AS jsonb),
-                     :country, :updated_at)
+                     :country, :now, :now, :now)
                 ON CONFLICT (neo4j_id) DO UPDATE SET
                     full_name = EXCLUDED.full_name,
                     name_variants = EXCLUDED.name_variants,
@@ -66,9 +75,10 @@ def sync_all():
                     is_active_pep = EXCLUDED.is_active_pep,
                     current_positions = EXCLUDED.current_positions,
                     country = EXCLUDED.country,
+                    last_seen = EXCLUDED.last_seen,
                     updated_at = EXCLUDED.updated_at
             """), {
-                "id": str(uuid.uuid4()),
+                "id": _deterministic_id(neo4j_id),
                 "neo4j_id": neo4j_id,
                 "full_name": full_name,
                 "name_variants": list(name_variants) if name_variants else [],
@@ -78,7 +88,7 @@ def sync_all():
                 "is_active": is_active,
                 "positions": json.dumps(positions),
                 "country": nationality,
-                "updated_at": datetime.now(timezone.utc).isoformat(),
+                "now": now,
             })
             synced += 1
 

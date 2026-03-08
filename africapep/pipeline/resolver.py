@@ -237,71 +237,120 @@ class EntityResolver:
         entity.extra_fields.update(record.extra_fields)
 
     def flush_to_neo4j(self, client: "Neo4jClient") -> int:
-        """Write all resolved entities to Neo4j graph database."""
-        written = 0
+        """Write all resolved entities to Neo4j using batched UNWIND writes.
+
+        Collects all persons, positions, organisations, sources, and
+        relationships into lists, then writes each category in one (or a
+        few) UNWIND operations instead of N individual transactions.
+        """
+        person_rows: list[dict] = []
+        person_country_links: list[dict] = []
+        position_rows: list[dict] = []
+        person_position_links: list[dict] = []
+        org_rows: list[dict] = []
+        position_org_links: list[dict] = []
+        org_country_links: list[dict] = []
+        source_rows: list[dict] = []
+        person_source_links: list[dict] = []
 
         for entity in self.entities.values():
-            try:
-                # Create Person node
-                client.upsert_person({
-                    "id": entity.id,
-                    "full_name": entity.full_name,
-                    "name_variants": entity.name_variants,
-                    "date_of_birth": entity.date_of_birth,
-                    "nationality": entity.nationality,
-                    "gender": entity.gender,
-                    "pep_tier": entity.pep_tier,
-                    "is_active_pep": entity.is_active_pep,
+            person_rows.append({
+                "id": entity.id,
+                "full_name": entity.full_name,
+                "name_variants": entity.name_variants,
+                "date_of_birth": entity.date_of_birth,
+                "nationality": entity.nationality,
+                "gender": entity.gender,
+                "pep_tier": entity.pep_tier,
+                "is_active_pep": entity.is_active_pep,
+            })
+
+            person_country_links.append({
+                "pid": entity.id,
+                "code": entity.nationality,
+            })
+
+            for pos in entity.positions:
+                pos_id = str(uuid.uuid4())
+                position_rows.append({
+                    "id": pos_id,
+                    "title": pos.get("title", ""),
+                    "institution": pos.get("institution", ""),
+                    "country": pos.get("country", entity.nationality),
+                    "branch": pos.get("branch", "EXECUTIVE"),
+                    "start_date": pos.get("start_date"),
+                    "end_date": pos.get("end_date"),
+                    "is_current": pos.get("is_current", True),
+                })
+                person_position_links.append({
+                    "pid": entity.id,
+                    "posid": pos_id,
+                    "start": pos.get("start_date"),
+                    "end": pos.get("end_date"),
+                    "current": pos.get("is_current", True),
                 })
 
-                # Link to country
-                client.link_person_country(entity.id, entity.nationality)
-
-                # Create positions and link
-                for pos in entity.positions:
-                    pos_id = str(uuid.uuid4())
-                    client.upsert_position({
-                        "id": pos_id,
-                        "title": pos.get("title", ""),
-                        "institution": pos.get("institution", ""),
-                        "country": pos.get("country", entity.nationality),
-                        "branch": pos.get("branch", "EXECUTIVE"),
-                        "start_date": pos.get("start_date"),
-                        "end_date": pos.get("end_date"),
-                        "is_current": pos.get("is_current", True),
+                if pos.get("institution"):
+                    org_id = str(uuid.uuid4())
+                    country = pos.get("country", entity.nationality)
+                    org_rows.append({
+                        "id": org_id,
+                        "name": pos["institution"],
+                        "org_type": _infer_org_type(pos["institution"]),
+                        "country": country,
+                        "registration_number": "",
                     })
-                    client.link_person_position(entity.id, pos_id)
-
-                    # Create org and link
-                    if pos.get("institution"):
-                        org_id = str(uuid.uuid4())
-                        client.upsert_organisation({
-                            "id": org_id,
-                            "name": pos["institution"],
-                            "org_type": _infer_org_type(pos["institution"]),
-                            "country": pos.get("country", entity.nationality),
-                            "registration_number": "",
-                        })
-                        client.link_position_org(pos_id, org_id)
-                        client.link_org_country(org_id, pos.get("country", entity.nationality))
-
-                # Create source records and link
-                for src in entity.sources:
-                    src_id = str(uuid.uuid4())
-                    client.create_source_record({
-                        "id": src_id,
-                        "source_url": src.get("source_url", ""),
-                        "source_type": src.get("source_type", ""),
-                        "scraped_at": src.get("scraped_at", datetime.now(timezone.utc).isoformat()),
-                        "raw_text": src.get("raw_text", "")[:5000],
-                        "country": src.get("country", entity.nationality),
+                    position_org_links.append({
+                        "posid": pos_id,
+                        "oid": org_id,
                     })
-                    client.link_person_source(entity.id, src_id)
+                    org_country_links.append({
+                        "oid": org_id,
+                        "code": country,
+                    })
 
-                written += 1
-            except Exception as e:
-                log.error("entity_write_failed", entity_id=entity.id,
-                          name=entity.full_name, error=str(e))
+            for src in entity.sources:
+                src_id = str(uuid.uuid4())
+                source_rows.append({
+                    "id": src_id,
+                    "source_url": src.get("source_url", ""),
+                    "source_type": src.get("source_type", ""),
+                    "scraped_at": src.get("scraped_at",
+                                          datetime.now(timezone.utc).isoformat()),
+                    "raw_text": src.get("raw_text", "")[:5000],
+                    "country": src.get("country", entity.nationality),
+                })
+                person_source_links.append({
+                    "pid": entity.id,
+                    "sid": src_id,
+                })
+
+        # ── Batch write all collected data ──
+        written = len(person_rows)
+        try:
+            if person_rows:
+                client.upsert_person_batch(person_rows)
+            if position_rows:
+                client.batch_upsert_positions(position_rows)
+            if org_rows:
+                client.batch_upsert_organisations(org_rows)
+            if source_rows:
+                client.batch_create_source_records(source_rows)
+
+            # Relationships (order matters: nodes must exist first)
+            if person_country_links:
+                client.batch_link_person_country(person_country_links)
+            if person_position_links:
+                client.batch_link_person_position(person_position_links)
+            if position_org_links:
+                client.batch_link_position_org(position_org_links)
+            if org_country_links:
+                client.batch_link_org_country(org_country_links)
+            if person_source_links:
+                client.batch_link_person_source(person_source_links)
+        except Exception as e:
+            log.error("batch_flush_failed", error=str(e))
+            written = 0
 
         log.info("resolver_flush_complete", entities=written,
                  duplicates=len(self.duplicates))

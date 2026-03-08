@@ -6,13 +6,21 @@ from africapep.config import settings
 
 log = structlog.get_logger()
 
+# Default batch size for UNWIND operations
+_DEFAULT_BATCH_SIZE = 500
+
 
 class Neo4jClient:
     """Neo4j connection manager with pooling and auto-reconnect."""
 
     def __init__(self):
         self._driver: Optional[Driver] = None
-        self._connect()
+        try:
+            self._connect()
+        except Exception as exc:
+            log.warning("neo4j_init_deferred", error=str(exc),
+                        hint="Will retry on first query")
+            self._driver = None
 
     def _connect(self):
         self._driver = GraphDatabase.driver(
@@ -36,12 +44,19 @@ class Neo4jClient:
             log.error("neo4j_connectivity_failed", error=str(e))
             return False
 
+    def _ensure_connected(self):
+        """Ensure the driver is initialised, reconnecting if necessary."""
+        if self._driver is None:
+            self._connect()
+
     def run(self, query: str, params: dict = None) -> list:
+        self._ensure_connected()
         with self._driver.session() as session:
             result = session.run(query, params or {})
             return [dict(r) for r in result]
 
     def run_write(self, query: str, params: dict = None):
+        self._ensure_connected()
         with self._driver.session() as session:
             session.execute_write(lambda tx: tx.run(query, params or {}))
 
@@ -59,6 +74,7 @@ class Neo4jClient:
 
     def upsert_person(self, person: dict) -> str:
         """Upsert a Person node within a single managed transaction."""
+        self._ensure_connected()
         query = """
         MERGE (p:Person {id: $id})
         SET p.full_name = $full_name,
@@ -81,38 +97,160 @@ class Neo4jClient:
         with self._driver.session() as session:
             return session.execute_write(_do_upsert, person)
 
-    def upsert_person_batch(self, persons: list[dict]) -> list[str]:
-        """Upsert multiple Person nodes in a single transaction.
+    def upsert_person_batch(self, persons: list[dict],
+                            batch_size: int = _DEFAULT_BATCH_SIZE) -> list[str]:
+        """Upsert multiple Person nodes using UNWIND for batched writes.
 
-        This avoids the overhead of opening a separate transaction for each
-        person, which matters when ingesting hundreds of records at once.
+        Sends all rows in a single Cypher statement per batch instead of
+        one transaction per person, reducing round-trips from N to
+        ceil(N / batch_size).
         """
+        self._ensure_connected()
         query = """
-        MERGE (p:Person {id: $id})
-        SET p.full_name = $full_name,
-            p.name_variants = $name_variants,
-            p.date_of_birth = $date_of_birth,
-            p.nationality = $nationality,
-            p.gender = $gender,
-            p.pep_tier = $pep_tier,
-            p.is_active_pep = $is_active_pep,
+        UNWIND $rows AS row
+        MERGE (p:Person {id: row.id})
+        SET p.full_name = row.full_name,
+            p.name_variants = row.name_variants,
+            p.date_of_birth = row.date_of_birth,
+            p.nationality = row.nationality,
+            p.gender = row.gender,
+            p.pep_tier = row.pep_tier,
+            p.is_active_pep = row.is_active_pep,
             p.updated_at = datetime(),
             p.created_at = coalesce(p.created_at, datetime())
         RETURN p.id AS id
         """
+        all_ids: list[str] = []
+        for start in range(0, len(persons), batch_size):
+            chunk = persons[start:start + batch_size]
 
-        def _do_batch(tx, items):
-            ids = []
-            for person in items:
-                result = tx.run(query, person)
-                record = result.single()
-                ids.append(record["id"] if record else person["id"])
-            return ids
+            def _do_batch(tx, rows):
+                result = tx.run(query, {"rows": rows})
+                return [record["id"] for record in result]
 
-        with self._driver.session() as session:
-            return session.execute_write(_do_batch, persons)
+            with self._driver.session() as session:
+                ids = session.execute_write(_do_batch, chunk)
+                all_ids.extend(ids)
+
+        return all_ids
+
+    # ── Generic batch write helpers ──
+
+    def run_write_batch(self, query: str, rows: list[dict],
+                        batch_size: int = _DEFAULT_BATCH_SIZE):
+        """Execute a Cypher write statement with UNWIND $rows in batches.
+
+        The caller's *query* must reference ``$rows`` (or use ``UNWIND $rows
+        AS row``) so that the driver can stream all items in one round-trip
+        per chunk.
+        """
+        self._ensure_connected()
+        for start in range(0, len(rows), batch_size):
+            chunk = rows[start:start + batch_size]
+
+            def _do(tx, items):
+                tx.run(query, {"rows": items})
+
+            with self._driver.session() as session:
+                session.execute_write(_do, chunk)
+
+    def batch_upsert_positions(self, positions: list[dict],
+                               batch_size: int = _DEFAULT_BATCH_SIZE):
+        """Batch-upsert Position nodes using UNWIND."""
+        query = """
+        UNWIND $rows AS row
+        MERGE (pos:Position {id: row.id})
+        SET pos.title = row.title,
+            pos.institution = row.institution,
+            pos.country = row.country,
+            pos.branch = row.branch,
+            pos.start_date = row.start_date,
+            pos.end_date = row.end_date,
+            pos.is_current = row.is_current
+        """
+        self.run_write_batch(query, positions, batch_size)
+
+    def batch_upsert_organisations(self, orgs: list[dict],
+                                   batch_size: int = _DEFAULT_BATCH_SIZE):
+        """Batch-upsert Organisation nodes using UNWIND."""
+        query = """
+        UNWIND $rows AS row
+        MERGE (o:Organisation {id: row.id})
+        SET o.name = row.name,
+            o.org_type = row.org_type,
+            o.country = row.country,
+            o.registration_number = row.registration_number
+        """
+        self.run_write_batch(query, orgs, batch_size)
+
+    def batch_create_source_records(self, sources: list[dict],
+                                    batch_size: int = _DEFAULT_BATCH_SIZE):
+        """Batch-create SourceRecord nodes using UNWIND."""
+        query = """
+        UNWIND $rows AS row
+        MERGE (s:SourceRecord {id: row.id})
+        SET s.source_url = row.source_url,
+            s.source_type = row.source_type,
+            s.scraped_at = datetime(row.scraped_at),
+            s.raw_text = row.raw_text,
+            s.country = row.country
+        """
+        self.run_write_batch(query, sources, batch_size)
+
+    def batch_link_person_position(self, links: list[dict],
+                                   batch_size: int = _DEFAULT_BATCH_SIZE):
+        """Batch-create HELD_POSITION relationships using UNWIND."""
+        query = """
+        UNWIND $rows AS row
+        MATCH (p:Person {id: row.pid}), (pos:Position {id: row.posid})
+        MERGE (p)-[r:HELD_POSITION]->(pos)
+        SET r.start_date = row.start, r.end_date = row.end,
+            r.is_current = row.current
+        """
+        self.run_write_batch(query, links, batch_size)
+
+    def batch_link_position_org(self, links: list[dict],
+                                batch_size: int = _DEFAULT_BATCH_SIZE):
+        """Batch-create AT_ORGANISATION relationships using UNWIND."""
+        query = """
+        UNWIND $rows AS row
+        MATCH (pos:Position {id: row.posid}), (o:Organisation {id: row.oid})
+        MERGE (pos)-[:AT_ORGANISATION]->(o)
+        """
+        self.run_write_batch(query, links, batch_size)
+
+    def batch_link_person_country(self, links: list[dict],
+                                  batch_size: int = _DEFAULT_BATCH_SIZE):
+        """Batch-create CITIZEN_OF relationships using UNWIND."""
+        query = """
+        UNWIND $rows AS row
+        MATCH (p:Person {id: row.pid}), (c:Country {code: row.code})
+        MERGE (p)-[:CITIZEN_OF]->(c)
+        """
+        self.run_write_batch(query, links, batch_size)
+
+    def batch_link_person_source(self, links: list[dict],
+                                 batch_size: int = _DEFAULT_BATCH_SIZE):
+        """Batch-create SOURCED_FROM relationships using UNWIND."""
+        query = """
+        UNWIND $rows AS row
+        MATCH (p:Person {id: row.pid}), (s:SourceRecord {id: row.sid})
+        MERGE (p)-[:SOURCED_FROM]->(s)
+        """
+        self.run_write_batch(query, links, batch_size)
+
+    def batch_link_org_country(self, links: list[dict],
+                               batch_size: int = _DEFAULT_BATCH_SIZE):
+        """Batch-create BASED_IN relationships using UNWIND."""
+        query = """
+        UNWIND $rows AS row
+        MATCH (o:Organisation {id: row.oid}), (c:Country {code: row.code})
+        MERGE (o)-[:BASED_IN]->(c)
+        """
+        self.run_write_batch(query, links, batch_size)
 
     def upsert_position(self, position: dict) -> str:
+        self._ensure_connected()
         query = """
         MERGE (pos:Position {id: $id})
         SET pos.title = $title,
@@ -134,6 +272,7 @@ class Neo4jClient:
             return session.execute_write(_do_upsert, position)
 
     def upsert_organisation(self, org: dict) -> str:
+        self._ensure_connected()
         query = """
         MERGE (o:Organisation {id: $id})
         SET o.name = $name,
@@ -159,6 +298,7 @@ class Neo4jClient:
         self.run_write(query, {"code": code, "name": name, "region": region})
 
     def create_source_record(self, source: dict) -> str:
+        self._ensure_connected()
         query = """
         CREATE (s:SourceRecord {
             id: $id, source_url: $source_url,
@@ -291,4 +431,10 @@ class Neo4jClient:
         self.run_write(query, {"pid": person_id, "posid": position_id, "end": end_date})
 
 
-neo4j_client = Neo4jClient()
+try:
+    neo4j_client = Neo4jClient()
+except Exception as _exc:
+    log.warning("neo4j_client_init_failed", error=str(_exc),
+                hint="Client created with deferred connection")
+    neo4j_client = Neo4jClient.__new__(Neo4jClient)
+    neo4j_client._driver = None

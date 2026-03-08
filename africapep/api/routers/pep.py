@@ -1,8 +1,10 @@
 """GET /api/v1/pep/{id} — full PEP profile retrieval."""
+import asyncio
+
 from fastapi import APIRouter, HTTPException
 import structlog
 
-from africapep.api.schemas import PepProfileResponse, PositionResponse, SourceResponse
+from africapep.api.schemas import PepProfileResponse, PositionResponse, SourceResponse, tier_to_risk_level
 from africapep.database.neo4j_client import neo4j_client
 
 log = structlog.get_logger()
@@ -10,9 +12,9 @@ router = APIRouter()
 
 
 @router.get("/pep/{pep_id}", response_model=PepProfileResponse)
-def get_pep_profile(pep_id: str):
+async def get_pep_profile(pep_id: str):
     """Get full PEP profile including all positions, sources, and name variants."""
-    results = neo4j_client.get_person(pep_id)
+    results = await asyncio.to_thread(neo4j_client.get_person, pep_id)
 
     if not results:
         raise HTTPException(status_code=404, detail="PEP not found")
@@ -47,14 +49,17 @@ def get_pep_profile(pep_id: str):
                 scraped_at=str(src.get("scraped_at")) if src.get("scraped_at") else None,
             ))
 
+    pep_tier = person.get("pep_tier", 2)
+
     return PepProfileResponse(
         id=person.get("id", pep_id),
         full_name=person.get("full_name", ""),
-        name_variants=person.get("name_variants", []),
+        aliases=person.get("name_variants", []),
         date_of_birth=str(person.get("date_of_birth")) if person.get("date_of_birth") else None,
         nationality=person.get("nationality", ""),
         gender=person.get("gender", ""),
-        pep_tier=person.get("pep_tier", 2),
+        pep_tier=pep_tier,
+        risk_level=tier_to_risk_level(pep_tier),
         is_active_pep=person.get("is_active_pep", True),
         positions=positions,
         sources=sources,

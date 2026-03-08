@@ -83,6 +83,32 @@ class ScreeningResponse(BaseModel):
     screening_id: str = Field(description="Unique ID for this screening (for audit trail)")
     screened_at: str = Field(description="Timestamp of the screening (ISO 8601)")
 
+    model_config = {"json_schema_extra": {"examples": [{
+        "query": "Kwame Mensah",
+        "threshold": 0.75,
+        "total_matches": 1,
+        "matches": [{
+            "pep_id": "PEP-GH-00123",
+            "matched_name": "Kwame Mensah",
+            "match_score": 0.92,
+            "match": True,
+            "pep_tier": 1,
+            "risk_level": "high",
+            "is_active": True,
+            "nationality": "GH",
+            "date_of_birth": "1965-03-15",
+            "aliases": ["K. Mensah"],
+            "positions": [{"title": "Minister of Finance", "institution": "Government of Ghana", "country": "GH", "branch": "EXECUTIVE", "start_date": "2021-01-01", "end_date": None, "is_current": True}],
+            "sources": [{"source_url": "https://wikidata.org/wiki/Q12345", "source_type": "WIKIDATA", "country": "GH", "scraped_at": "2025-01-15T10:30:00Z"}],
+            "datasets": ["africapep-wikidata"],
+            "first_seen": "2024-06-01T00:00:00Z",
+            "last_seen": "2025-01-15T10:30:00Z",
+            "explanation": {"name_similarity": 0.92, "best_variant_score": 0.92, "method": "rapidfuzz_token_sort", "matched_variant": None},
+        }],
+        "screening_id": "scr-abc123-def456",
+        "screened_at": "2025-01-20T14:30:00Z",
+    }]}}
+
 
 class PepProfileResponse(BaseModel):
     id: str
@@ -99,6 +125,23 @@ class PepProfileResponse(BaseModel):
     datasets: list[str] = ["africapep-wikidata"]
     first_seen: Optional[str] = None
     last_seen: Optional[str] = None
+
+    model_config = {"json_schema_extra": {"examples": [{
+        "id": "PEP-GH-00123",
+        "full_name": "Kwame Mensah",
+        "aliases": ["K. Mensah", "Kwame A. Mensah"],
+        "date_of_birth": "1965-03-15",
+        "nationality": "GH",
+        "gender": "male",
+        "pep_tier": 1,
+        "risk_level": "high",
+        "is_active_pep": True,
+        "positions": [{"title": "Minister of Finance", "institution": "Government of Ghana", "country": "GH", "branch": "EXECUTIVE", "start_date": "2021-01-01", "end_date": None, "is_current": True}],
+        "sources": [{"source_url": "https://wikidata.org/wiki/Q12345", "source_type": "WIKIDATA", "country": "GH", "scraped_at": "2025-01-15T10:30:00Z"}],
+        "datasets": ["africapep-wikidata"],
+        "first_seen": "2024-06-01T00:00:00Z",
+        "last_seen": "2025-01-15T10:30:00Z",
+    }]}}
 
 
 class GraphNode(BaseModel):
@@ -137,6 +180,22 @@ class SearchResponse(BaseModel):
     limit: int
     results: list[SearchResultItem]
 
+    model_config = {"json_schema_extra": {"examples": [{
+        "query": "Mensah",
+        "total": 1,
+        "page": 1,
+        "limit": 20,
+        "results": [{
+            "id": "PEP-GH-00123",
+            "full_name": "Kwame Mensah",
+            "pep_tier": 1,
+            "risk_level": "high",
+            "is_active": True,
+            "nationality": "GH",
+            "positions": [{"title": "Minister of Finance", "institution": "Government of Ghana", "country": "GH", "branch": "EXECUTIVE", "start_date": "2021-01-01", "end_date": None, "is_current": True}],
+        }],
+    }]}}
+
 
 class StatsResponse(BaseModel):
     total_peps: int = 0
@@ -146,12 +205,28 @@ class StatsResponse(BaseModel):
     sources_count: int = 0
     active_peps: int = 0
 
+    model_config = {"json_schema_extra": {"examples": [{
+        "total_peps": 15420,
+        "by_country": {"GH": 1200, "NG": 3500, "KE": 980, "ZA": 2100},
+        "by_tier": {"1": 2500, "2": 5800, "3": 7120},
+        "last_updated": "2025-01-20T14:30:00Z",
+        "sources_count": 48500,
+        "active_peps": 9800,
+    }]}}
+
 
 class HealthResponse(BaseModel):
     status: str
     neo4j: str
     postgres: str
     version: str = "1.0.0"
+
+    model_config = {"json_schema_extra": {"examples": [{
+        "status": "healthy",
+        "neo4j": "connected",
+        "postgres": "connected",
+        "version": "1.0.0",
+    }]}}
 
 
 class ErrorResponse(BaseModel):

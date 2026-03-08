@@ -30,18 +30,68 @@ HONORIFIC_PREFIXES = [
 
 # ISO 3166-1 alpha-2 for target countries
 COUNTRY_ALIASES = {
+    # North Africa
+    "algeria": "DZ", "dz": "DZ", "algérie": "DZ", "الجزائر": "DZ",
+    "egypt": "EG", "eg": "EG", "مصر": "EG", "misr": "EG",
+    "libya": "LY", "ly": "LY", "ليبيا": "LY", "libye": "LY",
+    "morocco": "MA", "ma": "MA", "المغرب": "MA", "maroc": "MA",
+    "tunisia": "TN", "tn": "TN", "تونس": "TN", "tunisie": "TN",
+    # West Africa
+    "benin": "BJ", "bj": "BJ", "bénin": "BJ",
+    "burkina faso": "BF", "bf": "BF", "burkina": "BF",
+    "cabo verde": "CV", "cv": "CV", "cape verde": "CV",
+    "cameroon": "CM", "cm": "CM", "cameroun": "CM",
+    "chad": "TD", "td": "TD", "tchad": "TD",
+    "cote d'ivoire": "CI", "ci": "CI", "ivory coast": "CI",
+    "côte d'ivoire": "CI",
+    "gambia": "GM", "gm": "GM", "the gambia": "GM",
     "ghana": "GH", "gh": "GH",
+    "guinea": "GN", "gn": "GN", "guinée": "GN",
+    "guinea-bissau": "GW", "gw": "GW", "guiné-bissau": "GW",
+    "liberia": "LR", "lr": "LR",
+    "mali": "ML", "ml": "ML",
+    "mauritania": "MR", "mr": "MR", "mauritanie": "MR", "موريتانيا": "MR",
+    "niger": "NE", "ne": "NE",
     "nigeria": "NG", "ng": "NG",
-    "kenya": "KE", "ke": "KE",
-    "south africa": "ZA", "za": "ZA", "rsa": "ZA",
+    "senegal": "SN", "sn": "SN", "sénégal": "SN",
+    "sierra leone": "SL", "sl": "SL",
+    "togo": "TG", "tg": "TG",
+    # East Africa
+    "burundi": "BI", "bi": "BI",
+    "comoros": "KM", "km": "KM", "comores": "KM",
+    "djibouti": "DJ", "dj": "DJ",
+    "eritrea": "ER", "er": "ER",
     "ethiopia": "ET", "et": "ET",
+    "kenya": "KE", "ke": "KE",
+    "madagascar": "MG", "mg": "MG",
+    "mauritius": "MU", "mu": "MU",
+    "rwanda": "RW", "rw": "RW",
+    "seychelles": "SC", "sc": "SC",
+    "somalia": "SO", "so": "SO", "الصومال": "SO",
+    "south sudan": "SS", "ss": "SS",
+    "sudan": "SD", "sd": "SD", "السودان": "SD", "soudan": "SD",
     "tanzania": "TZ", "tz": "TZ",
     "uganda": "UG", "ug": "UG",
-    "senegal": "SN", "sn": "SN",
-    "cameroon": "CM", "cm": "CM",
-    "egypt": "EG", "eg": "EG",
-    "morocco": "MA", "ma": "MA",
-    "rwanda": "RW", "rw": "RW",
+    # Southern Africa
+    "angola": "AO", "ao": "AO",
+    "botswana": "BW", "bw": "BW",
+    "eswatini": "SZ", "sz": "SZ", "swaziland": "SZ",
+    "lesotho": "LS", "ls": "LS",
+    "malawi": "MW", "mw": "MW",
+    "mozambique": "MZ", "mz": "MZ",
+    "namibia": "NA", "na": "NA",
+    "south africa": "ZA", "za": "ZA", "rsa": "ZA", "afrique du sud": "ZA",
+    "zambia": "ZM", "zm": "ZM",
+    "zimbabwe": "ZW", "zw": "ZW",
+    # Central Africa
+    "central african republic": "CF", "cf": "CF", "centrafrique": "CF",
+    "congo": "CG", "cg": "CG", "republic of the congo": "CG",
+    "democratic republic of the congo": "CD", "cd": "CD", "drc": "CD",
+    "dr congo": "CD", "rdc": "CD",
+    "equatorial guinea": "GQ", "gq": "GQ", "guinée équatoriale": "GQ",
+    "gabon": "GA", "ga": "GA",
+    "sao tome and principe": "ST", "st": "ST",
+    "são tomé and príncipe": "ST",
 }
 
 INSTITUTION_NORMALISATION = {
@@ -130,8 +180,70 @@ def normalise_name(raw_name: str) -> str:
     return name.strip()
 
 
+# French/Arabic diacritics transliteration map for North/West African names
+_TRANSLITERATION_MAP = {
+    # French diacritics
+    "é": "e", "è": "e", "ê": "e", "ë": "e",
+    "à": "a", "â": "a", "ä": "a",
+    "ù": "u", "û": "u", "ü": "u",
+    "î": "i", "ï": "i",
+    "ô": "o", "ö": "o",
+    "ç": "c",
+    "ñ": "n",
+    "ÿ": "y",
+    # Common Arabic transliteration characters
+    "ā": "a", "ī": "i", "ū": "u",
+    "ḥ": "h", "ḍ": "d", "ṣ": "s", "ṭ": "t", "ẓ": "z",
+    "ḳ": "k", "ġ": "gh",
+    "'": "'", "'": "", "ʿ": "", "ʾ": "",
+    "\u0300": "", "\u0301": "", "\u0302": "", "\u0308": "",  # combining accents
+}
+
+# Common French-Arabic name prefix alternates found in North/West Africa
+_NAME_PREFIX_ALTERNATES = {
+    "abdoul": ["abdul", "abdel"],
+    "abdul": ["abdoul", "abdel"],
+    "abdel": ["abdul", "abdoul"],
+    "mohammed": ["mohamed", "muhammad", "mohamad"],
+    "mohamed": ["mohammed", "muhammad", "mohamad"],
+    "muhammad": ["mohammed", "mohamed", "mohamad"],
+    "oumar": ["omar", "umar"],
+    "omar": ["oumar", "umar"],
+    "ousmane": ["osman", "uthman", "othman"],
+    "ibrahima": ["ibrahim", "ibraheem"],
+    "ibrahim": ["ibrahima", "ibraheem"],
+    "moussa": ["musa", "mousa"],
+    "amadou": ["ahmadou", "ahmed"],
+    "mamadou": ["mamadu", "mahmadou"],
+    "boubacar": ["abubakar", "abu bakr", "aboubacar"],
+    "abubakar": ["boubacar", "abu bakr", "aboubacar"],
+    "seydou": ["saidou", "saidu"],
+    "cheikh": ["sheikh", "shaykh"],
+    "ould": ["wuld"],
+    "ben": ["ibn", "bin"],
+    "el": ["al", "ul"],
+    "al": ["el", "ul"],
+}
+
+
+def _transliterate_name(name: str) -> str:
+    """Remove diacritics and transliterate French/Arabic characters to ASCII."""
+    result = name
+    for char, replacement in _TRANSLITERATION_MAP.items():
+        result = result.replace(char, replacement)
+        result = result.replace(char.upper(), replacement.upper() if replacement else "")
+    # Also apply Unicode NFKD decomposition to strip remaining combining marks
+    decomposed = unicodedata.normalize("NFKD", result)
+    ascii_name = "".join(c for c in decomposed if not unicodedata.combining(c))
+    return ascii_name
+
+
 def generate_name_variants(full_name: str) -> list[str]:
-    """Generate alternative name forms for fuzzy matching."""
+    """Generate alternative name forms for fuzzy matching.
+
+    Includes transliteration variants for French/Arabic names common
+    in North and West Africa.
+    """
     variants = {full_name}
 
     parts = full_name.split()
@@ -140,14 +252,27 @@ def generate_name_variants(full_name: str) -> list[str]:
         variants.add(f"{parts[0]} {parts[-1]}")
         # Last, First
         variants.add(f"{parts[-1]}, {parts[0]}")
-        # First Middle Last -> First Last
+        # First Middle Last -> Last First Middle
         if len(parts) >= 3:
-            variants.add(f"{parts[0]} {parts[-1]}")
-            # Last First Middle
             variants.add(f"{parts[-1]} {' '.join(parts[:-1])}")
         # Initials
         initials = " ".join(p[0] + "." for p in parts[:-1]) + " " + parts[-1]
         variants.add(initials)
+
+    # Generate transliterated variant (strip diacritics)
+    transliterated = _transliterate_name(full_name)
+    if transliterated != full_name:
+        variants.add(transliterated)
+
+    # Generate prefix alternates for French/Arabic name parts
+    for i, part in enumerate(parts):
+        part_lower = part.lower()
+        if part_lower in _NAME_PREFIX_ALTERNATES:
+            for alternate in _NAME_PREFIX_ALTERNATES[part_lower]:
+                alt_parts = list(parts)
+                # Preserve original casing style
+                alt_parts[i] = alternate.title() if part[0].isupper() else alternate
+                variants.add(" ".join(alt_parts))
 
     return list(variants)
 

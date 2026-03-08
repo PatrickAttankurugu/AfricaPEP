@@ -12,6 +12,8 @@ from africapep.scraper.spiders.wikidata_scraper import WikidataScraper, COUNTRY_
 from africapep.pipeline.normaliser import normalise_record
 from africapep.pipeline.classifier import classify_pep_tier
 from africapep.pipeline.resolver import EntityResolver
+from africapep.pipeline.extractor import extract_entities
+from africapep.pipeline.relationship_builder import build_relationships_from_text
 from africapep.database.neo4j_client import neo4j_client
 from africapep.database.sync import sync_all
 
@@ -27,6 +29,8 @@ def main():
 
     resolver = EntityResolver()
     total_raw = 0
+    # Collect (entity_id, raw_text) pairs for relationship extraction
+    entity_texts: list[tuple[str, str]] = []
 
     print(f"  Pulling PEP data for {len(COUNTRY_QIDS)} African countries...")
     print()
@@ -40,8 +44,20 @@ def main():
             total_raw += len(records)
             for record in records:
                 normalised = normalise_record(record)
+
+                # NLP extraction: enrich extra_fields with extracted entities
+                try:
+                    extracted = extract_entities(record.raw_text)
+                    if extracted.organisations:
+                        normalised.extra_fields["extracted_orgs"] = extracted.organisations
+                    if extracted.titles:
+                        normalised.extra_fields["extracted_titles"] = extracted.titles
+                except Exception:
+                    pass  # NLP enrichment is best-effort
+
                 tier = classify_pep_tier(normalised.title, normalised.institution)
-                resolver.add(normalised, tier)
+                entity_id = resolver.add(normalised, tier)
+                entity_texts.append((entity_id, record.raw_text))
         except Exception as exc:
             print(f"FAILED: {exc}")
             log.error("seed.failed", country=code, error=str(exc))
@@ -56,6 +72,23 @@ def main():
     print("  Writing to Neo4j...")
     written = resolver.flush_to_neo4j(neo4j_client)
     print(f"    Written {written} entities")
+
+    # Relationship extraction pass: detect family/associate links from raw text
+    print("  Building relationships...")
+    known_persons = {
+        entity.full_name: entity.id
+        for entity in resolver.entities.values()
+    }
+    rel_count = 0
+    for entity_id, raw_text in entity_texts:
+        try:
+            build_relationships_from_text(
+                raw_text, entity_id, neo4j_client, known_persons
+            )
+            rel_count += 1
+        except Exception:
+            pass  # Relationship extraction is best-effort
+    print(f"    Processed {rel_count} records for relationships")
 
     print("  Syncing to PostgreSQL...")
     synced = sync_all()

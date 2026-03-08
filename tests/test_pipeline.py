@@ -1,5 +1,5 @@
 """Tests for the NLP pipeline: normaliser, classifier, extractor."""
-from datetime import datetime
+from datetime import datetime, timezone
 
 import pytest
 
@@ -83,7 +83,7 @@ class TestNormaliser:
             source_url="https://parliament.gh",
             source_type="PARLIAMENT",
             raw_text="Hon. Kwame Mensah MP",
-            scraped_at=datetime.utcnow(),
+            scraped_at=datetime.now(timezone.utc),
         )
 
         normalised = normalise_record(record)

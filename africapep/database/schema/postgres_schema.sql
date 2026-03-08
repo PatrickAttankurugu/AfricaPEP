@@ -12,6 +12,8 @@ CREATE TABLE IF NOT EXISTS pep_profiles (
     is_active_pep BOOLEAN DEFAULT TRUE,
     current_positions JSONB DEFAULT '[]',
     country VARCHAR(2),
+    first_seen TIMESTAMPTZ DEFAULT NOW(),
+    last_seen TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW(),
     search_vector TSVECTOR
 );
