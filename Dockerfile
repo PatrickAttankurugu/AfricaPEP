@@ -13,6 +13,10 @@ RUN pip install --no-cache-dir https://github.com/explosion/spacy-models/release
 COPY . .
 ENV PYTHONPATH=/app
 
+# Run as non-root user
+RUN useradd -m -s /bin/bash appuser && chown -R appuser:appuser /app
+USER appuser
+
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 

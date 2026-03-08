@@ -11,6 +11,7 @@ from slowapi.errors import RateLimitExceeded
 from sqlalchemy.exc import OperationalError, InterfaceError
 import structlog
 
+from africapep.config import settings
 from africapep.api.routers import screen, pep, graph, search, health, countries
 
 log = structlog.get_logger()
@@ -42,8 +43,8 @@ app = FastAPI(
         "- **Dual Database** — Neo4j graph + PostgreSQL for fast search\n"
     ),
     version="1.0.0",
-    docs_url="/docs",
-    redoc_url="/redoc",
+    docs_url="/docs" if settings.environment != "production" else None,
+    redoc_url="/redoc" if settings.environment != "production" else None,
     openapi_tags=tags_metadata,
     contact={"name": "Patrick Attankurugu", "url": "https://github.com/PatrickAttankurugu/AfricaPEP"},
     license_info={"name": "MIT", "url": "https://opensource.org/licenses/MIT"},
@@ -59,8 +60,8 @@ app.add_middleware(
         "http://localhost:3000",
     ],
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization", "X-API-Key"],
 )
 
 
@@ -119,7 +120,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 # Database connection errors -> 503
 @app.exception_handler(OperationalError)
 async def db_operational_error_handler(request: Request, exc: OperationalError):
-    log.error("database_connection_error", error=str(exc))
+    log.error("database_connection_error", error_type=type(exc).__name__)
     return JSONResponse(
         status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
         content={
@@ -131,7 +132,7 @@ async def db_operational_error_handler(request: Request, exc: OperationalError):
 
 @app.exception_handler(InterfaceError)
 async def db_interface_error_handler(request: Request, exc: InterfaceError):
-    log.error("database_interface_error", error=str(exc))
+    log.error("database_interface_error", error_type=type(exc).__name__)
     return JSONResponse(
         status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
         content={
@@ -144,7 +145,7 @@ async def db_interface_error_handler(request: Request, exc: InterfaceError):
 # Catch-all for unhandled exceptions -> 500
 @app.exception_handler(Exception)
 async def general_exception_handler(request: Request, exc: Exception):
-    log.error("unhandled_exception", error=str(exc), type=type(exc).__name__)
+    log.error("unhandled_exception", error_type=type(exc).__name__)
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content={

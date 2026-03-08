@@ -10,6 +10,8 @@ from fastapi.responses import JSONResponse
 from sqlalchemy import text
 from sqlalchemy.exc import OperationalError, InterfaceError
 from rapidfuzz import fuzz
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 import structlog
 
 from africapep.api.schemas import (
@@ -22,9 +24,11 @@ from africapep.database.postgres_client import get_db
 
 log = structlog.get_logger()
 router = APIRouter()
+limiter = Limiter(key_func=get_remote_address)
 
 
 @router.post("/screen", response_model=ScreeningResponse)
+@limiter.limit("60/minute")
 def screen_name(request: ScreeningRequest, req: Request):
     """Screen a name against the PEP database using fuzzy matching.
 
@@ -68,6 +72,7 @@ def screen_name(request: ScreeningRequest, req: Request):
 
 
 @router.post("/screen/batch", response_model=BatchScreeningResponse)
+@limiter.limit("20/minute")
 def screen_batch(request: BatchScreeningRequest, req: Request):
     """Screen multiple names against the PEP database in a single request.
 

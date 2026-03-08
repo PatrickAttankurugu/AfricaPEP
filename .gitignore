@@ -17,8 +17,18 @@ build/
 venv/
 env/
 
-# Environment variables
+# Environment variables and secrets
 .env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.secret
+credentials.json
+service-account.json
+secrets/
 
 # Data directories (large/local only)
 data/neo4j/

@@ -3,16 +3,16 @@ services:
     image: neo4j:5-community
     restart: unless-stopped
     ports:
-      - "7474:7474"
-      - "7687:7687"
+      - "127.0.0.1:7474:7474"
+      - "127.0.0.1:7687:7687"
     volumes:
       - ./data/neo4j:/data
     environment:
-      NEO4J_AUTH: neo4j/africapep_secret
+      NEO4J_AUTH: neo4j/${NEO4J_PASSWORD:-changeme}
       NEO4J_dbms_memory_heap_initial__size: 512m
       NEO4J_dbms_memory_heap_max__size: 1G
     healthcheck:
-      test: ["CMD", "cypher-shell", "-u", "neo4j", "-p", "africapep_secret", "RETURN 1"]
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:7474 || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -21,15 +21,15 @@ services:
     image: postgres:15
     restart: unless-stopped
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - ./data/postgres:/var/lib/postgresql/data
     environment:
-      POSTGRES_USER: africapep
-      POSTGRES_PASSWORD: africapep_secret
-      POSTGRES_DB: africapep
+      POSTGRES_USER: ${POSTGRES_USER:-africapep}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      POSTGRES_DB: ${POSTGRES_DB:-africapep}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U africapep"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-africapep}"]
       interval: 5s
       timeout: 3s
       retries: 10
@@ -45,7 +45,7 @@ services:
       postgres:
         condition: service_healthy
     env_file: .env
-    command: uvicorn africapep.api.main:app --host 0.0.0.0 --port 8000
+    command: uvicorn africapep.api.main:app --host 0.0.0.0 --port 8000 --workers 4
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 15s

@@ -42,7 +42,9 @@ def search_peps(
             "OR :query = ANY(name_variants))"
         )
         params["query"] = q
-        params["like_query"] = f"%{q}%"
+        # Escape LIKE wildcards to prevent pattern injection
+        escaped_q = q.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+        params["like_query"] = f"%{escaped_q}%"
 
     if country:
         conditions.append("(nationality = :country OR country = :country)")

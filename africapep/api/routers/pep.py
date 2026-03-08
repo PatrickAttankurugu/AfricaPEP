@@ -15,7 +15,7 @@ def get_pep_profile(pep_id: str):
     results = neo4j_client.get_person(pep_id)
 
     if not results:
-        raise HTTPException(status_code=404, detail=f"PEP not found: {pep_id}")
+        raise HTTPException(status_code=404, detail="PEP not found")
 
     record = results[0]
     person = record["p"]
