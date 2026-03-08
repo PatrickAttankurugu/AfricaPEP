@@ -1,11 +1,13 @@
 # AfricaPEP — African Politically Exposed Persons Database
 
+[![CI](https://github.com/PatrickAttankurugu/AfricaPEP/actions/workflows/ci.yml/badge.svg)](https://github.com/PatrickAttankurugu/AfricaPEP/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![Docker](https://img.shields.io/badge/docker-compose-blue.svg)](https://docs.docker.com/compose/)
 [![Tests](https://img.shields.io/badge/tests-79%20passing-brightgreen.svg)](#running-tests)
 [![Countries](https://img.shields.io/badge/countries-54-orange.svg)](#database-coverage)
 [![PEPs](https://img.shields.io/badge/PEP%20profiles-32%2C476-purple.svg)](#database-coverage)
+[![Contributing](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
 A production-grade, open-source PEP (Politically Exposed Persons) database covering **all 54 African Union member states**. Built for KYC/AML compliance teams who need reliable PEP screening without expensive third-party data subscriptions.
 
@@ -293,13 +295,24 @@ docker compose exec api python -m pytest tests/ -v
 
 We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
-### Ways to contribute:
+### Good first issues
 
-- **Add new data sources** — Government gazettes, electoral commissions, judiciary websites
-- **Improve NLP pipeline** — Better name normalisation, relationship detection
-- **Add regional bodies** — AU, ECOWAS, SADC, EAC officials
-- **Frontend** — Improve the Next.js screening UI
-- **Documentation** — Improve docs, add examples
+New to the project? Look for issues labeled [`good first issue`](https://github.com/PatrickAttankurugu/AfricaPEP/labels/good%20first%20issue):
+
+- Add date of birth extraction from Wikidata SPARQL
+- Improve FATF tier classification for judiciary roles
+- Add French/Arabic name transliteration support
+- Write tests for the sync module
+- Add API response pagination headers
+
+### Other ways to contribute
+
+- **Add supplementary data sources** — Government gazettes, electoral commissions, judiciary websites
+- **Improve NLP pipeline** — Better name normalisation, African naming conventions, relationship detection
+- **Add regional bodies** — AU Commission, ECOWAS, SADC, EAC officials
+- **Frontend** — Improve the Next.js screening UI, add data visualisations
+- **Documentation** — Improve docs, add tutorials, translate to French/Arabic/Portuguese
+- **Testing** — Add edge cases, performance tests, end-to-end tests
 
 ## Design Principles
 
@@ -308,6 +321,14 @@ We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 - **Never delete:** Positions are end-dated, not deleted. Inactive PEPs are flagged, not removed
 - **Polite scraping:** Rate-limited queries, User-Agent identification
 - **Graph-first:** Neo4j is the source of truth; PostgreSQL is a search index synced from it
+- **Industry-standard API:** Screening responses follow OpenSanctions/ComplyAdvantage patterns
+
+## Community
+
+- [GitHub Discussions](https://github.com/PatrickAttankurugu/AfricaPEP/discussions) — Ask questions, share ideas
+- [GitHub Issues](https://github.com/PatrickAttankurugu/AfricaPEP/issues) — Report bugs, request features
+- [CHANGELOG](CHANGELOG.md) — See what's new
+- [Security Policy](SECURITY.md) — Report vulnerabilities responsibly
 
 ## License
 

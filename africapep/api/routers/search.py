@@ -10,6 +10,7 @@ import structlog
 
 from africapep.api.schemas import (
     SearchResponse, SearchResultItem, PositionResponse, StatsResponse,
+    tier_to_risk_level,
 )
 from africapep.database.postgres_client import get_db
 
@@ -88,10 +89,12 @@ def search_peps(
                             is_current=True,
                         ))
 
+                pep_tier = row.pep_tier or 2
                 results.append(SearchResultItem(
                     id=str(row.neo4j_id or row.id),
                     full_name=row.full_name,
-                    pep_tier=row.pep_tier or 2,
+                    pep_tier=pep_tier,
+                    risk_level=tier_to_risk_level(pep_tier),
                     is_active=row.is_active_pep if row.is_active_pep is not None else True,
                     nationality=row.nationality or "",
                     positions=positions,

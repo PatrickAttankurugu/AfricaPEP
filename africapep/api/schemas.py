@@ -1,4 +1,8 @@
-"""Pydantic request/response models for the API."""
+"""Pydantic request/response models for the API.
+
+Response format follows industry standards (OpenSanctions, ComplyAdvantage,
+Dow Jones patterns) for PEP/sanctions screening APIs.
+"""
 from datetime import date, datetime
 from typing import Optional
 from uuid import UUID
@@ -11,7 +15,7 @@ from pydantic import BaseModel, Field, field_validator
 class ScreeningRequest(BaseModel):
     name: str = Field(..., min_length=2, max_length=200, description="Name to screen")
     country: Optional[str] = Field(None, min_length=2, max_length=2, description="ISO 3166-1 alpha-2 country code")
-    threshold: float = Field(0.75, ge=0.0, le=1.0, description="Minimum match score")
+    threshold: float = Field(0.75, ge=0.0, le=1.0, description="Minimum match score (0.0-1.0)")
 
     model_config = {"json_schema_extra": {
         "examples": [{"name": "Kwame Mensah", "country": "GH", "threshold": 0.75}]
@@ -46,35 +50,57 @@ class SourceResponse(BaseModel):
     scraped_at: Optional[str] = None
 
 
+class MatchExplanation(BaseModel):
+    """Explains why a match was returned — which scoring components contributed."""
+    name_similarity: float = Field(description="Token-sort ratio between query and matched name (0.0-1.0)")
+    best_variant_score: float = Field(description="Highest score across all name variants (0.0-1.0)")
+    method: str = Field(default="rapidfuzz_token_sort", description="Scoring algorithm used")
+    matched_variant: Optional[str] = Field(None, description="Name variant that produced the best score, if different from primary name")
+
+
 class MatchResult(BaseModel):
-    pep_id: str
-    matched_name: str
-    match_score: float
-    pep_tier: int
-    is_active: bool
-    positions: list[PositionResponse] = []
-    nationality: str = ""
-    sources: list[SourceResponse] = []
+    pep_id: str = Field(description="Unique entity identifier")
+    matched_name: str = Field(description="Primary name of the matched PEP")
+    match_score: float = Field(description="Overall match score (0.0-1.0)")
+    match: bool = Field(description="Whether this result meets the screening threshold")
+    pep_tier: int = Field(description="FATF risk tier (1=highest, 2=elevated, 3=standard)")
+    risk_level: str = Field(description="Human-readable risk level: high, elevated, or standard")
+    is_active: bool = Field(description="Whether the person currently holds a PEP position")
+    nationality: str = Field(default="", description="ISO 3166-1 alpha-2 country code")
+    date_of_birth: Optional[str] = Field(None, description="Date of birth (YYYY-MM-DD) if known")
+    aliases: list[str] = Field(default=[], description="Known name variants and aliases")
+    positions: list[PositionResponse] = Field(default=[], description="Political positions held")
+    sources: list[SourceResponse] = Field(default=[], description="Data sources for this record")
+    datasets: list[str] = Field(default=["africapep-wikidata"], description="Datasets this entity appears in")
+    first_seen: Optional[str] = Field(None, description="When this entity was first ingested (ISO 8601)")
+    last_seen: Optional[str] = Field(None, description="When this entity was last confirmed (ISO 8601)")
+    explanation: Optional[MatchExplanation] = Field(None, description="Scoring breakdown explaining the match")
 
 
 class ScreeningResponse(BaseModel):
-    query: str
-    matches: list[MatchResult]
-    screening_id: str
-    screened_at: str
+    query: str = Field(description="The name that was screened")
+    threshold: float = Field(description="Match threshold used for this screening")
+    total_matches: int = Field(description="Number of matches found")
+    matches: list[MatchResult] = Field(description="Matched PEP entities, sorted by score descending")
+    screening_id: str = Field(description="Unique ID for this screening (for audit trail)")
+    screened_at: str = Field(description="Timestamp of the screening (ISO 8601)")
 
 
 class PepProfileResponse(BaseModel):
     id: str
     full_name: str
-    name_variants: list[str] = []
+    aliases: list[str] = []
     date_of_birth: Optional[str] = None
     nationality: str = ""
     gender: str = ""
     pep_tier: int
+    risk_level: str = ""
     is_active_pep: bool = True
     positions: list[PositionResponse] = []
     sources: list[SourceResponse] = []
+    datasets: list[str] = ["africapep-wikidata"]
+    first_seen: Optional[str] = None
+    last_seen: Optional[str] = None
 
 
 class GraphNode(BaseModel):
@@ -100,6 +126,7 @@ class SearchResultItem(BaseModel):
     id: str
     full_name: str
     pep_tier: int
+    risk_level: str = ""
     is_active: bool
     nationality: str = ""
     positions: list[PositionResponse] = []
@@ -154,13 +181,36 @@ class BatchScreeningRequest(BaseModel):
 
 
 class BatchScreeningResultItem(BaseModel):
-    query: str
-    matches: list["MatchResult"]
-    screening_id: str
-    screened_at: str
+    query_name: str = Field(description="The name that was screened")
+    match_count: int = Field(description="Number of matches found")
+    matches: list[MatchResult] = Field(description="Matched PEP entities")
 
 
 class BatchScreeningResponse(BaseModel):
     results: list[BatchScreeningResultItem]
     total_queries: int
     total_matches: int
+    screening_id: str = Field(description="Unique ID for this batch screening")
+    screened_at: str = Field(description="Timestamp of the screening (ISO 8601)")
+    threshold: float = Field(description="Match threshold used")
+
+
+# ── Country coverage models ──
+
+class CountryInfo(BaseModel):
+    code: str = Field(description="ISO 3166-1 alpha-2 country code")
+    name: str = Field(description="Country name")
+    region: str = Field(description="African region")
+    pep_count: int = Field(description="Number of PEP profiles")
+
+
+class CountriesResponse(BaseModel):
+    total_countries: int
+    countries: list[CountryInfo]
+
+
+# ── Utility ──
+
+def tier_to_risk_level(tier: int) -> str:
+    """Convert FATF tier number to human-readable risk level."""
+    return {1: "high", 2: "elevated", 3: "standard"}.get(tier, "unknown")

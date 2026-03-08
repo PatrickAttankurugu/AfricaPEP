@@ -14,8 +14,9 @@ import structlog
 
 from africapep.api.schemas import (
     ScreeningRequest, ScreeningResponse, MatchResult,
-    PositionResponse, SourceResponse,
+    PositionResponse, SourceResponse, MatchExplanation,
     BatchScreeningRequest, BatchScreeningResponse, BatchScreeningResultItem,
+    tier_to_risk_level,
 )
 from africapep.database.postgres_client import get_db
 
@@ -58,6 +59,8 @@ def screen_name(request: ScreeningRequest, req: Request):
 
     return ScreeningResponse(
         query=request.name,
+        threshold=request.threshold,
+        total_matches=len(matches),
         matches=matches,
         screening_id=screening_id,
         screened_at=screened_at,
@@ -107,16 +110,21 @@ def screen_batch(request: BatchScreeningRequest, req: Request):
         _log_screening(screening_id, entry.name, matches)
 
         results.append(BatchScreeningResultItem(
-            query=entry.name,
+            query_name=entry.name,
+            match_count=len(matches),
             matches=matches,
-            screening_id=screening_id,
-            screened_at=screened_at,
         ))
+
+    batch_screening_id = str(uuid.uuid4())
+    batch_screened_at = datetime.now(timezone.utc).isoformat()
 
     return BatchScreeningResponse(
         results=results,
         total_queries=len(request.names),
         total_matches=total_matches,
+        screening_id=batch_screening_id,
+        screened_at=batch_screened_at,
+        threshold=request.threshold,
     )
 
 
@@ -128,6 +136,7 @@ def _find_matches(query_name: str, country: str = None,
     sql = """
         SELECT id, neo4j_id, full_name, name_variants, date_of_birth,
                nationality, pep_tier, is_active_pep, current_positions,
+               first_seen, last_seen,
                similarity(full_name, :query) AS trgm_score
         FROM pep_profiles
         WHERE similarity(full_name, :query) > :min_sim
@@ -148,18 +157,27 @@ def _find_matches(query_name: str, country: str = None,
 
         for row in rows:
             # Re-rank using rapidfuzz
-            name_scores = [fuzz.token_sort_ratio(query_name, row.full_name) / 100.0]
+            primary_score = fuzz.token_sort_ratio(query_name, row.full_name) / 100.0
+            name_scores = [primary_score]
+            matched_variant = None
 
             # Also check against name variants
+            aliases = []
             if row.name_variants:
                 for variant in row.name_variants:
+                    aliases.append(variant)
                     score = fuzz.token_sort_ratio(query_name, variant) / 100.0
-                    name_scores.append(score)
+                    if score > primary_score:
+                        name_scores.append(score)
+                        matched_variant = variant
 
             best_score = max(name_scores)
 
             if best_score < threshold:
                 continue
+
+            pep_tier = row.pep_tier or 2
+            is_active = row.is_active_pep if row.is_active_pep is not None else True
 
             # Parse positions from JSONB
             positions = []
@@ -173,15 +191,36 @@ def _find_matches(query_name: str, country: str = None,
                         is_current=True,
                     ))
 
+            # Build match explanation
+            explanation = MatchExplanation(
+                name_similarity=round(primary_score, 4),
+                best_variant_score=round(best_score, 4),
+                method="rapidfuzz_token_sort",
+                matched_variant=matched_variant,
+            )
+
+            # Format dates
+            dob = str(row.date_of_birth) if row.date_of_birth else None
+            first_seen = row.first_seen.isoformat() if hasattr(row, 'first_seen') and row.first_seen else None
+            last_seen = row.last_seen.isoformat() if hasattr(row, 'last_seen') and row.last_seen else None
+
             matches.append(MatchResult(
                 pep_id=str(row.neo4j_id or row.id),
                 matched_name=row.full_name,
                 match_score=round(best_score, 4),
-                pep_tier=row.pep_tier or 2,
-                is_active=row.is_active_pep if row.is_active_pep is not None else True,
-                positions=positions,
+                match=best_score >= threshold,
+                pep_tier=pep_tier,
+                risk_level=tier_to_risk_level(pep_tier),
+                is_active=is_active,
                 nationality=row.nationality or "",
+                date_of_birth=dob,
+                aliases=aliases,
+                positions=positions,
                 sources=[],
+                datasets=["africapep-wikidata"],
+                first_seen=first_seen,
+                last_seen=last_seen,
+                explanation=explanation,
             ))
 
     # Sort by score descending

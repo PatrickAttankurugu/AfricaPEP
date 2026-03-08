@@ -72,24 +72,33 @@ class TestResponseModels:
             pep_id="test-uuid",
             matched_name="Kwame Mensah",
             match_score=0.89,
+            match=True,
             pep_tier=1,
+            risk_level="high",
             is_active=True,
             nationality="GH",
         )
         assert match.match_score == 0.89
         assert match.pep_tier == 1
+        assert match.match is True
+        assert match.risk_level == "high"
+        assert match.datasets == ["africapep-wikidata"]
 
     def test_screening_response(self):
         from africapep.api.schemas import ScreeningResponse, MatchResult
 
         resp = ScreeningResponse(
             query="Kwame Mensah",
+            threshold=0.75,
+            total_matches=1,
             matches=[
                 MatchResult(
                     pep_id="uuid-1",
                     matched_name="Kwame Asante Mensah",
                     match_score=0.89,
+                    match=True,
                     pep_tier=1,
+                    risk_level="high",
                     is_active=True,
                     nationality="GH",
                 )
@@ -99,6 +108,8 @@ class TestResponseModels:
         )
         assert len(resp.matches) == 1
         assert resp.matches[0].match_score == 0.89
+        assert resp.threshold == 0.75
+        assert resp.total_matches == 1
 
     def test_graph_response(self):
         from africapep.api.schemas import GraphResponse, GraphNode, GraphEdge

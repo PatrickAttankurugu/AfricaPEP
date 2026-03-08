@@ -1,129 +1,210 @@
 # Contributing to AfricaPEP
 
-Thank you for your interest in contributing to AfricaPEP! This project aims to provide free, comprehensive PEP screening coverage for all African countries.
+Thank you for your interest in contributing to AfricaPEP — the open-source African PEP database for KYC/AML compliance.
+
+## Quick Links
+
+- **Live demo:** [pep.patrickaiafrica.com](https://pep.patrickaiafrica.com)
+- **API docs:** [api-pep.patrickaiafrica.com/docs](https://api-pep.patrickaiafrica.com/docs)
+- **Issues:** [GitHub Issues](https://github.com/PatrickAttankurugu/AfricaPEP/issues)
+- **Discussions:** [GitHub Discussions](https://github.com/PatrickAttankurugu/AfricaPEP/discussions)
 
 ## Getting Started
 
-1. Fork the repository
-2. Clone your fork: `git clone https://github.com/YOUR_USERNAME/AfricaPEP.git`
-3. Create a branch: `git checkout -b feature/your-feature-name`
-4. Set up your development environment (see below)
-
-### Development Setup
+### 1. Fork and clone
 
 ```bash
-# Install dependencies
-pip install -r requirements.txt
-python -m spacy download en_core_web_sm
+git clone https://github.com/YOUR_USERNAME/AfricaPEP.git
+cd AfricaPEP
+```
 
-# Configure
+### 2. Set up your environment
+
+**Option A: Docker (recommended)**
+
+```bash
 cp .env.example .env
-# Edit .env with your local database credentials
-
-# Or use Docker (recommended)
 docker compose up -d
 docker compose exec api python -m africapep.database.init
 docker compose exec api python -m africapep.database.seed
 ```
 
-### Running Tests
+**Option B: Local**
 
 ```bash
-# Run all tests
+# Requires Python 3.11+, Neo4j 5, PostgreSQL 15
+pip install -r requirements.txt
+python -m spacy download en_core_web_sm
+
+cp .env.example .env
+# Edit .env with your database credentials
+
+python -m africapep.database.init
+python -m africapep.database.seed
+```
+
+### 3. Run tests
+
+```bash
+# All unit tests (no database needed)
+pytest tests/ -v -m "not integration"
+
+# All tests including integration
 pytest tests/ -v
 
-# Run with coverage
+# With coverage
 pytest tests/ --cov=africapep --cov-report=html
 ```
 
 All tests must pass before submitting a PR.
 
+### 4. Create a branch
+
+```bash
+git checkout -b feature/your-feature-name
+# or
+git checkout -b fix/your-bugfix-name
+```
+
 ## How to Contribute
 
-### Adding a New Country Scraper
+### Good First Issues
 
-This is the most impactful way to contribute. Many countries currently only have presidency scrapers — adding parliament, judiciary, or gazette scrapers dramatically improves coverage.
+Look for issues labeled [`good first issue`](https://github.com/PatrickAttankurugu/AfricaPEP/labels/good%20first%20issue). These are small, well-defined tasks ideal for newcomers.
 
-1. Create `africapep/scraper/spiders/{country}_{source}.py`
-2. Inherit from `BaseScraper` (or `BaseGovGazetteScraper` for gazette PDFs)
-3. Implement `scrape()` and `_load_fixture()` methods
-4. Add to `ALL_SCRAPERS` in `africapep/scraper/spiders/__init__.py`
-5. Add fixture test in `tests/test_scrapers.py`
-6. Update PEP tier classifier with country-specific titles if needed
+### Data & Scraping
+
+AfricaPEP pulls data from [Wikidata's SPARQL endpoint](https://query.wikidata.org/). The single `WikidataScraper` covers all 54 African countries.
+
+Ways to improve data quality:
+
+- **Expand the SPARQL query** — Add fields like date of birth, party affiliation, or education
+- **Add supplementary data sources** — Government gazettes, electoral commissions, judiciary websites (create a new scraper inheriting from `BaseScraper`)
+- **Improve entity resolution** — Better deduplication scoring, handling of transliterated names
+- **Add regional bodies** — AU Commission, ECOWAS, SADC, EAC officials
+
+Example: adding a new data source scraper:
 
 ```python
 from africapep.scraper.base_scraper import BaseScraper, RawPersonRecord
 
-class NewCountryScraper(BaseScraper):
-    country_code = "XX"
-    source_type = "PARLIAMENT"
+class GovernmentGazetteScraper(BaseScraper):
+    source_type = "GAZETTE"
+
+    def __init__(self, country_code: str):
+        super().__init__()
+        self.country_code = country_code
 
     def scrape(self) -> list[RawPersonRecord]:
         # Your scraping logic here
         ...
-
-    def _load_fixture(self) -> list[RawPersonRecord]:
-        return self._synthetic_fixture()
 ```
 
-### Improving Existing Scrapers
+### NLP Pipeline
 
-- Fix broken selectors when government websites change
-- Add more data extraction (dates, relationships, party affiliation)
-- Improve fixture data with more realistic test records
+- Better name normalisation for African naming conventions (patronymics, clan names, Arabic transliterations)
+- Improved FATF tier classification — add country-specific political titles
+- Date format parsing for various conventions used across Africa
 
-### NLP Pipeline Improvements
+### API & Backend
 
-- Better name normalisation for different naming conventions
-- Improved entity resolution scoring
-- Date format parsing for various African date conventions
+- Add new endpoints (e.g., relationship graph queries, PEP timeline)
+- Improve fuzzy matching algorithm
+- Add API authentication / rate limiting
+- Performance optimisation for large result sets
 
-### Bug Reports
+### Frontend (Next.js)
 
-Open an issue with:
-- Steps to reproduce
-- Expected vs actual behavior
-- Environment details (OS, Python version, Docker version)
+- Improve the screening UI/UX
+- Add data visualisations (PEP distribution maps, network graphs)
+- Accessibility improvements
+- Internationalisation (French, Arabic, Portuguese, Swahili)
 
-### Feature Requests
+### Documentation
 
-Open an issue describing:
-- The problem you're trying to solve
-- Your proposed solution
-- Any alternatives you've considered
+- Improve API documentation with more examples
+- Write tutorials for common use cases
+- Translate docs into other languages
+
+### Testing
+
+- Add tests for uncovered modules
+- Add end-to-end tests
+- Add performance/load tests
+
+## Architecture Overview
+
+```
+Wikidata SPARQL  -->  WikidataScraper  -->  NLP Pipeline  -->  Entity Resolver
+                                            (normalise)        (deduplicate)
+                                            (classify)
+                                                                    |
+                                                          +---------+---------+
+                                                          v                   v
+                                                       Neo4j             PostgreSQL
+                                                   (graph/truth)       (search index)
+                                                          |                   |
+                                                          +--------+----------+
+                                                                   v
+                                                               FastAPI
+                                                                   v
+                                                            Next.js Frontend
+```
+
+**Key principle:** Neo4j is the source of truth. PostgreSQL is a search index synced from Neo4j.
 
 ## Code Style
 
-- Python 3.11+ with type hints
-- Follow existing code patterns and conventions
+- **Python 3.11+** with type hints
+- Follow existing patterns in the codebase
 - Keep functions focused and well-named
-- Add tests for new functionality
+- Use `structlog` for logging (not `print`)
+- Add tests for any new functionality
 
 ## Pull Request Process
 
-1. Update tests if you've changed functionality
-2. Ensure all tests pass: `pytest tests/ -v`
-3. Update documentation if needed
-4. Write a clear PR description explaining what and why
-5. Reference any related issues
+1. Create a feature branch from `main`
+2. Make your changes with clear, atomic commits
+3. Add/update tests as needed
+4. Ensure all tests pass: `pytest tests/ -v`
+5. Update documentation if your change affects the public API
+6. Open a PR with a clear title and description
+7. Reference any related issues (e.g., "Closes #42")
+
+### PR Title Convention
+
+```
+feat: add date of birth extraction from Wikidata
+fix: handle timeout in SPARQL queries
+docs: add batch screening API example
+test: add entity resolver edge cases
+refactor: simplify fuzzy matching pipeline
+```
 
 ## Scraping Ethics
 
-When writing scrapers, please follow these principles:
+When writing scrapers:
 
-- **Respect robots.txt** — Check and obey robots.txt directives
-- **Rate limiting** — Minimum 2 seconds between requests
-- **User-Agent** — Identify as AfricaPEP in the User-Agent string
-- **Public data only** — Only scrape publicly available government data
-- **No authentication bypass** — Never circumvent login walls or CAPTCHAs
+- **Respect robots.txt** — check and obey directives
+- **Rate limit** — minimum 2 seconds between requests
+- **User-Agent** — identify as AfricaPEP
+- **Public data only** — only scrape publicly available data
+- **No auth bypass** — never circumvent login walls or CAPTCHAs
 
 ## Code of Conduct
 
-- Be respectful and constructive
+We are committed to providing a welcoming and inclusive environment. All participants are expected to:
+
+- Be respectful and constructive in all interactions
 - Welcome newcomers and help them get started
-- Focus on the technical merits of contributions
+- Focus on technical merits of contributions
+- Accept constructive criticism gracefully
 - Maintain a harassment-free environment for everyone
+
+See [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for details.
 
 ## Questions?
 
-Open a [GitHub Discussion](../../discussions) or an issue if you need help getting started.
+- Open a [GitHub Discussion](https://github.com/PatrickAttankurugu/AfricaPEP/discussions) for questions
+- Open an [Issue](https://github.com/PatrickAttankurugu/AfricaPEP/issues) for bugs or feature requests
+- Email: patrickattankurugu@gmail.com
