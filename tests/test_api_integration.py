@@ -92,6 +92,59 @@ class TestSearchEndpoint:
         assert resp.status_code == 400
 
 
+class TestSearchPaginationHeaders:
+    """Test pagination headers on /search endpoint."""
+
+    def test_search_includes_total_count_header(self, client):
+        """Verify X-Total-Count header is present in search response."""
+        resp = client.get("/api/v1/search?q=test")
+        assert resp.status_code == 200
+        assert "X-Total-Count" in resp.headers
+        # Should be a valid integer
+        total_count = int(resp.headers["X-Total-Count"])
+        assert total_count >= 0
+
+    def test_search_includes_page_headers(self, client):
+        """Verify X-Page and X-Per-Page headers are present."""
+        resp = client.get("/api/v1/search?q=test&page=2&limit=10")
+        assert resp.status_code == 200
+        assert "X-Page" in resp.headers
+        assert "X-Per-Page" in resp.headers
+        assert resp.headers["X-Page"] == "2"
+        assert resp.headers["X-Per-Page"] == "10"
+
+    def test_search_includes_link_header(self, client):
+        """Verify Link header follows RFC 8288 with pagination links."""
+        resp = client.get("/api/v1/search?q=test&limit=10")
+        assert resp.status_code == 200
+        assert "Link" in resp.headers
+
+        link_header = resp.headers["Link"]
+        # Should contain rel="first" and rel="last"
+        assert 'rel="first"' in link_header
+        assert 'rel="last"' in link_header
+
+    def test_search_link_header_includes_next_when_not_last_page(self, client):
+        """Verify Link header includes 'next' link when not on last page."""
+        # Mock data with multiple pages (assuming total > limit)
+        resp = client.get("/api/v1/search?q=test&page=1&limit=10")
+        assert resp.status_code == 200
+
+        link_header = resp.headers["Link"]
+        # On first page, should have next link
+        if int(resp.headers["X-Total-Count"]) > 10:
+            assert 'rel="next"' in link_header
+
+    def test_search_link_header_includes_prev_when_not_first_page(self, client):
+        """Verify Link header includes 'prev' link when not on first page."""
+        resp = client.get("/api/v1/search?q=test&page=2&limit=10")
+        assert resp.status_code == 200
+
+        link_header = resp.headers["Link"]
+        # On page 2, should have prev link
+        assert 'rel="prev"' in link_header
+
+
 class TestSchemaValidation:
     def test_batch_screening_request_schema(self):
         from africapep.api.schemas import BatchScreeningRequest, BatchNameEntry
