@@ -9,7 +9,7 @@ description = "Open-source African PEP (Politically Exposed Persons) database wi
 readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.11"
-authors = [{name = "Patrick Attankurugu", email = "patrickattankurugu@gmail.com"}]
+authors = [{name = "Patrick Attankurugu", email = "patricka.azuma@gmail.com"}]
 keywords = ["pep", "aml", "kyc", "compliance", "africa", "sanctions", "screening"]
 classifiers = [
     "Development Status :: 4 - Beta",

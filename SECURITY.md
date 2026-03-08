@@ -12,7 +12,7 @@ If you discover a security vulnerability in AfricaPEP, please report it responsi
 
 **Do NOT open a public GitHub issue for security vulnerabilities.**
 
-Instead, email **patrickattankurugu@gmail.com** with:
+Instead, email **patricka.azuma@gmail.com** with:
 
 1. A description of the vulnerability
 2. Steps to reproduce

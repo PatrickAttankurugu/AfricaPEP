@@ -330,6 +330,10 @@ New to the project? Look for issues labeled [`good first issue`](https://github.
 - [CHANGELOG](CHANGELOG.md) — See what's new
 - [Security Policy](SECURITY.md) — Report vulnerabilities responsibly
 
+## Author
+
+**Patrick Attankurugu** — [LinkedIn](https://www.linkedin.com/in/patrick-ai-africa/) | [X/Twitter](https://x.com/patrickaiafrica) | [Email](mailto:patricka.azuma@gmail.com)
+
 ## License
 
 MIT - see [LICENSE](LICENSE) for details.

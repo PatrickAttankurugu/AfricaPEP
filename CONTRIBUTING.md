@@ -207,4 +207,6 @@ See [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for details.
 
 - Open a [GitHub Discussion](https://github.com/PatrickAttankurugu/AfricaPEP/discussions) for questions
 - Open an [Issue](https://github.com/PatrickAttankurugu/AfricaPEP/issues) for bugs or feature requests
-- Email: patrickattankurugu@gmail.com
+- Email: patricka.azuma@gmail.com
+- LinkedIn: [Patrick Attankurugu](https://www.linkedin.com/in/patrick-ai-africa/)
+- X/Twitter: [@patrickaiafrica](https://x.com/patrickaiafrica)
