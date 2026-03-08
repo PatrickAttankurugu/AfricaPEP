@@ -13,9 +13,13 @@ Thank you for your interest in contributing to AfricaPEP — the open-source Afr
 
 ### 1. Fork and clone
 
+1. Click the **Fork** button at [github.com/PatrickAttankurugu/AfricaPEP](https://github.com/PatrickAttankurugu/AfricaPEP)
+2. Clone your fork:
+
 ```bash
-git clone https://github.com/YOUR_USERNAME/AfricaPEP.git
+git clone https://github.com/<your-github-username>/AfricaPEP.git
 cd AfricaPEP
+git remote add upstream https://github.com/PatrickAttankurugu/AfricaPEP.git
 ```
 
 ### 2. Set up your environment
