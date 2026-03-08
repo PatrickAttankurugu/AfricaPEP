@@ -1,11 +1,10 @@
 """Build PEP -> family/associate/org relationship edges from extracted data."""
-import re
 from typing import Optional
 
 import structlog
 from rapidfuzz import fuzz
 
-from africapep.pipeline.extractor import RELATIONSHIP_PATTERNS, extract_entities
+from africapep.pipeline.extractor import extract_entities
 from africapep.database.neo4j_client import Neo4jClient
 
 log = structlog.get_logger()

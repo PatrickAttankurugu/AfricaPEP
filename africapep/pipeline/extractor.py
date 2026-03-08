@@ -8,7 +8,6 @@ from dataclasses import dataclass, field
 
 import spacy
 from spacy.language import Language
-from spacy.tokens import Span
 import structlog
 
 log = structlog.get_logger()

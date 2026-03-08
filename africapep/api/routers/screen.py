@@ -14,7 +14,7 @@ import structlog
 
 from africapep.api.schemas import (
     ScreeningRequest, ScreeningResponse, MatchResult,
-    PositionResponse, SourceResponse, MatchExplanation,
+    PositionResponse, MatchExplanation,
     BatchScreeningRequest, BatchScreeningResponse, BatchScreeningResultItem,
     tier_to_risk_level,
 )
@@ -89,7 +89,6 @@ def screen_batch(request: BatchScreeningRequest, req: Request):
 
     for entry in request.names:
         screening_id = str(uuid.uuid4())
-        screened_at = datetime.now(timezone.utc).isoformat()
 
         try:
             matches = _find_matches(entry.name, entry.country, request.threshold)

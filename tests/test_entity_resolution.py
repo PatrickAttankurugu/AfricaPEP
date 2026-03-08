@@ -1,7 +1,6 @@
 """Tests for entity resolution: merge/no-merge decisions, scoring, deduplication."""
-from datetime import datetime, date
+from datetime import datetime
 
-import pytest
 
 
 def _make_record(name, title="Member of Parliament", institution="Parliament",
@@ -152,7 +151,6 @@ class TestEntityResolver:
 
         # Either merged or flagged as duplicate
         total = len(resolver.entities)
-        dupes = len(resolver.duplicates)
         assert total <= 2
         # At minimum, the resolver handled both records
 

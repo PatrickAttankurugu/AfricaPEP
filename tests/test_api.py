@@ -3,7 +3,6 @@
 These tests use synthetic data and mock database calls.
 """
 import pytest
-from unittest.mock import patch, MagicMock
 
 
 class TestScreeningAPI:

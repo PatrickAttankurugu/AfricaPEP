@@ -3,9 +3,7 @@
 Response format follows industry standards (OpenSanctions, ComplyAdvantage,
 Dow Jones patterns) for PEP/sanctions screening APIs.
 """
-from datetime import date, datetime
 from typing import Optional
-from uuid import UUID
 
 from pydantic import BaseModel, Field, field_validator
 

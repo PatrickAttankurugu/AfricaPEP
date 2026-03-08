@@ -1,7 +1,6 @@
 """GET /api/v1/search — full-text search with filters.
 GET /api/v1/stats — database statistics.
 """
-from datetime import datetime, timezone
 
 from fastapi import APIRouter, Query, HTTPException
 from sqlalchemy import text

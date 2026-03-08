@@ -4,7 +4,6 @@ TIER 1: Heads of state/government level
 TIER 2: Senior officials
 TIER 3: Other PEPs
 """
-import re
 import structlog
 
 log = structlog.get_logger()

@@ -10,7 +10,6 @@ from apscheduler.triggers.cron import CronTrigger
 from sqlalchemy import text
 import structlog
 
-from africapep.config import settings
 from africapep.database.postgres_client import get_db
 from africapep.database.sync import sync_all
 
@@ -111,7 +110,7 @@ def run_gazette_scrapers():
                 log.error("gazette_scraper_failed", scraper=scraper.__class__.__name__,
                           error=str(e))
 
-        written = resolver.flush_to_neo4j(neo4j_client)
+        resolver.flush_to_neo4j(neo4j_client)
         _log_job("run_gazette_scrapers", started, total_records, "SUCCESS")
 
     except Exception as e:
