@@ -7,8 +7,6 @@ the client.
 import sys
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 # ---------------------------------------------------------------------------
 # Provide a fake ``neo4j`` package so the import of neo4j_client succeeds
 # even when the real driver is not installed.

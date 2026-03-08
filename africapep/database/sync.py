@@ -106,7 +106,7 @@ def sync_all():
                 VALUES (:id, :neo4j_id, :url, :type, :country, :scraped, :text)
                 ON CONFLICT DO NOTHING
             """), {
-                "id": str(uuid.uuid4()),
+                "id": str(uuid_mod.uuid4()),
                 "neo4j_id": src["id"],
                 "url": src.get("source_url"),
                 "type": src.get("source_type"),

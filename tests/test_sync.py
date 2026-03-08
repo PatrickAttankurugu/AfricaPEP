@@ -4,8 +4,6 @@ import json
 import uuid as uuid_mod
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 from tests.conftest import sample_person_neo4j
 
 # Mock the neo4j driver before importing sync (not installed in test env)
@@ -15,7 +13,7 @@ if "neo4j" not in sys.modules:
 _mock_neo4j_client_mod = MagicMock()
 sys.modules.setdefault("africapep.database.neo4j_client", _mock_neo4j_client_mod)
 
-from africapep.database.sync import _deterministic_id, _parse_date, sync_all
+from africapep.database.sync import _deterministic_id, _parse_date, sync_all  # noqa: E402
 
 
 class TestDeterministicId:

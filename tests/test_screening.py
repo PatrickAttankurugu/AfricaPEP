@@ -1,10 +1,8 @@
 """Tests for _find_matches() in africapep.api.routers.screen."""
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 # Import factory helpers from conftest (they are plain functions, not fixtures)
-from tests.conftest import sample_pep_row, sample_position
+from tests.conftest import sample_pep_row
 
 
 def _make_db_context(rows):
