@@ -2,7 +2,7 @@
 GET /api/v1/stats — database statistics.
 """
 
-from fastapi import APIRouter, Query, HTTPException
+from fastapi import APIRouter, Query, HTTPException, Response
 from sqlalchemy import text
 from sqlalchemy.exc import OperationalError, InterfaceError
 import structlog
@@ -19,6 +19,7 @@ router = APIRouter()
 
 @router.get("/search", response_model=SearchResponse)
 def search_peps(
+    response: Response,
     q: str = Query(..., min_length=1, description="Search query"),
     country: str = Query(None, min_length=2, max_length=2),
     tier: int = Query(None, ge=1, le=3),
@@ -106,6 +107,36 @@ def search_peps(
             status_code=503,
             detail="Database is temporarily unavailable. Please try again later.",
         )
+
+    # Add pagination headers (RFC 8288)
+    response.headers["X-Total-Count"] = str(total)
+    response.headers["X-Page"] = str(page)
+    response.headers["X-Per-Page"] = str(limit)
+
+    # Build Link header
+    total_pages = (total + limit - 1) // limit  # Ceiling division
+    base_url = "/api/v1/search"
+    query_params = f"?q={q}"
+    if country:
+        query_params += f"&country={country}"
+    if tier is not None:
+        query_params += f"&tier={tier}"
+    if active is not None:
+        query_params += f"&active={active}"
+
+    links = []
+    # First page
+    links.append(f'<{base_url}{query_params}&page=1&limit={limit}>; rel="first"')
+    # Last page
+    links.append(f'<{base_url}{query_params}&page={total_pages}&limit={limit}>; rel="last"')
+    # Next page
+    if page < total_pages:
+        links.append(f'<{base_url}{query_params}&page={page + 1}&limit={limit}>; rel="next"')
+    # Previous page
+    if page > 1:
+        links.append(f'<{base_url}{query_params}&page={page - 1}&limit={limit}>; rel="prev"')
+
+    response.headers["Link"] = ", ".join(links)
 
     return SearchResponse(
         query=q,
