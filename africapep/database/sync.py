@@ -45,8 +45,14 @@ def sync_all():
     with get_db() as db:
         for person in persons:
             neo4j_id = person["id"]
-            full_name = person["full_name"] or ""
+            full_name = (person["full_name"] or "")[:255]
             name_variants = person.get("name_variants") or []
+
+            # Skip junk records (scraper artifacts with extremely long names)
+            if len(person.get("full_name") or "") > 200:
+                log.warning("sync_skip_long_name", neo4j_id=neo4j_id,
+                            name_len=len(person["full_name"]))
+                continue
             dob = person.get("date_of_birth")
             nationality = person.get("nationality")
             pep_tier = person.get("pep_tier")
