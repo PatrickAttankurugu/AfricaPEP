@@ -39,7 +39,7 @@ limiter = Limiter(key_func=get_remote_address)
 
 @router.post("/screen", response_model=ScreeningResponse)
 @limiter.limit("60/minute")
-async def screen_name(request: ScreeningRequest, req: Request):
+async def screen_name(body: ScreeningRequest, request: Request):
     """Screen a name against the PEP database using fuzzy matching.
 
     Uses PostgreSQL pg_trgm similarity for initial candidate retrieval,
@@ -47,7 +47,7 @@ async def screen_name(request: ScreeningRequest, req: Request):
 
     Rate limit: 60 requests per minute.
     """
-    if not request.name or not request.name.strip():
+    if not body.name or not body.name.strip():
         return JSONResponse(
             status_code=400,
             content={"detail": "Name field cannot be empty or whitespace.", "code": "INVALID_INPUT"},
@@ -58,24 +58,24 @@ async def screen_name(request: ScreeningRequest, req: Request):
 
     try:
         matches = await asyncio.to_thread(
-            _find_matches, request.name, request.country, request.threshold
+            _find_matches, body.name, body.country, body.threshold
         )
     except (OperationalError, InterfaceError) as e:
-        log.error("screening_db_unavailable", query=request.name, error=str(e))
+        log.error("screening_db_unavailable", query=body.name, error=str(e))
         raise HTTPException(
             status_code=503,
             detail="Database is temporarily unavailable. Please try again later.",
         )
     except Exception as e:
-        log.error("screening_failed", query=request.name, error=str(e))
+        log.error("screening_failed", query=body.name, error=str(e))
         raise HTTPException(status_code=500, detail="Screening failed")
 
     # Log the screening (non-critical, don't fail if this errors)
-    await asyncio.to_thread(_log_screening, screening_id, request.name, matches)
+    await asyncio.to_thread(_log_screening, screening_id, body.name, matches)
 
     return ScreeningResponse(
-        query=request.name,
-        threshold=request.threshold,
+        query=body.name,
+        threshold=body.threshold,
         total_matches=len(matches),
         matches=matches,
         screening_id=screening_id,
@@ -85,14 +85,14 @@ async def screen_name(request: ScreeningRequest, req: Request):
 
 @router.post("/screen/batch", response_model=BatchScreeningResponse)
 @limiter.limit("20/minute")
-async def screen_batch(request: BatchScreeningRequest, req: Request):
+async def screen_batch(body: BatchScreeningRequest, request: Request):
     """Screen multiple names against the PEP database in a single request.
 
     Accepts up to 50 names per batch. Returns an array of screening results.
 
     Rate limit: 20 requests per minute.
     """
-    if len(request.names) > 50:
+    if len(body.names) > 50:
         return JSONResponse(
             status_code=400,
             content={
@@ -104,12 +104,12 @@ async def screen_batch(request: BatchScreeningRequest, req: Request):
     results = []
     total_matches = 0
 
-    for entry in request.names:
+    for entry in body.names:
         screening_id = str(uuid.uuid4())
 
         try:
             matches = await asyncio.to_thread(
-                _find_matches, entry.name, entry.country, request.threshold
+                _find_matches, entry.name, entry.country, body.threshold
             )
         except (OperationalError, InterfaceError) as e:
             log.error("batch_screening_db_unavailable", query=entry.name, error=str(e))
@@ -138,11 +138,11 @@ async def screen_batch(request: BatchScreeningRequest, req: Request):
 
     return BatchScreeningResponse(
         results=results,
-        total_queries=len(request.names),
+        total_queries=len(body.names),
         total_matches=total_matches,
         screening_id=batch_screening_id,
         screened_at=batch_screened_at,
-        threshold=request.threshold,
+        threshold=body.threshold,
     )
 
 
