@@ -92,6 +92,9 @@ async def request_size_limit_middleware(request: Request, call_next):
 # ── API key authentication middleware ──
 # Public endpoints that don't require authentication
 _PUBLIC_PATHS = {"/", "/health", "/docs", "/redoc", "/openapi.json"}
+# Read-only API paths open for the public demo frontend
+_PUBLIC_API_PREFIXES = ("/api/v1/stats", "/api/v1/search", "/api/v1/pep/",
+                        "/api/v1/screen", "/api/v1/countries")
 
 
 @app.middleware("http")
@@ -101,6 +104,8 @@ async def api_key_auth_middleware(request: Request, call_next):
 
     path = request.url.path
     if path in _PUBLIC_PATHS or request.method == "OPTIONS":
+        return await call_next(request)
+    if any(path.startswith(prefix) for prefix in _PUBLIC_API_PREFIXES):
         return await call_next(request)
 
     api_key = request.headers.get("X-API-Key")
