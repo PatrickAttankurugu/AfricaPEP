@@ -64,6 +64,7 @@ class EntityResolver:
         self.entities: dict[str, ResolvedEntity] = {}
         self.duplicates: list[PotentialDuplicate] = []
         self._blocks: dict[str, list[str]] = {}  # block_key -> [entity_ids]
+        self._qid_to_entity: dict[str, str] = {}  # wikidata_qid -> entity_id
 
     def _block_key(self, record: NormalisedRecord) -> str:
         """Generate blocking key: country + first letter of surname."""
@@ -76,6 +77,32 @@ class EntityResolver:
 
         Returns the entity ID (existing or new).
         """
+        # Fast-path: if same Wikidata QID already seen, merge immediately
+        wikidata_qid = record.extra_fields.get("wikidata_qid", "")
+        if wikidata_qid and wikidata_qid in self._qid_to_entity:
+            existing_id = self._qid_to_entity[wikidata_qid]
+            is_current = record.extra_fields.get("is_current", True)
+            source_record = {
+                "source_url": record.source_url,
+                "source_type": record.source_type,
+                "raw_text": record.raw_text[:5000],
+                "scraped_at": record.scraped_at.isoformat() if hasattr(record.scraped_at, 'isoformat') else str(record.scraped_at),
+                "country": record.country_code,
+            }
+            position = {
+                "title": record.title,
+                "institution": record.institution,
+                "branch": record.branch,
+                "country": record.country_code,
+                "is_current": is_current,
+                "start_date": record.extra_fields.get("start_date"),
+                "end_date": record.extra_fields.get("end_date"),
+            }
+            self._merge_into(existing_id, record, pep_tier, source_record, position)
+            log.info("entity_merged_by_qid", entity_id=existing_id,
+                     name=record.full_name, qid=wikidata_qid)
+            return existing_id
+
         block = self._block_key(record)
 
         # Find best match within the same block
@@ -90,6 +117,8 @@ class EntityResolver:
                 best_score = score
                 best_match_id = existing_id
 
+        is_current = record.extra_fields.get("is_current", True)
+
         source_record = {
             "source_url": record.source_url,
             "source_type": record.source_type,
@@ -103,7 +132,9 @@ class EntityResolver:
             "institution": record.institution,
             "branch": record.branch,
             "country": record.country_code,
-            "is_current": True,
+            "is_current": is_current,
+            "start_date": record.extra_fields.get("start_date"),
+            "end_date": record.extra_fields.get("end_date"),
         }
 
         if best_score >= MERGE_THRESHOLD and best_match_id:
@@ -135,12 +166,16 @@ class EntityResolver:
             nationality=record.country_code,
             gender="",
             pep_tier=pep_tier,
-            is_active_pep=True,
+            is_active_pep=is_current,
             positions=[position] if record.title else [],
             sources=[source_record],
             extra_fields=record.extra_fields,
         )
         self.entities[entity_id] = entity
+
+        # Register QID mapping for fast dedup
+        if wikidata_qid:
+            self._qid_to_entity[wikidata_qid] = entity_id
 
         # Update review duplicate with new entity ID
         if self.duplicates and not self.duplicates[-1].entity_b_id:
@@ -220,6 +255,10 @@ class EntityResolver:
         # Keep highest (most restrictive) PEP tier
         if pep_tier < entity.pep_tier:
             entity.pep_tier = pep_tier
+
+        # Update active status: active if ANY position is current
+        if position.get("is_current", False):
+            entity.is_active_pep = True
 
         # Add position if not duplicate
         if position.get("title"):

@@ -57,7 +57,7 @@ def _build_regional_query(org_qid: str) -> str:
     or positions that are part of (P361) the organisation.
     """
     return f"""
-SELECT DISTINCT ?personLabel ?positionLabel ?start ?end
+SELECT DISTINCT ?person ?personLabel ?positionLabel ?start ?end
        ?dob ?dod ?partyLabel ?nationalityLabel WHERE {{
   {{
     ?person wdt:P39 ?position .
@@ -105,7 +105,7 @@ def _build_query(country_qid: str, since: Optional[str] = None) -> str:
             f'  FILTER(?modified >= "{since}T00:00:00Z"^^xsd:dateTime)\n'
         )
     return f"""
-SELECT DISTINCT ?personLabel ?positionLabel ?institutionLabel
+SELECT DISTINCT ?person ?personLabel ?positionLabel ?institutionLabel
        ?start ?end ?dob ?dod ?partyLabel WHERE {{
   ?person wdt:P39 ?position .
   ?position wdt:P17 wd:{country_qid} .
@@ -185,6 +185,10 @@ class WikidataScraper(BaseScraper):
             position = binding.get("positionLabel", {}).get("value", "")
             institution = binding.get("institutionLabel", {}).get("value", "")
 
+            # Extract Wikidata QID from the person URI
+            person_uri = binding.get("person", {}).get("value", "")
+            wikidata_qid = person_uri.split("/")[-1] if person_uri else ""
+
             # Skip blank or QID-only labels (unresolved entities)
             if not name or name.startswith("Q") or not position:
                 continue
@@ -230,6 +234,7 @@ class WikidataScraper(BaseScraper):
                         "date_of_birth": date_of_birth,
                         "date_of_death": date_of_death,
                         "party": party,
+                        "wikidata_qid": wikidata_qid,
                         "wikidata_country_qid": self._country_qid,
                     },
                 )
@@ -343,6 +348,10 @@ def scrape_regional_bodies() -> Dict[str, List[RawPersonRecord]]:
                 name = binding.get("personLabel", {}).get("value", "")
                 position = binding.get("positionLabel", {}).get("value", "")
 
+                # Extract Wikidata QID from the person URI
+                person_uri = binding.get("person", {}).get("value", "")
+                wikidata_qid = person_uri.split("/")[-1] if person_uri else ""
+
                 if not name or name.startswith("Q") or not position:
                     continue
 
@@ -385,6 +394,7 @@ def scrape_regional_bodies() -> Dict[str, List[RawPersonRecord]]:
                             "date_of_birth": date_of_birth,
                             "date_of_death": date_of_death,
                             "party": party,
+                            "wikidata_qid": wikidata_qid,
                             "regional_body": org_code,
                             "wikidata_org_qid": org_qid,
                         },
