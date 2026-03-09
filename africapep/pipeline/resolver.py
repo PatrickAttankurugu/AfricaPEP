@@ -12,6 +12,8 @@ from typing import Optional
 from dataclasses import dataclass, field
 
 from rapidfuzz import fuzz
+
+from africapep.pipeline.scoring import hybrid_name_score
 import structlog
 
 from typing import TYPE_CHECKING
@@ -190,11 +192,11 @@ class EntityResolver:
 
     def _compute_score(self, record: NormalisedRecord, existing: ResolvedEntity) -> float:
         """Compute composite similarity score between record and existing entity."""
-        # 1. Name similarity (weight: 0.5)
+        # 1. Name similarity (weight: 0.5) — hybrid Levenshtein + Jaro-Winkler
         name_scores = []
         for variant in [record.full_name] + record.name_variants:
             for existing_variant in [existing.full_name] + existing.name_variants:
-                score = fuzz.token_sort_ratio(variant, existing_variant) / 100.0
+                score = hybrid_name_score(variant, existing_variant)
                 name_scores.append(score)
         name_score = max(name_scores) if name_scores else 0.0
 

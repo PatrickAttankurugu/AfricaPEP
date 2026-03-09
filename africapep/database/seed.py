@@ -9,7 +9,7 @@ Idempotent — safe to run multiple times.
 import time
 
 import structlog
-from rapidfuzz import fuzz
+from africapep.pipeline.scoring import hybrid_name_score
 
 from africapep.scraper.spiders.wikidata_scraper import (
     WikidataScraper, COUNTRY_QIDS, scrape_relationships,
@@ -135,7 +135,7 @@ def _find_person_by_name(name: str, known_persons: dict[str, str],
     best_score = 0.0
 
     for known_name, known_id in known_persons.items():
-        score = fuzz.token_sort_ratio(name, known_name) / 100.0
+        score = hybrid_name_score(name, known_name)
         if score > best_score and score >= threshold:
             best_score = score
             best_match = known_id

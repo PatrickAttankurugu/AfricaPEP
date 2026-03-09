@@ -50,9 +50,9 @@ class SourceResponse(BaseModel):
 
 class MatchExplanation(BaseModel):
     """Explains why a match was returned — which scoring components contributed."""
-    name_similarity: float = Field(description="Token-sort ratio between query and matched name (0.0-1.0)")
+    name_similarity: float = Field(description="Hybrid similarity score between query and matched name (0.0-1.0)")
     best_variant_score: float = Field(description="Highest score across all name variants (0.0-1.0)")
-    method: str = Field(default="rapidfuzz_token_sort", description="Scoring algorithm used")
+    method: str = Field(default="hybrid_levenshtein_jaro_winkler", description="Scoring algorithm used")
     matched_variant: Optional[str] = Field(None, description="Name variant that produced the best score, if different from primary name")
 
 

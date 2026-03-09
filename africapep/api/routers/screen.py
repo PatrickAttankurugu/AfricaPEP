@@ -11,7 +11,7 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy import text
 from sqlalchemy.exc import OperationalError, InterfaceError
-from rapidfuzz import fuzz
+from africapep.pipeline.scoring import hybrid_name_score
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 import structlog
@@ -174,8 +174,8 @@ def _find_matches(query_name: str, country: str = None,
         rows = result.fetchall()
 
         for row in rows:
-            # Re-rank using rapidfuzz
-            primary_score = fuzz.token_sort_ratio(query_name, row.full_name) / 100.0
+            # Re-rank using hybrid scoring (Levenshtein + Jaro-Winkler)
+            primary_score = hybrid_name_score(query_name, row.full_name)
             name_scores = [primary_score]
             matched_variant = None
 
@@ -184,7 +184,7 @@ def _find_matches(query_name: str, country: str = None,
             if row.name_variants:
                 for variant in row.name_variants:
                     aliases.append(variant)
-                    score = fuzz.token_sort_ratio(query_name, variant) / 100.0
+                    score = hybrid_name_score(query_name, variant)
                     if score > primary_score:
                         name_scores.append(score)
                         matched_variant = variant
@@ -213,7 +213,7 @@ def _find_matches(query_name: str, country: str = None,
             explanation = MatchExplanation(
                 name_similarity=round(primary_score, 4),
                 best_variant_score=round(best_score, 4),
-                method="rapidfuzz_token_sort",
+                method="hybrid_levenshtein_jaro_winkler",
                 matched_variant=matched_variant,
             )
 
