@@ -11,7 +11,7 @@
 
 A production-grade, open-source PEP (Politically Exposed Persons) database covering **all 54 African Union member states**. Built for KYC/AML compliance teams who need reliable PEP screening without expensive third-party data subscriptions.
 
-**Live demo:** [pep.patrickaiafrica.com](https://pep.patrickaiafrica.com) | **API:** [api-pep.patrickaiafrica.com](https://api-pep.patrickaiafrica.com/docs) | **Frontend repo:** [africapep-frontend](https://github.com/PatrickAttankurugu/africapep-frontend)
+**Live demo:** [pep.patrickaiafrica.com](https://pep.patrickaiafrica.com) |**Frontend repo:** [africapep-frontend](https://github.com/PatrickAttankurugu/africapep-frontend)
 
 ## Why AfricaPEP?
 
