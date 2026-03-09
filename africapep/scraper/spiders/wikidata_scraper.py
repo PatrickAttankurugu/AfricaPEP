@@ -11,6 +11,7 @@ Usage:
 from __future__ import annotations
 
 import time
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Dict, List, Optional
 
@@ -315,6 +316,103 @@ def scrape_all_countries() -> Dict[str, List[RawPersonRecord]]:
         # Polite delay between countries
         time.sleep(2)
     return results
+
+
+def _build_relationships_query(country_qid: str) -> str:
+    """Build SPARQL query to fetch family/associate relationships for PEPs.
+
+    Fetches spouse (P26), father (P22), mother (P25), child (P40),
+    and sibling (P3373) relationships.
+    """
+    return f"""
+SELECT DISTINCT ?person ?personLabel ?relatedLabel ?relType WHERE {{
+  ?person wdt:P39 ?position .
+  ?position wdt:P17 wd:{country_qid} .
+  {{
+    ?person wdt:P26 ?related .
+    BIND("SPOUSE" AS ?relType)
+  }} UNION {{
+    ?person wdt:P22 ?related .
+    BIND("FATHER" AS ?relType)
+  }} UNION {{
+    ?person wdt:P25 ?related .
+    BIND("MOTHER" AS ?relType)
+  }} UNION {{
+    ?person wdt:P40 ?related .
+    BIND("CHILD" AS ?relType)
+  }} UNION {{
+    ?person wdt:P3373 ?related .
+    BIND("SIBLING" AS ?relType)
+  }}
+  SERVICE wikibase:label {{ bd:serviceParam wikibase:language "en" }}
+}}
+ORDER BY ?personLabel
+LIMIT 10000
+"""
+
+
+@dataclass
+class WikidataRelationship:
+    """A family/associate relationship extracted from Wikidata."""
+    person_qid: str
+    person_name: str
+    related_name: str
+    relationship_type: str
+
+
+def scrape_relationships(country_code: str) -> List[WikidataRelationship]:
+    """Scrape family relationships for PEPs from a given country."""
+    country_code = country_code.upper()
+    qid = COUNTRY_QIDS.get(country_code)
+    if not qid:
+        return []
+
+    query = _build_relationships_query(qid)
+    helper = _RegionalHelper()
+
+    encoded_params = requests.compat.urlencode(  # type: ignore[attr-defined]
+        {"query": query, "format": "json"}
+    )
+    url = f"{SPARQL_ENDPOINT}?{encoded_params}"
+    helper.session.headers["Accept"] = "application/json"
+
+    try:
+        resp = helper._get(url)
+        data = resp.json()
+    except Exception as exc:
+        log.error("wikidata.relationships.failed", country=country_code, error=str(exc))
+        return []
+
+    relationships: List[WikidataRelationship] = []
+    seen: set = set()
+
+    for binding in data.get("results", {}).get("bindings", []):
+        person_name = binding.get("personLabel", {}).get("value", "")
+        related_name = binding.get("relatedLabel", {}).get("value", "")
+        rel_type = binding.get("relType", {}).get("value", "")
+        person_uri = binding.get("person", {}).get("value", "")
+        person_qid = person_uri.split("/")[-1] if person_uri else ""
+
+        if not person_name or person_name.startswith("Q"):
+            continue
+        if not related_name or related_name.startswith("Q"):
+            continue
+
+        key = (person_qid, related_name.lower(), rel_type)
+        if key in seen:
+            continue
+        seen.add(key)
+
+        relationships.append(WikidataRelationship(
+            person_qid=person_qid,
+            person_name=person_name,
+            related_name=related_name,
+            relationship_type=rel_type,
+        ))
+
+    log.info("wikidata.relationships.done", country=country_code,
+             count=len(relationships))
+    return relationships
 
 
 def scrape_regional_bodies() -> Dict[str, List[RawPersonRecord]]:
