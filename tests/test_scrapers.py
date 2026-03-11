@@ -131,6 +131,7 @@ def test_wikidata_scraper_scrape_with_mock():
                     "positionLabel": {"value": "President of the Senate", "type": "literal"},
                     "institutionLabel": {"value": "National Assembly", "type": "literal"},
                     "start": {"value": "2023-06-13T00:00:00Z"},
+                    "dob": {"value": "1962-12-09T00:00:00Z"},
                 },
                 {
                     "personLabel": {"value": "Q12345", "type": "literal"},
@@ -154,6 +155,9 @@ def test_wikidata_scraper_scrape_with_mock():
     assert records[1].full_name == "Godswill Akpabio"
     assert records[1].extra_fields["start_date"] == "2023-06-13"
     assert records[1].extra_fields["is_current"] is True
+    
+    # Verify extraction of Date of Birth (P569) from the mock SPARQL response
+    assert records[1].extra_fields["date_of_birth"] == "1962-12-09"
 
 
 def test_wikidata_scraper_deduplicates():
