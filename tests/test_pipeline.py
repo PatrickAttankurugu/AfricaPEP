@@ -123,6 +123,14 @@ class TestClassifier:
 
         assert classify_pep_tier("Chief Justice") == 1
         assert classify_pep_tier("Justice of the Supreme Court") == 1
+        assert classify_pep_tier("Constitutional Court Judge") == 1
+        assert classify_pep_tier("Président de la Cour Suprême") == 1
+
+    def test_judiciary_french_tiers(self):
+        from africapep.pipeline.classifier import classify_pep_tier
+
+        assert classify_pep_tier("Juge d'appel") == 2
+        assert classify_pep_tier("Magistrat") == 3
 
     def test_tier_1_central_bank(self):
         from africapep.pipeline.classifier import classify_pep_tier
