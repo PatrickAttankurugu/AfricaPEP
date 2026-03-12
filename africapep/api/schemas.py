@@ -35,6 +35,7 @@ class PositionResponse(BaseModel):
     title: str
     institution: str = ""
     country: str = ""
+    flag: str = ""
     branch: str = ""
     start_date: Optional[str] = None
     end_date: Optional[str] = None
@@ -65,6 +66,7 @@ class MatchResult(BaseModel):
     risk_level: str = Field(description="Human-readable risk level: high, elevated, or standard")
     is_active: bool = Field(description="Whether the person currently holds a PEP position")
     nationality: str = Field(default="", description="ISO 3166-1 alpha-2 country code")
+    flag: str = Field(default="", description="Country flag emoji")
     date_of_birth: Optional[str] = Field(None, description="Date of birth (YYYY-MM-DD) if known")
     aliases: list[str] = Field(default=[], description="Known name variants and aliases")
     positions: list[PositionResponse] = Field(default=[], description="Political positions held")
@@ -116,6 +118,7 @@ class PepProfileResponse(BaseModel):
     aliases: list[str] = []
     date_of_birth: Optional[str] = None
     nationality: str = ""
+    flag: str = ""
     gender: str = ""
     pep_tier: int
     risk_level: str = ""
@@ -170,6 +173,7 @@ class SearchResultItem(BaseModel):
     risk_level: str = ""
     is_active: bool
     nationality: str = ""
+    flag: str = ""
     positions: list[PositionResponse] = []
 
 
@@ -273,6 +277,7 @@ class BatchScreeningResponse(BaseModel):
 class CountryInfo(BaseModel):
     code: str = Field(description="ISO 3166-1 alpha-2 country code")
     name: str = Field(description="Country name")
+    flag: str = Field(description="Country flag emoji")
     region: str = Field(description="African region")
     pep_count: int = Field(description="Number of PEP profiles")
 
@@ -283,6 +288,16 @@ class CountriesResponse(BaseModel):
 
 
 # ── Utility ──
+
+def country_flag(code: str) -> str:
+    """Convert ISO 3166-1 alpha-2 country code to regional indicator flag emoji."""
+    if not code or len(code) != 2:
+        return ""
+    try:
+        return "".join(chr(0x1F1E6 + ord(c) - ord("A")) for c in code.upper())
+    except Exception:
+        return ""
+
 
 def tier_to_risk_level(tier: int) -> str:
     """Convert FATF tier number to human-readable risk level."""

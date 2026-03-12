@@ -4,7 +4,10 @@ import asyncio
 from fastapi import APIRouter, HTTPException
 import structlog
 
-from africapep.api.schemas import PepProfileResponse, PositionResponse, SourceResponse, tier_to_risk_level
+from africapep.api.schemas import (
+    PepProfileResponse, PositionResponse, SourceResponse,
+    tier_to_risk_level, country_flag
+)
 from africapep.database.neo4j_client import neo4j_client
 
 log = structlog.get_logger()
@@ -32,6 +35,7 @@ async def get_pep_profile(pep_id: str):
                 title=pos.get("title", ""),
                 institution=pos.get("institution", ""),
                 country=pos.get("country", ""),
+                flag=country_flag(pos.get("country", "")),
                 branch=pos.get("branch", ""),
                 start_date=str(pos.get("start_date")) if pos.get("start_date") else None,
                 end_date=str(pos.get("end_date")) if pos.get("end_date") else None,
@@ -57,6 +61,7 @@ async def get_pep_profile(pep_id: str):
         aliases=person.get("name_variants", []),
         date_of_birth=str(person.get("date_of_birth")) if person.get("date_of_birth") else None,
         nationality=person.get("nationality", ""),
+        flag=country_flag(person.get("nationality", "")),
         gender=person.get("gender", ""),
         pep_tier=pep_tier,
         risk_level=tier_to_risk_level(pep_tier),
