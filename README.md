@@ -98,43 +98,37 @@ The scraper queries Wikidata's public SPARQL endpoint for all persons who hold o
 +-------------------------------------------------------------+
 ```
 
-## Quick Start (Docker)
+## Quick Start
+
+We've provided a simple `Makefile` to get the project running via Docker in minutes!
 
 ```bash
-# 1. Clone and configure
+# 1. Clone the repository
 git clone https://github.com/PatrickAttankurugu/AfricaPEP.git && cd AfricaPEP
-cp .env.example .env
 
-# 2. Start all services
-docker compose up -d
+# 2. Setup the environment and start services
+make setup
 
-# 3. Initialize databases
-docker compose exec api python -m africapep.database.init
+# 3. Seed with live PEP data from Wikidata (32,000+ profiles)
+make seed
 
-# 4. Seed with live PEP data from Wikidata (32,000+ profiles)
-docker compose exec api python -m africapep.database.seed
-
-# 5. API is live at http://localhost:8000
+# 4. Success! API is live at http://localhost:8000
 curl http://localhost:8000/health
 ```
 
-## Quick Start (Local Development)
+## Local Development (Hot-Reload)
+
+To run the API and scraper with instantaneous hot-reloading for local development:
 
 ```bash
-# 1. Prerequisites: Python 3.11+, Neo4j 5, PostgreSQL 15
-pip install -r requirements.txt
-python -m spacy download en_core_web_sm
+# First ensure setup was run
+make setup
 
-# 2. Configure
-cp .env.example .env
-# Edit .env with your database credentials
+# Stop the original detached containers
+docker compose down
 
-# 3. Initialize and seed
-python -m africapep.database.init
-python -m africapep.database.seed
-
-# 4. Start API
-uvicorn africapep.api.main:app --reload --port 8000
+# Run the development environment with hot-reloading
+make run
 ```
 
 ## API Documentation
