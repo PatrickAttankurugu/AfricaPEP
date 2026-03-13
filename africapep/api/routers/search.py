@@ -12,7 +12,7 @@ import structlog
 
 from africapep.api.schemas import (
     SearchResponse, SearchResultItem, PositionResponse, StatsResponse,
-    tier_to_risk_level,
+    tier_to_risk_level, country_flag,
 )
 from africapep.database.postgres_client import get_db
 
@@ -101,6 +101,7 @@ async def search_peps(
                         title=pos.get("title", ""),
                         institution=pos.get("institution", ""),
                         country=pos.get("country", ""),
+                        flag=country_flag(pos.get("country", "")),
                         branch=pos.get("branch", ""),
                         is_current=True,
                     ))
@@ -113,6 +114,7 @@ async def search_peps(
                 risk_level=tier_to_risk_level(pep_tier),
                 is_active=row.is_active_pep if row.is_active_pep is not None else True,
                 nationality=row.nationality or "",
+                flag=country_flag(row.nationality or ""),
                 positions=positions,
             ))
     except (OperationalError, InterfaceError) as e:

@@ -20,7 +20,7 @@ from africapep.api.schemas import (
     ScreeningRequest, ScreeningResponse, MatchResult,
     PositionResponse, MatchExplanation,
     BatchScreeningRequest, BatchScreeningResponse, BatchScreeningResultItem,
-    tier_to_risk_level,
+    tier_to_risk_level, country_flag,
 )
 from africapep.config import settings
 from africapep.database.postgres_client import get_db
@@ -205,6 +205,7 @@ def _find_matches(query_name: str, country: str = None,
                         title=pos.get("title", ""),
                         institution=pos.get("institution", ""),
                         country=pos.get("country", ""),
+                        flag=country_flag(pos.get("country", "")),
                         branch=pos.get("branch", ""),
                         is_current=True,
                     ))
@@ -231,6 +232,7 @@ def _find_matches(query_name: str, country: str = None,
                 risk_level=tier_to_risk_level(pep_tier),
                 is_active=is_active,
                 nationality=row.nationality or "",
+                flag=country_flag(row.nationality or ""),
                 date_of_birth=dob,
                 aliases=aliases,
                 positions=positions,

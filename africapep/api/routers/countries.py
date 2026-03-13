@@ -6,6 +6,7 @@ from fastapi import APIRouter
 from sqlalchemy import text
 import structlog
 
+from africapep.api.schemas import country_flag
 from africapep.database.postgres_client import get_db
 
 log = structlog.get_logger()
@@ -79,6 +80,7 @@ async def list_countries():
         countries.append({
             "code": code,
             "name": name,
+            "flag": country_flag(code),
             "region": REGIONS.get(code, "Unknown"),
             "pep_count": counts.get(code, 0),
         })
