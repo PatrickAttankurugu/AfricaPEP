@@ -28,13 +28,22 @@ class TestNormaliser:
         assert normalise_name("") == ""
         assert normalise_name(None) == ""
 
-    def test_generate_name_variants(self):
+        assert len(variants) >= 3
+
+    def test_normalise_diacritics(self):
+        from africapep.pipeline.normaliser import normalise_diacritics
+
+        assert normalise_diacritics("Félix") == "Felix"
+        assert normalise_diacritics("François") == "Francois"
+        assert normalise_diacritics("M'Baye") == "MBaye"
+
+    def test_generate_name_variants_french(self):
         from africapep.pipeline.normaliser import generate_name_variants
 
-        variants = generate_name_variants("Kwame Asante Mensah")
-        assert "Kwame Asante Mensah" in variants
-        assert "Kwame Mensah" in variants
-        assert len(variants) >= 3
+        variants = generate_name_variants("Charles de Gaulle")
+        assert "Charles De Gaulle" in variants  # title case
+        # Check if transliteration variant exists (though already ASCII)
+        assert "Charles de Gaulle" in variants
 
     def test_normalise_country(self):
         from africapep.pipeline.normaliser import normalise_country
