@@ -24,7 +24,9 @@ TIER_1_TITLES = [
     # Judicial heads
     "chief justice", "deputy chief justice",
     "justice of the supreme court", "supreme court justice",
+    "constitutional court judge", "justice of the constitutional court",
     "president of the court of appeal",
+    "président de la cour suprême", "juge constitutionnel",
     # Central bank
     "governor of the central bank", "central bank governor",
     "governor of the bank of ghana", "governor of the reserve bank",
@@ -70,6 +72,7 @@ TIER_2_TITLES = [
     "high court judge", "judge of the high court",
     "appeal court judge", "judge of the court of appeal",
     "judge of the federal high court",
+    "juge d'appel", "juge de la haute cour",
     # Ambassadors
     "ambassador", "high commissioner",
     "permanent representative",
@@ -112,7 +115,7 @@ TIER_3_TITLES = [
     "municipal chief executive", "district chief executive",
     "local government chairman", "local government chair",
     "councillor", "council member",
-    "magistrate", "district judge",
+    "magistrate", "district judge", "magistrat",
     "deputy minister", "assistant minister",
     "acting minister",
     "permanent secretary", "deputy director",
