@@ -44,11 +44,7 @@ services:
         condition: service_healthy
       postgres:
         condition: service_healthy
-    env_file:
-      - path: .env.example
-        required: true
-      - path: .env
-        required: false
+    env_file: .env
     command: uvicorn africapep.api.main:app --host 0.0.0.0 --port 8000 --workers 4
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
@@ -64,11 +60,7 @@ services:
         condition: service_healthy
       postgres:
         condition: service_healthy
-    env_file:
-      - path: .env.example
-        required: true
-      - path: .env
-        required: false
+    env_file: .env
     command: python -m africapep.scheduler.jobs
     volumes:
       - ./data/raw_pdfs:/app/data/raw_pdfs
