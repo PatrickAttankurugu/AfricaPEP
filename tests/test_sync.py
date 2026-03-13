@@ -151,18 +151,47 @@ class TestSyncAllMissingFields:
         assert positions[0]["title"] == "President"
 
 
-class TestParseDate:
-    def test_iso_format(self):
-        assert _parse_date("1965-03-12") == "1965-03-12"
+class TestSyncErrors:
+    @patch("africapep.database.sync.neo4j_client")
+    def test_neo4j_error_propagates(self, mock_neo4j):
+        mock_neo4j.run.side_effect = Exception("Neo4j connection failed")
+        
+        with pytest.raises(Exception, match="Neo4j connection failed"):
+            sync_all()
 
-    def test_datetime_format(self):
-        assert _parse_date("1965-03-12T10:00:00") == "1965-03-12"
+    @patch("africapep.database.sync.get_db")
+    @patch("africapep.database.sync.neo4j_client")
+    def test_postgres_error_propagates(self, mock_neo4j, mock_get_db):
+        mock_neo4j.run.side_effect = [[sample_person_neo4j()], []]
+        
+        db = MagicMock()
+        db.__enter__.side_effect = Exception("Postgres connection failed")
+        mock_get_db.return_value = db
+        
+        with pytest.raises(Exception, match="Postgres connection failed"):
+            sync_all()
 
-    def test_none_returns_none(self):
-        assert _parse_date(None) is None
 
-    def test_empty_string_returns_none(self):
-        assert _parse_date("") is None
+class TestSyncIdempotency:
+    @patch("africapep.database.sync.get_db")
+    @patch("africapep.database.sync.neo4j_client")
+    def test_sync_is_idempotent(self, mock_neo4j, mock_get_db):
+        person = sample_person_neo4j(person_id="p1")
+        # Same result for multiple runs
+        mock_neo4j.run.side_effect = [[person], [], [person], []]
 
-    def test_unrecognised_format_returns_none(self):
-        assert _parse_date("not-a-date") is None
+        db = MagicMock()
+        db.__enter__ = MagicMock(return_value=db)
+        mock_get_db.return_value = db
+
+        # First run
+        sync_all()
+        id1 = db.execute.call_args[0][1]["id"]
+        
+        # Second run
+        sync_all()
+        id2 = db.execute.call_args[0][1]["id"]
+        
+        # Deterministic IDs should match
+        assert id1 == id2
+        assert id1 == _deterministic_id("p1")

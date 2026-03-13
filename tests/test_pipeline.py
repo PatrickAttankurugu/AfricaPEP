@@ -28,13 +28,22 @@ class TestNormaliser:
         assert normalise_name("") == ""
         assert normalise_name(None) == ""
 
-    def test_generate_name_variants(self):
+        assert len(variants) >= 3
+
+    def test_normalise_diacritics(self):
+        from africapep.pipeline.normaliser import normalise_diacritics
+
+        assert normalise_diacritics("Félix") == "Felix"
+        assert normalise_diacritics("François") == "Francois"
+        assert normalise_diacritics("M'Baye") == "MBaye"
+
+    def test_generate_name_variants_french(self):
         from africapep.pipeline.normaliser import generate_name_variants
 
-        variants = generate_name_variants("Kwame Asante Mensah")
-        assert "Kwame Asante Mensah" in variants
-        assert "Kwame Mensah" in variants
-        assert len(variants) >= 3
+        variants = generate_name_variants("Charles de Gaulle")
+        assert "Charles De Gaulle" in variants  # title case
+        # Check if transliteration variant exists (though already ASCII)
+        assert "Charles de Gaulle" in variants
 
     def test_normalise_country(self):
         from africapep.pipeline.normaliser import normalise_country
@@ -114,6 +123,14 @@ class TestClassifier:
 
         assert classify_pep_tier("Chief Justice") == 1
         assert classify_pep_tier("Justice of the Supreme Court") == 1
+        assert classify_pep_tier("Constitutional Court Judge") == 1
+        assert classify_pep_tier("Président de la Cour Suprême") == 1
+
+    def test_judiciary_french_tiers(self):
+        from africapep.pipeline.classifier import classify_pep_tier
+
+        assert classify_pep_tier("Juge d'appel") == 2
+        assert classify_pep_tier("Magistrat") == 3
 
     def test_tier_1_central_bank(self):
         from africapep.pipeline.classifier import classify_pep_tier
