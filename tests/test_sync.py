@@ -174,7 +174,7 @@ class TestSyncErrors:
     def test_sync_all_neo4j_error(self, mock_neo4j, mock_get_db):
         from neo4j.exceptions import CypherError
         mock_neo4j.run.side_effect = CypherError("Test error")
-        
+
         db = MagicMock()
         mock_get_db.return_value = db
 
