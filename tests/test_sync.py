@@ -166,3 +166,54 @@ class TestParseDate:
 
     def test_unrecognised_format_returns_none(self):
         assert _parse_date("not-a-date") is None
+
+
+class TestSyncErrors:
+    @patch("africapep.database.sync.get_db")
+    @patch("africapep.database.sync.neo4j_client")
+    def test_sync_all_neo4j_error(self, mock_neo4j, mock_get_db):
+        from neo4j.exceptions import CypherError
+        mock_neo4j.run.side_effect = CypherError("Test error")
+        
+        db = MagicMock()
+        mock_get_db.return_value = db
+
+        synced = sync_all()
+        assert synced == 0  # Should catch and return 0
+
+    @patch("africapep.database.sync.get_db")
+    @patch("africapep.database.sync.neo4j_client")
+    def test_sync_all_postgres_error(self, mock_neo4j, mock_get_db):
+        from sqlalchemy.exc import OperationalError
+        person = sample_person_neo4j()
+        mock_neo4j.run.side_effect = [[person], []]
+
+        db = MagicMock()
+        db.execute.side_effect = OperationalError("statement", "params", "orig")
+        db.__enter__ = MagicMock(return_value=db)
+        db.__exit__ = MagicMock(return_value=False)
+        mock_get_db.return_value = db
+
+        synced = sync_all()
+        assert synced == 0  # Should roll back and return 0
+
+
+class TestSyncIdempotency:
+    @patch("africapep.database.sync.get_db")
+    @patch("africapep.database.sync.neo4j_client")
+    def test_sync_all_is_idempotent(self, mock_neo4j, mock_get_db):
+        person = sample_person_neo4j()
+        # Run 1
+        mock_neo4j.run.side_effect = [[person], []]
+        db = MagicMock()
+        db.__enter__ = MagicMock(return_value=db)
+        db.__exit__ = MagicMock(return_value=False)
+        mock_get_db.return_value = db
+
+        synced_1 = sync_all()
+        assert synced_1 == 1
+
+        # Run 2
+        mock_neo4j.run.side_effect = [[person], []]
+        synced_2 = sync_all()
+        assert synced_2 == 1  # Should still process 1 but upsert handles duplicates
