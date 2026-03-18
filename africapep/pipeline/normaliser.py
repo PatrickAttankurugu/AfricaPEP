@@ -223,11 +223,16 @@ _NAME_PREFIX_ALTERNATES = {
     "ben": ["ibn", "bin"],
     "el": ["al", "ul"],
     "al": ["el", "ul"],
+    "de": ["d'"],
+    "du": ["de la"],
 }
 
 
-def _transliterate_name(name: str) -> str:
-    """Remove diacritics and transliterate French/Arabic characters to ASCII."""
+def normalise_diacritics(name: str) -> str:
+    """Remove diacritics and transliterate French/Arabic characters to ASCII.
+
+    Example: "Félix" -> "Felix", "ç" -> "c".
+    """
     result = name
     for char, replacement in _TRANSLITERATION_MAP.items():
         result = result.replace(char, replacement)
@@ -260,7 +265,7 @@ def generate_name_variants(full_name: str) -> list[str]:
         variants.add(initials)
 
     # Generate transliterated variant (strip diacritics)
-    transliterated = _transliterate_name(full_name)
+    transliterated = normalise_diacritics(full_name)
     if transliterated != full_name:
         variants.add(transliterated)
 

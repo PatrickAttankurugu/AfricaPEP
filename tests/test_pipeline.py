@@ -36,6 +36,21 @@ class TestNormaliser:
         assert "Kwame Mensah" in variants
         assert len(variants) >= 3
 
+    def test_normalise_diacritics(self):
+        from africapep.pipeline.normaliser import normalise_diacritics
+
+        assert normalise_diacritics("Félix") == "Felix"
+        assert normalise_diacritics("François") == "Francois"
+        assert normalise_diacritics("M'Baye") == "MBaye"
+
+    def test_generate_name_variants_french(self):
+        from africapep.pipeline.normaliser import generate_name_variants
+
+        variants = generate_name_variants("Charles de Gaulle")
+        # Check if transliteration/prefix variant exists ("de" alternate is "d'")
+        assert "Charles d' Gaulle" in variants
+        assert "Charles de Gaulle" in variants
+
     def test_normalise_country(self):
         from africapep.pipeline.normaliser import normalise_country
 
