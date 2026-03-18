@@ -28,6 +28,12 @@ class TestNormaliser:
         assert normalise_name("") == ""
         assert normalise_name(None) == ""
 
+    def test_generate_name_variants(self):
+        from africapep.pipeline.normaliser import generate_name_variants
+
+        variants = generate_name_variants("Kwame Asante Mensah")
+        assert "Kwame Asante Mensah" in variants
+        assert "Kwame Mensah" in variants
         assert len(variants) >= 3
 
     def test_normalise_diacritics(self):
