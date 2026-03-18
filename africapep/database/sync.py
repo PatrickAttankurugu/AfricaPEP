@@ -21,108 +21,110 @@ def _deterministic_id(neo4j_id: str) -> str:
 
 def sync_all():
     """Pull all Person nodes from Neo4j and upsert into pep_profiles."""
-    query = """
-    MATCH (p:Person)
-    OPTIONAL MATCH (p)-[hp:HELD_POSITION]->(pos:Position)
-    WHERE hp.is_current = true
-    WITH p, collect({
-        title: pos.title,
-        institution: pos.institution,
-        country: pos.country,
-        branch: pos.branch
-    }) AS current_positions
-    RETURN p.id AS id, p.full_name AS full_name,
-           p.name_variants AS name_variants,
-           p.date_of_birth AS date_of_birth,
-           p.nationality AS nationality,
-           p.pep_tier AS pep_tier,
-           p.is_active_pep AS is_active_pep,
-           current_positions
-    """
-    persons = neo4j_client.run(query)
-    synced = 0
+    try:
+        query = """
+        MATCH (p:Person)
+        OPTIONAL MATCH (p)-[hp:HELD_POSITION]->(pos:Position)
+        WHERE hp.is_current = true
+        WITH p, collect({
+            title: pos.title,
+            institution: pos.institution,
+            country: pos.country,
+            branch: pos.branch
+        }) AS current_positions
+        RETURN p.id AS id, p.full_name AS full_name,
+               p.name_variants AS name_variants,
+               p.date_of_birth AS date_of_birth,
+               p.nationality AS nationality,
+               p.pep_tier AS pep_tier,
+               p.is_active_pep AS is_active_pep,
+               current_positions
+        """
+        persons = neo4j_client.run(query)
+        synced = 0
 
-    with get_db() as db:
-        for person in persons:
-            neo4j_id = person["id"]
-            full_name = (person["full_name"] or "")[:255]
-            name_variants = person.get("name_variants") or []
+        with get_db() as db:
+            for person in persons:
+                neo4j_id = person["id"]
+                full_name = (person["full_name"] or "")[:255]
+                name_variants = person.get("name_variants") or []
 
-            # Skip junk records (scraper artifacts with extremely long names)
-            if len(person.get("full_name") or "") > 200:
-                log.warning("sync_skip_long_name", neo4j_id=neo4j_id,
-                            name_len=len(person["full_name"]))
-                continue
-            dob = person.get("date_of_birth")
-            nationality = person.get("nationality")
-            pep_tier = person.get("pep_tier")
-            is_active = person.get("is_active_pep", True)
-            positions = person.get("current_positions") or []
+                if len(person.get("full_name") or "") > 200:
+                    log.warning("sync_skip_long_name", neo4j_id=neo4j_id,
+                                name_len=len(person["full_name"]))
+                    continue
+                dob = person.get("date_of_birth")
+                nationality = person.get("nationality")
+                pep_tier = person.get("pep_tier")
+                is_active = person.get("is_active_pep", True)
+                positions = person.get("current_positions") or []
 
-            # Filter out empty position dicts
-            positions = [p for p in positions if p.get("title")]
+                positions = [p for p in positions if p.get("title")]
 
-            now = datetime.now(timezone.utc).isoformat()
-            db.execute(text("""
-                INSERT INTO pep_profiles
-                    (id, neo4j_id, full_name, name_variants, date_of_birth,
-                     nationality, pep_tier, is_active_pep, current_positions,
-                     country, first_seen, last_seen, updated_at)
-                VALUES
-                    (:id, :neo4j_id, :full_name, :name_variants, :dob,
-                     :nationality, :pep_tier, :is_active, CAST(:positions AS jsonb),
-                     :country, :now, :now, :now)
-                ON CONFLICT (neo4j_id) DO UPDATE SET
-                    full_name = EXCLUDED.full_name,
-                    name_variants = EXCLUDED.name_variants,
-                    date_of_birth = EXCLUDED.date_of_birth,
-                    nationality = EXCLUDED.nationality,
-                    pep_tier = EXCLUDED.pep_tier,
-                    is_active_pep = EXCLUDED.is_active_pep,
-                    current_positions = EXCLUDED.current_positions,
-                    country = EXCLUDED.country,
-                    last_seen = EXCLUDED.last_seen,
-                    updated_at = EXCLUDED.updated_at
-            """), {
-                "id": _deterministic_id(neo4j_id),
-                "neo4j_id": neo4j_id,
-                "full_name": full_name,
-                "name_variants": list(name_variants) if name_variants else [],
-                "dob": _parse_date(dob),
-                "nationality": nationality,
-                "pep_tier": pep_tier,
-                "is_active": is_active,
-                "positions": json.dumps(positions),
-                "country": nationality,
-                "now": now,
-            })
-            synced += 1
+                now = datetime.now(timezone.utc).isoformat()
+                db.execute(text("""
+                    INSERT INTO pep_profiles
+                        (id, neo4j_id, full_name, name_variants, date_of_birth,
+                         nationality, pep_tier, is_active_pep, current_positions,
+                         country, first_seen, last_seen, updated_at)
+                    VALUES
+                        (:id, :neo4j_id, :full_name, :name_variants, :dob,
+                         :nationality, :pep_tier, :is_active, CAST(:positions AS jsonb),
+                         :country, :now, :now, :now)
+                    ON CONFLICT (neo4j_id) DO UPDATE SET
+                        full_name = EXCLUDED.full_name,
+                        name_variants = EXCLUDED.name_variants,
+                        date_of_birth = EXCLUDED.date_of_birth,
+                        nationality = EXCLUDED.nationality,
+                        pep_tier = EXCLUDED.pep_tier,
+                        is_active_pep = EXCLUDED.is_active_pep,
+                        current_positions = EXCLUDED.current_positions,
+                        country = EXCLUDED.country,
+                        last_seen = EXCLUDED.last_seen,
+                        updated_at = EXCLUDED.updated_at
+                """), {
+                    "id": _deterministic_id(neo4j_id),
+                    "neo4j_id": neo4j_id,
+                    "full_name": full_name,
+                    "name_variants": list(name_variants) if name_variants else [],
+                    "dob": _parse_date(dob),
+                    "nationality": nationality,
+                    "pep_tier": pep_tier,
+                    "is_active": is_active,
+                    "positions": json.dumps(positions),
+                    "country": nationality,
+                    "now": now,
+                })
+                synced += 1
 
-    # Sync source records
-    sources = neo4j_client.run("""
-        MATCH (s:SourceRecord) RETURN s.id AS id, s.source_url AS source_url,
-        s.source_type AS source_type, s.country AS country,
-        s.scraped_at AS scraped_at, s.raw_text AS raw_text
-    """)
+        sources = neo4j_client.run("""
+            MATCH (s:SourceRecord) RETURN s.id AS id, s.source_url AS source_url,
+            s.source_type AS source_type, s.country AS country,
+            s.scraped_at AS scraped_at, s.raw_text AS raw_text
+        """)
 
-    with get_db() as db:
-        for src in sources:
-            db.execute(text("""
-                INSERT INTO source_records (id, neo4j_id, source_url, source_type, country, scraped_at, raw_text)
-                VALUES (:id, :neo4j_id, :url, :type, :country, :scraped, :text)
-                ON CONFLICT DO NOTHING
-            """), {
-                "id": str(uuid_mod.uuid4()),
-                "neo4j_id": src["id"],
-                "url": src.get("source_url"),
-                "type": src.get("source_type"),
-                "country": src.get("country"),
-                "scraped": str(src.get("scraped_at")) if src.get("scraped_at") else None,
-                "text": src.get("raw_text", "")[:10000],
-            })
+        with get_db() as db:
+            for src in sources:
+                db.execute(text("""
+                    INSERT INTO source_records (id, neo4j_id, source_url, source_type, country, scraped_at, raw_text)
+                    VALUES (:id, :neo4j_id, :url, :type, :country, :scraped, :text)
+                    ON CONFLICT DO NOTHING
+                """), {
+                    "id": str(uuid_mod.uuid4()),
+                    "neo4j_id": src["id"],
+                    "url": src.get("source_url"),
+                    "type": src.get("source_type"),
+                    "country": src.get("country"),
+                    "scraped": str(src.get("scraped_at")) if src.get("scraped_at") else None,
+                    "text": src.get("raw_text", "")[:10000],
+                })
 
-    log.info("sync_complete", persons_synced=synced, sources_synced=len(sources))
-    return synced
+        log.info("sync_complete", persons_synced=synced, sources_synced=len(sources))
+        return synced
+
+    except Exception as e:
+        log.error("sync_failed", error=str(e))
+        return 0
 
 
 def _parse_date(dob):
