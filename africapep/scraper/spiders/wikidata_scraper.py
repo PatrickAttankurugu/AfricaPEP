@@ -24,6 +24,22 @@ log = structlog.get_logger(__name__)
 
 SPARQL_ENDPOINT = "https://query.wikidata.org/sparql"
 
+# Label language priority chain. Latin scripts first (so searchable names win),
+# native scripts only as a last resort. This recovers officials of Portuguese
+# (Guinea-Bissau, Sao Tome), French/Arabic (Djibouti) and Tigrinya (Eritrea)
+# countries who lack an English label and were previously dropped as blank.
+LABEL_LANGS = "en,pt,fr,es,sw,ar,ti"
+
+# Wikidata QID for "public office". Used to keep the citizenship-based catchment
+# within the existing PEP seniority definition: a citizen only qualifies if the
+# position they hold is (a subclass of) a public office, excluding sports,
+# academic and other non-political P39 positions.
+PUBLIC_OFFICE_QID = "Q294414"
+
+# Cap on the number of position QIDs sent in a single VALUES clause when
+# classifying positions by office class (keeps each follow-up query small/fast).
+_OFFICE_CLASS_BATCH = 200
+
 # Wikidata QIDs for African countries, keyed by ISO 3166-1 alpha-2
 COUNTRY_QIDS: Dict[str, str] = {
     "DZ": "Q262", "AO": "Q916", "BJ": "Q962", "BW": "Q963",
@@ -78,19 +94,30 @@ SELECT DISTINCT ?person ?personLabel ?positionLabel ?start ?end
   OPTIONAL {{ ?person wdt:P570 ?dod }}
   OPTIONAL {{ ?person wdt:P102 ?party }}
   OPTIONAL {{ ?person wdt:P27 ?nationality }}
-  SERVICE wikibase:label {{ bd:serviceParam wikibase:language "en" }}
+  SERVICE wikibase:label {{ bd:serviceParam wikibase:language "{LABEL_LANGS}" }}
 }}
 ORDER BY ?personLabel
 LIMIT 5000
 """
 
 
-def _build_query(country_qid: str, since: Optional[str] = None) -> str:
-    """Build SPARQL query to fetch politicians for a country.
+def _modified_filter(since: Optional[str]) -> str:
+    """Build the optional incremental ``schema:dateModified`` filter clause."""
+    if not since:
+        return ""
+    return (
+        f'  ?person schema:dateModified ?modified .\n'
+        f'  FILTER(?modified >= "{since}T00:00:00Z"^^xsd:dateTime)\n'
+    )
 
-    Returns people who hold/held positions (P39) in institutions
-    tied to the given country (P17). Includes position start/end dates,
-    date of birth (P569), date of death (P570), and party affiliation (P102).
+
+def _build_query(country_qid: str, since: Optional[str] = None) -> str:
+    """Build SPARQL query for politicians whose POSITION is tied to a country.
+
+    Branch A of the catchment: people who hold/held a position (P39) whose
+    ``country (P17)`` is the given country. This is the original, proven query
+    and is kept as a standalone request so that the broader (and heavier)
+    branches can never regress coverage below this baseline if they time out.
 
     Args:
         country_qid: Wikidata QID for the country.
@@ -99,12 +126,7 @@ def _build_query(country_qid: str, since: Optional[str] = None) -> str:
             Wikidata revision timestamp (``schema:dateModified``) is after
             this date, enabling incremental scraping.
     """
-    modified_filter = ""
-    if since:
-        modified_filter = (
-            f'  ?person schema:dateModified ?modified .\n'
-            f'  FILTER(?modified >= "{since}T00:00:00Z"^^xsd:dateTime)\n'
-        )
+    modified_filter = _modified_filter(since)
     return f"""
 SELECT DISTINCT ?person ?personLabel ?positionLabel ?institutionLabel
        ?start ?end ?dob ?dod ?partyLabel WHERE {{
@@ -120,10 +142,91 @@ SELECT DISTINCT ?person ?personLabel ?positionLabel ?institutionLabel
   OPTIONAL {{ ?person wdt:P569 ?dob }}
   OPTIONAL {{ ?person wdt:P570 ?dod }}
   OPTIONAL {{ ?person wdt:P102 ?party }}
-  SERVICE wikibase:label {{ bd:serviceParam wikibase:language "en" }}
+  SERVICE wikibase:label {{ bd:serviceParam wikibase:language "{LABEL_LANGS}" }}
 }}
 ORDER BY ?personLabel
 LIMIT 10000
+"""
+
+
+def _build_jurisdiction_query(country_qid: str, since: Optional[str] = None) -> str:
+    """Build SPARQL query for politicians whose POSITION applies to a country.
+
+    Branch B of the catchment: many political positions are linked to their
+    country via ``applies to jurisdiction (P1001)`` rather than ``country
+    (P17)`` -- especially in smaller and non-anglophone countries. This branch
+    captures those, which the original P17-only query missed entirely.
+    """
+    modified_filter = _modified_filter(since)
+    return f"""
+SELECT DISTINCT ?person ?personLabel ?positionLabel ?institutionLabel
+       ?start ?end ?dob ?dod ?partyLabel WHERE {{
+  ?person wdt:P39 ?position .
+  ?position wdt:P1001 wd:{country_qid} .
+{modified_filter}  OPTIONAL {{
+    ?person p:P39 ?stmt .
+    ?stmt ps:P39 ?position .
+    OPTIONAL {{ ?stmt pq:P580 ?start }}
+    OPTIONAL {{ ?stmt pq:P582 ?end }}
+  }}
+  OPTIONAL {{ ?position wdt:P361 ?institution }}
+  OPTIONAL {{ ?person wdt:P569 ?dob }}
+  OPTIONAL {{ ?person wdt:P570 ?dod }}
+  OPTIONAL {{ ?person wdt:P102 ?party }}
+  SERVICE wikibase:label {{ bd:serviceParam wikibase:language "{LABEL_LANGS}" }}
+}}
+ORDER BY ?personLabel
+LIMIT 10000
+"""
+
+
+def _build_citizenship_query(country_qid: str, since: Optional[str] = None) -> str:
+    """Build SPARQL query for citizens of a country who hold any position.
+
+    Branch C (step 1 of 2): candidates are people who are a ``citizen (P27)``
+    of the country and hold any position (P39). This catches officials whose
+    position carries neither P17 nor P1001. It is intentionally broad -- the
+    ``?position`` QID is returned so the caller can keep only those positions
+    that are public offices (see :func:`_build_office_class_filter`), preserving
+    the existing PEP seniority definition.
+    """
+    modified_filter = _modified_filter(since)
+    return f"""
+SELECT DISTINCT ?person ?personLabel ?position ?positionLabel ?institutionLabel
+       ?start ?end ?dob ?dod ?partyLabel WHERE {{
+  ?person wdt:P27 wd:{country_qid} ;
+          wdt:P39 ?position .
+{modified_filter}  OPTIONAL {{
+    ?person p:P39 ?stmt .
+    ?stmt ps:P39 ?position .
+    OPTIONAL {{ ?stmt pq:P580 ?start }}
+    OPTIONAL {{ ?stmt pq:P582 ?end }}
+  }}
+  OPTIONAL {{ ?position wdt:P361 ?institution }}
+  OPTIONAL {{ ?person wdt:P569 ?dob }}
+  OPTIONAL {{ ?person wdt:P570 ?dod }}
+  OPTIONAL {{ ?person wdt:P102 ?party }}
+  SERVICE wikibase:label {{ bd:serviceParam wikibase:language "{LABEL_LANGS}" }}
+}}
+ORDER BY ?personLabel
+LIMIT 10000
+"""
+
+
+def _build_office_class_filter(position_qids: List[str]) -> str:
+    """Build SPARQL query returning which given positions are public offices.
+
+    Branch C (step 2 of 2): given a bounded set of position QIDs, return the
+    subset that are a subclass (P279*) of public office. Run over a small
+    ``VALUES`` set, this avoids the unbounded subclass walk that would otherwise
+    exceed the SPARQL endpoint timeout.
+    """
+    values = " ".join(f"wd:{qid}" for qid in position_qids)
+    return f"""
+SELECT ?position WHERE {{
+  VALUES ?position {{ {values} }}
+  ?position wdt:P279* wd:{PUBLIC_OFFICE_QID} .
+}}
 """
 
 
@@ -164,84 +267,172 @@ class WikidataScraper(BaseScraper):
         )
         return records
 
-    def _query_sparql(self) -> List[RawPersonRecord]:
-        """Execute SPARQL query and parse results into records."""
-        query = _build_query(self._country_qid, since=self.since)
-        now = datetime.now(timezone.utc)
+    def _run_query(self, query: str) -> dict:
+        """Send a SPARQL query and return the parsed JSON response.
 
-        # Use BaseScraper._get() for retry logic and rate limiting
+        Uses BaseScraper._get() for retry logic and polite rate limiting.
+        """
         encoded_params = requests.compat.urlencode(  # type: ignore[attr-defined]
             {"query": query, "format": "json"}
         )
         url = f"{SPARQL_ENDPOINT}?{encoded_params}"
         self.session.headers["Accept"] = "application/json"
         resp = self._get(url)
-        data = resp.json()
+        return resp.json()
 
+    def _query_sparql(self) -> List[RawPersonRecord]:
+        """Execute the multi-branch catchment and merge results.
+
+        Three independent branches are queried and merged, deduplicated by
+        (name, position). Each branch is isolated: if a broader branch fails
+        or times out, the others still contribute, so coverage never regresses
+        below the original P17 baseline (Branch A).
+        """
+        now = datetime.now(timezone.utc)
         records: List[RawPersonRecord] = []
         seen: set = set()
 
-        for binding in data.get("results", {}).get("bindings", []):
-            name = binding.get("personLabel", {}).get("value", "")
-            position = binding.get("positionLabel", {}).get("value", "")
-            institution = binding.get("institutionLabel", {}).get("value", "")
+        def absorb(bindings: list) -> None:
+            for binding in bindings:
+                record = self._binding_to_record(binding, now, seen)
+                if record is not None:
+                    records.append(record)
 
-            # Extract Wikidata QID from the person URI
-            person_uri = binding.get("person", {}).get("value", "")
-            wikidata_qid = person_uri.split("/")[-1] if person_uri else ""
-
-            # Skip blank or QID-only labels (unresolved entities)
-            if not name or name.startswith("Q") or not position:
-                continue
-
-            # Deduplicate by name+position
-            key = (name.lower(), position.lower())
-            if key in seen:
-                continue
-            seen.add(key)
-
-            # Parse dates
-            start_date = _parse_date(binding.get("start", {}).get("value"))
-            end_date = _parse_date(binding.get("end", {}).get("value"))
-            date_of_birth = _parse_date(binding.get("dob", {}).get("value"))
-            date_of_death = _parse_date(binding.get("dod", {}).get("value"))
-            party = binding.get("partyLabel", {}).get("value", "")
-            # Skip QID-only party labels
-            if party.startswith("Q"):
-                party = ""
-
-            # Determine is_current: not current if position has ended,
-            # or if the person has died (historical figures)
-            is_current = _determine_is_current(
-                end_date=end_date,
-                date_of_death=date_of_death,
-                start_date=start_date,
-            )
-
-            records.append(
-                RawPersonRecord(
-                    full_name=name,
-                    title=position,
-                    institution=institution or position,
-                    country_code=self.country_code,
-                    source_url=f"https://www.wikidata.org/wiki/{self._country_qid}",
-                    source_type="WIKIDATA",
-                    raw_text=f"{name} - {position}",
-                    scraped_at=now,
-                    extra_fields={
-                        "start_date": start_date,
-                        "end_date": end_date,
-                        "is_current": is_current,
-                        "date_of_birth": date_of_birth,
-                        "date_of_death": date_of_death,
-                        "party": party,
-                        "wikidata_qid": wikidata_qid,
-                        "wikidata_country_qid": self._country_qid,
-                    },
+        # Branch A (P17) and Branch B (P1001): position tied to the country.
+        for label, builder in (
+            ("p17", _build_query),
+            ("p1001", _build_jurisdiction_query),
+        ):
+            try:
+                data = self._run_query(builder(self._country_qid, since=self.since))
+                absorb(data.get("results", {}).get("bindings", []))
+            except Exception as exc:  # noqa: BLE001 - isolate per-branch failures
+                log.error(
+                    "wikidata.branch.failed",
+                    country=self.country_code,
+                    branch=label,
+                    error=str(exc),
                 )
+
+        # Branch C (citizenship + public office): two-step to stay under the
+        # SPARQL timeout. Fetch citizen candidates, then keep only those whose
+        # position is a public office.
+        try:
+            cdata = self._run_query(
+                _build_citizenship_query(self._country_qid, since=self.since)
+            )
+            cbindings = cdata.get("results", {}).get("bindings", [])
+            candidate_qids = {
+                _qid_from_uri(b.get("position", {}).get("value", ""))
+                for b in cbindings
+            }
+            candidate_qids.discard("")
+            office_qids = self._fetch_office_class_qids(candidate_qids)
+            kept = [
+                b
+                for b in cbindings
+                if _qid_from_uri(b.get("position", {}).get("value", "")) in office_qids
+            ]
+            absorb(kept)
+        except Exception as exc:  # noqa: BLE001 - isolate per-branch failures
+            log.error(
+                "wikidata.branch.failed",
+                country=self.country_code,
+                branch="citizenship",
+                error=str(exc),
             )
 
         return records
+
+    def _fetch_office_class_qids(self, position_qids: set) -> set:
+        """Return the subset of position QIDs that are public offices.
+
+        Batches the lookup so each follow-up query carries a small VALUES set.
+        """
+        office: set = set()
+        qids = [q for q in position_qids if q]
+        for i in range(0, len(qids), _OFFICE_CLASS_BATCH):
+            batch = qids[i : i + _OFFICE_CLASS_BATCH]
+            try:
+                data = self._run_query(_build_office_class_filter(batch))
+            except Exception as exc:  # noqa: BLE001 - degrade gracefully
+                log.error(
+                    "wikidata.officeclass.failed",
+                    country=self.country_code,
+                    batch_size=len(batch),
+                    error=str(exc),
+                )
+                continue
+            for b in data.get("results", {}).get("bindings", []):
+                qid = _qid_from_uri(b.get("position", {}).get("value", ""))
+                if qid:
+                    office.add(qid)
+        return office
+
+    def _binding_to_record(
+        self, binding: dict, now: datetime, seen: set
+    ) -> Optional[RawPersonRecord]:
+        """Convert one SPARQL binding to a record, or None if invalid/duplicate.
+
+        ``seen`` is shared across branches so the same (name, position) pulled
+        in by more than one branch is only emitted once.
+        """
+        name = binding.get("personLabel", {}).get("value", "")
+        position = binding.get("positionLabel", {}).get("value", "")
+        institution = binding.get("institutionLabel", {}).get("value", "")
+
+        # Skip blank or QID-only labels (unresolved entities)
+        if not name or name.startswith("Q") or not position:
+            return None
+
+        # Deduplicate by name+position (shared across all branches)
+        key = (name.lower(), position.lower())
+        if key in seen:
+            return None
+        seen.add(key)
+
+        person_uri = binding.get("person", {}).get("value", "")
+        wikidata_qid = _qid_from_uri(person_uri)
+
+        start_date = _parse_date(binding.get("start", {}).get("value"))
+        end_date = _parse_date(binding.get("end", {}).get("value"))
+        date_of_birth = _parse_date(binding.get("dob", {}).get("value"))
+        date_of_death = _parse_date(binding.get("dod", {}).get("value"))
+        party = binding.get("partyLabel", {}).get("value", "")
+        if party.startswith("Q"):
+            party = ""
+
+        is_current = _determine_is_current(
+            end_date=end_date,
+            date_of_death=date_of_death,
+            start_date=start_date,
+        )
+
+        return RawPersonRecord(
+            full_name=name,
+            title=position,
+            institution=institution or position,
+            country_code=self.country_code,
+            source_url=f"https://www.wikidata.org/wiki/{self._country_qid}",
+            source_type="WIKIDATA",
+            raw_text=f"{name} - {position}",
+            scraped_at=now,
+            extra_fields={
+                "start_date": start_date,
+                "end_date": end_date,
+                "is_current": is_current,
+                "date_of_birth": date_of_birth,
+                "date_of_death": date_of_death,
+                "party": party,
+                "wikidata_qid": wikidata_qid,
+                "wikidata_country_qid": self._country_qid,
+            },
+        )
+
+def _qid_from_uri(uri: str) -> str:
+    """Extract the trailing Wikidata QID from an entity URI ("" if none)."""
+    return uri.split("/")[-1] if uri else ""
+
 
 def _parse_date(value: Optional[str]) -> Optional[str]:
     """Parse Wikidata date string to ISO format."""
@@ -344,7 +535,7 @@ SELECT DISTINCT ?person ?personLabel ?relatedLabel ?relType WHERE {{
     ?person wdt:P3373 ?related .
     BIND("SIBLING" AS ?relType)
   }}
-  SERVICE wikibase:label {{ bd:serviceParam wikibase:language "en" }}
+  SERVICE wikibase:label {{ bd:serviceParam wikibase:language "{LABEL_LANGS}" }}
 }}
 ORDER BY ?personLabel
 LIMIT 10000
