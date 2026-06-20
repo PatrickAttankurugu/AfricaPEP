@@ -10,6 +10,11 @@ class Settings(BaseSettings):
     postgres_url: str = ""
     log_level: str = "INFO"
     scraper_delay_seconds: float = 2.0
+    # Default HTTP read timeout for scraper requests (seconds).
+    scraper_timeout_seconds: int = 30
+    # Longer timeout for heavy SPARQL queries (e.g. the P279* office-class
+    # subclass walk in the citizenship branch), which exceed the default.
+    scraper_sparql_timeout_seconds: int = 90
     environment: str = "development"
 
     # API authentication

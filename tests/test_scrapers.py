@@ -105,6 +105,40 @@ def test_wikidata_scraper_query_build():
     assert "positionLabel" in query
 
 
+def test_get_uses_configurable_request_timeout():
+    """_get passes the instance request_timeout to session.get, not a hardcoded value."""
+    from africapep.scraper.spiders.wikidata_scraper import WikidataScraper
+
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+    mock_response.json.return_value = {"results": {"bindings": []}}
+
+    with patch("africapep.scraper.spiders.wikidata_scraper.time.sleep"), \
+         patch("africapep.scraper.base_scraper.time.sleep"):
+        scraper = WikidataScraper(country_code="GH")
+        scraper.request_timeout = 90
+        scraper.session.get = MagicMock(return_value=mock_response)
+        scraper._get("https://example.com/sparql")
+
+    _, kwargs = scraper.session.get.call_args
+    assert kwargs.get("timeout") == 90, "should pass the instance request_timeout through"
+
+
+def test_wikidata_scraper_uses_longer_sparql_timeout():
+    """The Wikidata scraper needs a longer timeout than the base default.
+
+    The citizenship/office-class branch runs a P279* subclass walk that takes
+    far longer than the 30s base timeout, so it must use the dedicated longer
+    SPARQL timeout or it always times out (Branch C dropped in production).
+    """
+    from africapep.scraper.base_scraper import BaseScraper
+    from africapep.scraper.spiders.wikidata_scraper import WikidataScraper
+
+    scraper = WikidataScraper(country_code="GH")
+    assert scraper.request_timeout > BaseScraper.request_timeout
+    assert scraper.request_timeout >= 90
+
+
 def test_wikidata_jurisdiction_query_uses_p1001():
     from africapep.scraper.spiders.wikidata_scraper import _build_jurisdiction_query
 
