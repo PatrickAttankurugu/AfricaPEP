@@ -158,8 +158,14 @@ class EntityResolver:
                      existing=self.entities[best_match_id].full_name,
                      score=round(best_score, 3))
 
-        # Create new entity
-        entity_id = str(uuid.uuid4())
+        # Create new entity.
+        # The id is the Neo4j MERGE key, so it MUST be stable across scrape
+        # runs -- otherwise each run mints a fresh uuid and MERGE creates a
+        # duplicate Person node every time (the cause of ~4-7x count
+        # inflation). Derive it from the Wikidata QID when available; fall
+        # back to a uuid only for records with no QID (e.g. non-Wikidata
+        # sources), which cannot be cross-run deduplicated anyway.
+        entity_id = f"wd:{wikidata_qid}" if wikidata_qid else str(uuid.uuid4())
         entity = ResolvedEntity(
             id=entity_id,
             full_name=record.full_name,
