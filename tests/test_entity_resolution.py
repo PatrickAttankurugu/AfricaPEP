@@ -35,6 +35,36 @@ class TestEntityResolver:
         assert len(resolver.entities) == 1
         assert resolver.entities[entity_id].full_name == "Kwame Mensah"
 
+    def test_person_id_stable_across_runs_via_qid(self):
+        """Same Wikidata QID must map to the same Person id across separate runs.
+
+        Each scrape run builds a fresh EntityResolver, so the in-memory QID
+        cache cannot deduplicate against prior runs. The Person id must
+        therefore be derived from the stable Wikidata QID, so the Neo4j
+        ``MERGE (p:Person {id})`` updates the existing node instead of
+        creating a duplicate every run (the cause of ~4-7x count inflation).
+        """
+        from africapep.pipeline.resolver import EntityResolver
+
+        rec = _make_record("Dionisio Cabi", country="GW")
+        rec.extra_fields = {"wikidata_qid": "Q123"}
+
+        # Two independent resolvers simulate two separate scrape runs.
+        id_run1 = EntityResolver().add(rec, 1)
+        id_run2 = EntityResolver().add(rec, 1)
+
+        assert id_run1 == id_run2, "Person id must be stable across runs for a QID"
+        assert id_run1 == "wd:Q123"
+
+    def test_person_id_falls_back_to_uuid_without_qid(self):
+        """Records with no QID still get a (unique) id and don't crash."""
+        from africapep.pipeline.resolver import EntityResolver
+
+        rec = _make_record("Anonymous Associate", country="GW")  # no extra_fields qid
+        entity_id = EntityResolver().add(rec, 2)
+
+        assert entity_id and not entity_id.startswith("wd:")
+
     def test_exact_name_merge(self):
         from africapep.pipeline.resolver import EntityResolver
 
