@@ -64,11 +64,17 @@ All tests must pass before submitting a PR.
 
 ### 4. Create a branch
 
+Always branch from an **up-to-date `main`** so your work doesn't accidentally include changes from other issues:
+
 ```bash
+git checkout main
+git pull upstream main      # sync with the latest upstream main first
 git checkout -b feature/your-feature-name
 # or
 git checkout -b fix/your-bugfix-name
 ```
+
+> **One issue per branch/PR.** Keep each pull request focused on a single issue — don't bundle unrelated changes. This keeps reviews fast and prevents the same change from showing up in multiple PRs.
 
 ## How to Contribute
 
@@ -167,7 +173,7 @@ Wikidata SPARQL  -->  WikidataScraper  -->  NLP Pipeline  -->  Entity Resolver
 
 ## Pull Request Process
 
-1. Create a feature branch from `main`
+1. Create a feature branch from an up-to-date `main` (**one issue per branch**)
 2. Make your changes with clear, atomic commits
 3. Add/update tests as needed
 4. Ensure all tests pass: `pytest tests/ -v`
