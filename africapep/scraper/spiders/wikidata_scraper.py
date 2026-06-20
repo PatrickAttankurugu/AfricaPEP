@@ -18,6 +18,7 @@ from typing import Dict, List, Optional
 import requests
 import structlog
 
+from africapep.config import settings
 from africapep.scraper.base_scraper import BaseScraper, RawPersonRecord
 
 log = structlog.get_logger(__name__)
@@ -234,6 +235,10 @@ class WikidataScraper(BaseScraper):
     """Scraper that pulls PEP data from Wikidata's SPARQL endpoint."""
 
     source_type = "WIKIDATA"
+    # SPARQL queries (esp. the citizenship branch's P279* office-class walk)
+    # routinely exceed the base 30s timeout; use the longer SPARQL timeout so
+    # Branch C lands instead of timing out.
+    request_timeout = settings.scraper_sparql_timeout_seconds
 
     def __init__(self, country_code: str, since: Optional[str] = None):
         """
@@ -482,6 +487,7 @@ def _determine_is_current(
 class _RegionalHelper(BaseScraper):
     """Minimal BaseScraper subclass used only to access _get() with retry."""
     source_type = "WIKIDATA"
+    request_timeout = settings.scraper_sparql_timeout_seconds
 
     def scrape(self) -> List[RawPersonRecord]:
         return []  # pragma: no cover

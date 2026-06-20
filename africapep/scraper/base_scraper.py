@@ -40,6 +40,8 @@ class BaseScraper(ABC):
     country_code: str = ""
     source_type: str = ""
     delay_seconds: float = settings.scraper_delay_seconds
+    # HTTP read timeout (seconds). Subclasses with heavier queries override this.
+    request_timeout: int = settings.scraper_timeout_seconds
 
     def __init__(self):
         self.session = requests.Session()
@@ -66,7 +68,7 @@ class BaseScraper(ABC):
         delay = self.delay_seconds + random.uniform(0, 1)
         time.sleep(delay)
         log.info("scraper_request", url=url, delay=round(delay, 1))
-        resp = self.session.get(url, timeout=30)
+        resp = self.session.get(url, timeout=self.request_timeout)
         log.info("scraper_response", url=url, status=resp.status_code)
         resp.raise_for_status()
         return resp
