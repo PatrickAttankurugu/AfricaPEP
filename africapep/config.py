@@ -15,6 +15,13 @@ class Settings(BaseSettings):
     # Longer timeout for heavy SPARQL queries (e.g. the P279* office-class
     # subclass walk in the citizenship branch), which exceed the default.
     scraper_sparql_timeout_seconds: int = 90
+
+    # Splink probabilistic dedup pass: match-probability thresholds for the
+    # AML-safe action policy. Auto-merge requires high probability AND
+    # corroboration; medium probability is queued for human review.
+    splink_automerge_prob: float = 0.99
+    splink_review_prob: float = 0.90
+
     environment: str = "development"
 
     # API authentication

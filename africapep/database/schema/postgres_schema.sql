@@ -68,6 +68,23 @@ CREATE INDEX IF NOT EXISTS idx_source_neo4j_id ON source_records(neo4j_id);
 CREATE INDEX IF NOT EXISTS idx_source_country ON source_records(country);
 CREATE INDEX IF NOT EXISTS idx_pep_nationality ON pep_profiles(nationality);
 
+-- Candidate duplicate Person pairs from the Splink probabilistic dedup pass
+-- that fall in the human-review band (medium match probability, or high
+-- probability without corroboration). Nothing here is merged automatically.
+CREATE TABLE IF NOT EXISTS duplicate_review (
+    id                UUID PRIMARY KEY,
+    neo4j_id_a        TEXT NOT NULL,
+    neo4j_id_b        TEXT NOT NULL,
+    name_a            TEXT,
+    name_b            TEXT,
+    match_probability DOUBLE PRECISION NOT NULL,
+    matched_fields    JSONB,
+    status            TEXT NOT NULL DEFAULT 'PENDING',  -- PENDING|MERGED|REJECTED
+    created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
+    UNIQUE (neo4j_id_a, neo4j_id_b)
+);
+CREATE INDEX IF NOT EXISTS idx_dupreview_status ON duplicate_review(status);
+
 CREATE OR REPLACE FUNCTION update_search_vector() RETURNS TRIGGER AS $$
 BEGIN
     NEW.search_vector := to_tsvector('english',

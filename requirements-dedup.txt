@@ -1,0 +1,6 @@
+# Optional dependencies for the OFFLINE Splink probabilistic dedup pass
+# (scripts/run_splink_dedup.py). Deliberately NOT in requirements.txt: this is
+# a heavy (~400MB) batch-only dependency and must never be installed in the
+# runtime service image. Install where the batch is run:
+#     pip install -r requirements.txt -r requirements-dedup.txt
+splink==4.0.16
