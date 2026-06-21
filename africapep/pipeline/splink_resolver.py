@@ -139,17 +139,26 @@ def prepare_dataframe(rows: list[dict]):
     """
     import pandas as pd
 
+    def _none_if_blank(v):
+        v = (v or "").strip()
+        return v or None
+
     records = []
     for r in rows:
         name = r.get("full_name") or ""
+        # Derived/comparison fields are stored as NULL when blank. This is
+        # critical for non-Latin scripts: jellyfish.metaphone() returns "" for
+        # Arabic/Tigrinya names, and an empty-string ExactMatch level would
+        # otherwise treat ""=="" as a phonetic match, firing for EVERY such
+        # pair and producing false merges. NULL = NULL is not a match in SQL.
         records.append({
             "unique_id": r["neo4j_id"],
             "full_name": name,
-            "date_of_birth": r.get("date_of_birth") or None,
-            "nationality": r.get("nationality") or None,
+            "date_of_birth": _none_if_blank(r.get("date_of_birth")),
+            "nationality": _none_if_blank(r.get("nationality")),
             "position": r.get("position") or "",
-            "phonetic_surname": phonetic_surname_key(name),
-            "metaphone_name": metaphone_name_key(name),
+            "phonetic_surname": _none_if_blank(phonetic_surname_key(name)),
+            "metaphone_name": _none_if_blank(metaphone_name_key(name)),
         })
     return pd.DataFrame.from_records(records)
 
