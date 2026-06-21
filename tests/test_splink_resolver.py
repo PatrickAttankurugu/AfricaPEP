@@ -86,6 +86,30 @@ def test_phonetic_feature_helpers():
     assert metaphone_name_key("") == ""
 
 
+def test_prepare_dataframe_nulls_blank_keys_for_non_latin():
+    """Non-Latin names yield NULL phonetic keys, not '' (prevents false merges).
+
+    jellyfish.metaphone() returns '' for Arabic/Tigrinya names. If stored as
+    '', an ExactMatch level treats ''=='' as a phonetic match and fires for
+    EVERY such pair -> mass false merges. They must be NULL/None instead.
+    """
+    pytest.importorskip("pandas")
+    from africapep.pipeline.splink_resolver import prepare_dataframe
+
+    rows = [
+        {"neo4j_id": "wd:Q1", "full_name": "محفوظ حلمى",
+         "date_of_birth": "", "nationality": "EG", "position": ""},
+        {"neo4j_id": "wd:Q2", "full_name": "ماهر مهران",
+         "date_of_birth": "", "nationality": "EG", "position": ""},
+    ]
+    df = prepare_dataframe(rows)
+    # Arabic names cannot be metaphone-encoded -> keys must be None, not ""
+    assert df["metaphone_name"].isna().all()
+    assert df["phonetic_surname"].isna().all()
+    # Blank DOB must be None, not "" (else ""=="" is a false DOB match)
+    assert df["date_of_birth"].isna().all()
+
+
 # ── Model layer (requires Splink) ──
 
 def test_splink_model_clusters_true_duplicates():
@@ -125,3 +149,38 @@ def test_splink_model_clusters_true_duplicates():
     # Distinct people must NOT be linked.
     assert ("wd:Q5", "wd:Q6") not in matched, "Paul/Franck Biya must not merge"
     assert ("wd:Q7", "wd:Q8") not in matched, "unrelated must not merge"
+
+
+def test_splink_does_not_merge_different_non_latin_names():
+    """Different Arabic names (un-encodable phonetically) must not link.
+
+    Regression guard for the empty-metaphone false-merge bug found on prod
+    data, where every Arabic pair scored as a phonetic match.
+    """
+    pytest.importorskip("splink")
+    from africapep.pipeline.splink_resolver import (
+        prepare_dataframe, train_linker, predict_pairs,
+    )
+    import warnings
+    warnings.filterwarnings("ignore")
+
+    rows = [
+        {"neo4j_id": "wd:Q1", "full_name": "محفوظ حلمى",
+         "date_of_birth": "", "nationality": "EG", "position": ""},
+        {"neo4j_id": "wd:Q2", "full_name": "ماهر مهران",
+         "date_of_birth": "", "nationality": "EG", "position": ""},
+        {"neo4j_id": "wd:Q3", "full_name": "حسن شحاتة",
+         "date_of_birth": "", "nationality": "EG", "position": ""},
+        # A genuine Latin-script duplicate so the model still has a positive.
+        {"neo4j_id": "wd:Q4", "full_name": "Mohammed Buhari",
+         "date_of_birth": "1942-12-17", "nationality": "NG", "position": "President @ Govt"},
+        {"neo4j_id": "wd:Q5", "full_name": "Muhammadu Buhari",
+         "date_of_birth": "1942-12-17", "nationality": "NG", "position": "President @ Govt"},
+    ]
+    df = prepare_dataframe(rows)
+    linker = train_linker(df)
+    matched = {tuple(sorted((a, b))) for a, b, _ in predict_pairs(linker, threshold=0.5)}
+
+    # No pair among the three DIFFERENT Arabic names may be linked.
+    for pair in [("wd:Q1", "wd:Q2"), ("wd:Q1", "wd:Q3"), ("wd:Q2", "wd:Q3")]:
+        assert pair not in matched, f"different Arabic names must not merge: {pair}"
