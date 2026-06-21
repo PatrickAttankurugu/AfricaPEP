@@ -135,6 +135,9 @@ make run
 
 Interactive docs at `http://localhost:8000/docs` (Swagger UI) or `/redoc`.
 
+See [docs/API.md](docs/API.md) for the complete API guide.
+
+
 ### Screen a Name
 
 ```bash
