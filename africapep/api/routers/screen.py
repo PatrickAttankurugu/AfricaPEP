@@ -11,7 +11,7 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy import text
 from sqlalchemy.exc import OperationalError, InterfaceError
-from africapep.pipeline.scoring import hybrid_name_score
+from africapep.pipeline.scoring import name_match_components
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 import structlog
@@ -174,8 +174,13 @@ def _find_matches(query_name: str, country: str = None,
         rows = result.fetchall()
 
         for row in rows:
-            # Re-rank using hybrid scoring (Levenshtein + Jaro-Winkler)
-            primary_score = hybrid_name_score(query_name, row.full_name)
+            # Re-rank recall-first: best of orthographic (Levenshtein /
+            # Jaro-Winkler) and phonetic, so transliteration/spelling variants
+            # in the candidate set surface for review. NOTE: the pg_trgm
+            # pre-filter above still gates which rows reach this re-rank; a
+            # purely phonetic match with low trigram overlap may never appear
+            # here -- widening candidate retrieval (phonetic index) is deferred.
+            primary_score = name_match_components(query_name, row.full_name).best
             name_scores = [primary_score]
             matched_variant = None
 
@@ -184,7 +189,7 @@ def _find_matches(query_name: str, country: str = None,
             if row.name_variants:
                 for variant in row.name_variants:
                     aliases.append(variant)
-                    score = hybrid_name_score(query_name, variant)
+                    score = name_match_components(query_name, variant).best
                     if score > primary_score:
                         name_scores.append(score)
                         matched_variant = variant
@@ -214,7 +219,7 @@ def _find_matches(query_name: str, country: str = None,
             explanation = MatchExplanation(
                 name_similarity=round(primary_score, 4),
                 best_variant_score=round(best_score, 4),
-                method="hybrid_levenshtein_jaro_winkler",
+                method="orthographic_phonetic_best",
                 matched_variant=matched_variant,
             )
 

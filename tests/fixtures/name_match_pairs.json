@@ -1,0 +1,26 @@
+[
+  {"a": "Mohammed Ali", "b": "Muhammad Ali", "same": true, "note": "transliteration; phonetic recovers at high threshold"},
+  {"a": "Jose Maria Neves", "b": "José María Neves", "same": true, "note": "diacritics"},
+  {"a": "Umaro Sissoco Embalo", "b": "Umaro Sisoco Embaló", "same": true, "note": "spelling + diacritic"},
+  {"a": "Ibrahim Boubacar Keita", "b": "Ibrahim Boubacar Keïta", "same": true, "note": "diacritic"},
+  {"a": "Mohamed Ould Abdel Aziz", "b": "Mohammed Ould Abdelaziz", "same": true, "note": "spelling/segmentation"},
+  {"a": "Abdoulaye Diallo", "b": "Abdulaye Diallo", "same": true, "note": "spelling"},
+  {"a": "Ahmed Mohammed", "b": "Ahmad Muhammad", "same": true, "note": "transliteration; orthographic weak, phonetic strong"},
+  {"a": "Faure Gnassingbe", "b": "Faure Gnassingbé", "same": true, "note": "diacritic"},
+  {"a": "Macky Sall", "b": "Macky Sal", "same": true, "note": "spelling"},
+  {"a": "Mamadou Sakho", "b": "Mamadu Sako", "same": true, "note": "transliteration; phonetic strong"},
+  {"a": "Aboubacar", "b": "Abubakar", "same": true, "note": "transliteration; phonetic strong"},
+  {"a": "Carlos Gomes Junior", "b": "Carlos Gomes Jr", "same": true, "note": "abbreviation"},
+
+  {"a": "Amadou Diallo", "b": "Ousmane Diallo", "same": false, "note": "same surname, different person (same block)"},
+  {"a": "Mohammed Toure", "b": "Ibrahim Toure", "same": false, "note": "same surname, different person"},
+  {"a": "Jose Neves", "b": "Carlos Neves", "same": false, "note": "same surname, different person"},
+  {"a": "Paul Biya", "b": "Franck Biya", "same": false, "note": "same surname, different person"},
+  {"a": "Ahmed Sankara", "b": "Thomas Sankara", "same": false, "note": "same surname, different person"},
+  {"a": "Mariam Sow", "b": "Ousmane Sow", "same": false, "note": "same surname, different person"},
+  {"a": "Kwame Mensah", "b": "Abena Mensah", "same": false, "note": "same surname, different person"},
+  {"a": "Ali Bongo", "b": "Omar Bongo", "same": false, "note": "same surname, different person (related)"},
+  {"a": "John Mensah", "b": "Joan Mensah", "same": false, "note": "DANGEROUS: both name signals fail; corroboration required"},
+  {"a": "Nelson Mandela", "b": "Robert Mugabe", "same": false, "note": "unrelated"},
+  {"a": "Ellen Johnson", "b": "Hifikepunye Pohamba", "same": false, "note": "unrelated"}
+]
