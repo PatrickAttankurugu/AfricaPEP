@@ -13,7 +13,7 @@ from dataclasses import dataclass, field
 
 from rapidfuzz import fuzz
 
-from africapep.pipeline.scoring import hybrid_name_score
+from africapep.pipeline.scoring import hybrid_name_score, name_match_components
 import structlog
 
 from typing import TYPE_CHECKING
@@ -27,6 +27,14 @@ log = structlog.get_logger()
 
 MERGE_THRESHOLD = 0.85
 REVIEW_THRESHOLD = 0.70
+
+# Phonetic name agreement strong enough to merge -- but only when corroborated
+# by a second signal (matching DOB or position). Phonetic alone never merges,
+# so phonetically-similar but distinct people are not collapsed.
+PHONETIC_MERGE_THRESHOLD = 0.90
+# A position pair counts as corroborating when title or institution similarity
+# clears this bar.
+POSITION_CORROBORATION = 0.85
 
 # Scoring weights
 NAME_WEIGHT = 0.5
@@ -139,8 +147,10 @@ class EntityResolver:
             "end_date": record.extra_fields.get("end_date"),
         }
 
-        if best_score >= MERGE_THRESHOLD and best_match_id:
-            # Auto-merge
+        if best_match_id and self._should_auto_merge(
+            record, self.entities[best_match_id]
+        ):
+            # Auto-merge (corroborated name match)
             self._merge_into(best_match_id, record, pep_tier, source_record, position)
             log.info("entity_merged", entity_id=best_match_id,
                      name=record.full_name, score=round(best_score, 3))
@@ -195,6 +205,60 @@ class EntityResolver:
         self._blocks[block].append(entity_id)
 
         return entity_id
+
+    def _should_auto_merge(
+        self, record: NormalisedRecord, existing: ResolvedEntity
+    ) -> bool:
+        """Decide whether *record* may auto-merge into *existing*.
+
+        Precision-first policy that fixes over-merging: a strong orthographic
+        name match merges on its own; a phonetic-only match merges only when a
+        second signal (matching DOB or position) corroborates it. Position or
+        DOB similarity alone -- with a weak name -- never triggers a merge, so
+        distinct people who share a generic title (e.g. "Minister") are no
+        longer collapsed.
+
+        The decision compares the two *canonical* full names only. Synthetic
+        name variants (e.g. abbreviated "A. Diallo" forms from
+        ``generate_name_variants``) exist to widen screening recall and are
+        deliberately NOT used here -- two different people, "A. Diallo" and
+        "O. Diallo", are orthographically near-identical and would re-introduce
+        the over-merge this policy prevents.
+        """
+        comp = name_match_components(record.full_name, existing.full_name)
+
+        if comp.orthographic >= MERGE_THRESHOLD:
+            return True
+
+        if comp.phonetic >= PHONETIC_MERGE_THRESHOLD and self._has_corroboration(
+            record, existing
+        ):
+            return True
+
+        return False
+
+    def _has_corroboration(
+        self, record: NormalisedRecord, existing: ResolvedEntity
+    ) -> bool:
+        """True if DOB or a held position independently agrees."""
+        # Exact DOB match.
+        if record.date_of_birth and existing.date_of_birth:
+            if str(record.date_of_birth) == str(existing.date_of_birth):
+                return True
+
+        # Strong position/institution match against any existing position.
+        if record.title:
+            for pos in existing.positions:
+                title_sim = fuzz.token_sort_ratio(
+                    record.title, pos.get("title", "")
+                ) / 100.0
+                inst_sim = fuzz.token_sort_ratio(
+                    record.institution, pos.get("institution", "")
+                ) / 100.0
+                if max(title_sim, inst_sim) >= POSITION_CORROBORATION:
+                    return True
+
+        return False
 
     def _compute_score(self, record: NormalisedRecord, existing: ResolvedEntity) -> float:
         """Compute composite similarity score between record and existing entity."""

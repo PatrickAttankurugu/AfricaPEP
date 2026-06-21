@@ -23,6 +23,53 @@ def _make_record(name, title="Member of Parliament", institution="Parliament",
     )
 
 
+class TestOverMergePrevention:
+    """The corroboration policy must stop distinct people from auto-merging."""
+
+    def test_similar_names_same_generic_position_do_not_merge(self):
+        """Different people sharing a surname + generic title must NOT merge.
+
+        Under the old composite gate (name*0.7 + position*0.3 when DOB is
+        missing), two distinct 'X Diallo' MPs crossed 0.85 via the shared
+        'Member of Parliament' position and were wrongly merged. The
+        corroboration policy requires a strong NAME match, so they stay split.
+        """
+        from africapep.pipeline.resolver import EntityResolver
+
+        resolver = EntityResolver()
+        # Same surname (same block), generic shared position, no DOB.
+        id1 = resolver.add(_make_record("Amadou Diallo", country="GN"), 2)
+        id2 = resolver.add(_make_record("Ousmane Diallo", country="GN"), 2)
+
+        assert id1 != id2, "distinct people must not merge on name+position alone"
+        assert len(resolver.entities) == 2
+
+    def test_phonetic_match_merges_only_with_corroboration(self):
+        from africapep.pipeline.resolver import EntityResolver
+        from africapep.pipeline.scoring import name_match_components
+
+        # Precondition: this pair is a phonetic (not orthographic) match.
+        comp = name_match_components("Souleymane", "Sulaiman")
+        assert comp.phonetic >= 0.90
+        assert comp.orthographic < 0.85, "test needs an orthographically-weak pair"
+
+        # Without corroboration (no DOB, different position) -> no merge.
+        r1 = _make_record("Souleymane", title="Minister of Health",
+                          institution="Ministry of Health", country="GN")
+        r2 = _make_record("Sulaiman", title="Governor",
+                          institution="Central Bank", country="GN")
+        resolver = EntityResolver()
+        assert resolver.add(r1, 2) != resolver.add(r2, 2)
+        assert len(resolver.entities) == 2
+
+        # With corroboration (same DOB) -> merge.
+        r3 = _make_record("Souleymane", country="GN", dob="1960-01-01")
+        r4 = _make_record("Sulaiman", country="GN", dob="1960-01-01")
+        resolver2 = EntityResolver()
+        assert resolver2.add(r3, 2) == resolver2.add(r4, 2)
+        assert len(resolver2.entities) == 1
+
+
 class TestEntityResolver:
     def test_add_single_entity(self):
         from africapep.pipeline.resolver import EntityResolver

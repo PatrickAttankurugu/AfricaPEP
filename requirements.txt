@@ -10,6 +10,7 @@ pytesseract==0.3.10
 Pillow==10.3.0
 spacy==3.7.4
 rapidfuzz==3.9.0
+jellyfish==1.0.3
 fastapi==0.109.2
 uvicorn[standard]==0.29.0
 pydantic==2.7.1
