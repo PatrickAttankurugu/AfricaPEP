@@ -256,3 +256,34 @@ class TestScoringLogic:
         r2 = _make_record("Ama Bawumia")
         score = resolver._compute_score(r2, existing)
         assert score < 0.70, f"Different names should score low, got {score}"
+
+
+class TestContentDerivedNodeIds:
+    """Position/Organisation ids must be stable across pipeline runs so Neo4j
+    MERGE upserts onto existing nodes instead of minting duplicates."""
+
+    def test_same_position_content_same_id(self):
+        from africapep.pipeline.resolver import _content_id
+
+        a = _content_id("position", "President", "Government of Chad", "TD", "EXECUTIVE")
+        b = _content_id("position", "President", "Government of Chad", "TD", "EXECUTIVE")
+        assert a == b
+
+    def test_id_normalises_case_and_whitespace(self):
+        from africapep.pipeline.resolver import _content_id
+
+        a = _content_id("position", "President", "Government of Chad", "TD", "EXECUTIVE")
+        b = _content_id("position", " president ", "GOVERNMENT OF CHAD", "td", "executive")
+        assert a == b
+
+    def test_different_content_different_id(self):
+        from africapep.pipeline.resolver import _content_id
+
+        a = _content_id("position", "President", "Government of Chad", "TD", "EXECUTIVE")
+        b = _content_id("position", "Minister of Finance", "Government of Chad", "TD", "EXECUTIVE")
+        assert a != b
+
+    def test_none_parts_handled(self):
+        from africapep.pipeline.resolver import _content_id
+
+        assert _content_id("organisation", None, None) == _content_id("organisation", "", "")
