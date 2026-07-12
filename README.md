@@ -285,21 +285,21 @@ pytest tests/ --cov=africapep --cov-report=html
 docker compose exec api python -m pytest tests/ -v
 ```
 
-
 ## 📚 Documentation
 
-For detailed API usage, request/response examples, and rate limits, see:
+For detailed API usage, request and response examples, authentication, and endpoint reference, see:
 
 - [API Guide](docs/API.md)
 
-The guide includes:
+The guide covers:
+
+- Authentication
 - Screening endpoint
 - Batch screening
 - Search endpoint
-- Profile details
+- Profile detail endpoint
 - Rate limits
-
-
+- Error responses
 
 ## Contributing
 
