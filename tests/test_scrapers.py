@@ -324,7 +324,7 @@ def test_wikidata_scraper_scrape_with_mock():
     assert records[1].full_name == "Godswill Akpabio"
     assert records[1].extra_fields["start_date"] == "2023-06-13"
     assert records[1].extra_fields["is_current"] is True
-    
+
     # Verify extraction of Date of Birth (P569) from the mock SPARQL response
     assert records[1].extra_fields["date_of_birth"] == "1962-12-09"
 
