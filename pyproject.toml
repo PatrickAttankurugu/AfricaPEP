@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "africapep"
-version = "1.0.0"
+version = "1.1.0"
 description = "Open-source African PEP (Politically Exposed Persons) database with scrapers, NLP pipeline, and API"
 readme = "README.md"
 license = {text = "MIT"}

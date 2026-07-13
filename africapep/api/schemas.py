@@ -223,13 +223,13 @@ class HealthResponse(BaseModel):
     status: str
     neo4j: str
     postgres: str
-    version: str = "1.0.0"
+    version: str = "1.1.0"
 
     model_config = {"json_schema_extra": {"examples": [{
         "status": "healthy",
         "neo4j": "connected",
         "postgres": "connected",
-        "version": "1.0.0",
+        "version": "1.1.0",
     }]}}
 
 
