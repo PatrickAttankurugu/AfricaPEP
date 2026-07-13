@@ -135,6 +135,11 @@ make run
 
 Interactive docs at `http://localhost:8000/docs` (Swagger UI) or `/redoc`.
 
+For complete endpoint documentation, authentication details, request and response examples, validation rules, rate limits, and error handling, see:
+
+- [API Guide](docs/API.md)
+
+
 ### Screen a Name
 
 ```bash
@@ -284,6 +289,7 @@ pytest tests/ --cov=africapep --cov-report=html
 # Inside Docker
 docker compose exec api python -m pytest tests/ -v
 ```
+
 
 ## Contributing
 
