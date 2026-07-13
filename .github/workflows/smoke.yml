@@ -1,0 +1,40 @@
+name: Production smoke check
+
+# Runs Monday mornings, a few hours after the Sunday 02:00 UTC scrape/sync
+# jobs, so a scrape that broke the database surfaces as a red workflow and
+# an email instead of waiting for a user to notice.
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Health endpoint
+        run: |
+          body=$(curl -sf --max-time 30 https://api-pep.patrickaiafrica.com/health)
+          echo "$body"
+          echo "$body" | grep -q '"status":"healthy"'
+          echo "$body" | grep -q '"neo4j":"connected"'
+          echo "$body" | grep -q '"postgres":"connected"'
+
+      - name: Profile count sanity
+        run: |
+          count=$(curl -sf --max-time 30 https://api-pep.patrickaiafrica.com/api/v1/stats | python3 -c "import sys,json;print(json.load(sys.stdin)['total_peps'])")
+          echo "total_peps=$count"
+          # The database only grows (positions are end-dated, never deleted).
+          # A count below 30000 means a scrape or sync destroyed data.
+          test "$count" -ge 30000
+
+      - name: Screening round-trip
+        run: |
+          matches=$(curl -sf --max-time 30 -X POST https://api-pep.patrickaiafrica.com/api/v1/screen \
+            -H "Content-Type: application/json" \
+            -d '{"name": "John Mahama", "threshold": 0.85}' | python3 -c "import sys,json;print(json.load(sys.stdin)['total_matches'])")
+          echo "matches=$matches"
+          test "$matches" -ge 1

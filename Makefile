@@ -2,7 +2,8 @@
 
 quickstart:
 	cp -n .env.example .env || true
-	docker compose up -d --wait
+	docker compose up -d --wait api
+	docker compose up -d
 	docker compose exec api python -m africapep.database.init
 	docker compose exec api python -m africapep.database.seed_sample
 	@echo ""
@@ -11,7 +12,8 @@ quickstart:
 
 setup:
 	cp -n .env.example .env || true
-	docker compose up -d --wait
+	docker compose up -d --wait api
+	docker compose up -d
 	docker compose exec api python -m africapep.database.init
 
 run:
