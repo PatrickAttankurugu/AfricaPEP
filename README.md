@@ -102,24 +102,22 @@ Wikidata is currently the sole data source, queried through one parameterized SP
 
 ## Quick Start
 
-We've provided a simple `Makefile` to get the project running via Docker in minutes!
+One command from clone to a working, populated screening API:
 
 ```bash
-# 1. Clone the repository
 git clone https://github.com/PatrickAttankurugu/AfricaPEP.git && cd AfricaPEP
+make quickstart
+```
 
-# 2. Setup the environment and start services
-make setup
+That boots Neo4j + PostgreSQL + the API, applies schema, and seeds the bundled offline sample dataset (2 countries, ~500 real records, no live scraping). Takes 2-3 minutes on a cold clone, most of it the Docker image build.
 
-# 3a. Quick start: seed with the bundled offline sample (2 countries, ~500 records, under a minute)
-make seed-sample
-
-# 3b. Or seed with live PEP data from Wikidata (all 54 countries, 34,000+ profiles, takes a while)
-make seed
-
-# 4. Success! API is live at http://localhost:8000
+```bash
+# Verify
 curl http://localhost:8000/health
 curl -X POST http://localhost:8000/api/v1/screen -H "Content-Type: application/json" -d '{"name": "Adama Barrow"}'
+
+# When you want the full dataset: live-seed all 54 countries from Wikidata (34,000+ profiles, takes a while)
+make seed
 ```
 
 ## Local Development (Hot-Reload)
@@ -266,6 +264,23 @@ python -c "from africapep.database.sync import sync_all; sync_all()"
    - Score 0.70-0.84 -> Flag for review
    - Score < 0.70 -> Separate entities
 4. **Merging:** All source records preserved. Name variants accumulated. Most restrictive PEP tier kept.
+
+## Matching Quality
+
+Name matching is measured, not asserted. A QID-grounded evaluation harness (`scripts/eval_name_matching.py`) scores the real production rules against labeled pairs where ground truth comes from Wikidata QIDs, including deliberately hard cases: transliterations (Mohammed/Muhammad), diacritics, and different people who share a blocking bucket.
+
+Current results on the 23-pair adversarial fixture:
+
+| Rule | Precision | Recall | F1 |
+|------|-----------|--------|-----|
+| Screening (threshold 0.75, recall-first) | 0.71 | 1.00 | 0.83 |
+| High threshold 0.90, orthographic only | 0.91 | 0.83 | 0.87 |
+| High threshold 0.90, + phonetic | 0.92 | 1.00 | 0.96 |
+| Auto-merge gate (orthographic >= 0.85) | 0.92 | 1.00 | 0.96 |
+
+Two design decisions fall straight out of these numbers: screening is deliberately recall-first (a compliance analyst reviews candidates; a missed PEP is worse than a false candidate), while merging is precision-first with corroboration required for phonetic-only matches (a false merge could flag an innocent person).
+
+The fixture set is small and grows by contribution: if you know name variants from your country that should (or should not) match, adding labeled pairs to `tests/fixtures/name_match_pairs.json` is a five-minute contribution that directly hardens the matcher. Run the harness with `python scripts/eval_name_matching.py`.
 
 ## Project Structure
 
