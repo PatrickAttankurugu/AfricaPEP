@@ -111,11 +111,15 @@ git clone https://github.com/PatrickAttankurugu/AfricaPEP.git && cd AfricaPEP
 # 2. Setup the environment and start services
 make setup
 
-# 3. Seed with live PEP data from Wikidata (34,000+ profiles)
+# 3a. Quick start: seed with the bundled offline sample (2 countries, ~500 records, under a minute)
+make seed-sample
+
+# 3b. Or seed with live PEP data from Wikidata (all 54 countries, 34,000+ profiles, takes a while)
 make seed
 
 # 4. Success! API is live at http://localhost:8000
 curl http://localhost:8000/health
+curl -X POST http://localhost:8000/api/v1/screen -H "Content-Type: application/json" -d '{"name": "Adama Barrow"}'
 ```
 
 ## Local Development (Hot-Reload)
