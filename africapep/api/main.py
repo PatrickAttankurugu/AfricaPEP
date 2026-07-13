@@ -45,7 +45,7 @@ app = FastAPI(
         "- **FATF-aligned Tiers** — Tier 1 (heads of state), Tier 2 (MPs/judges), Tier 3 (local officials)\n"
         "- **Dual Database** — Neo4j graph + PostgreSQL for fast search\n"
     ),
-    version="1.0.0",
+    version="1.1.0",
     docs_url=None if is_production else "/docs",
     redoc_url=None if is_production else "/redoc",
     openapi_url=None if is_production else "/openapi.json",
@@ -225,6 +225,6 @@ app.include_router(countries.router, prefix="/api/v1", tags=["Countries"])
 def root():
     return {
         "service": "AfricaPEP API",
-        "version": "1.0.0",
+        "version": "1.1.0",
         "docs": "/docs",
     }

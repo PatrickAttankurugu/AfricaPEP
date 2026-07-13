@@ -26,5 +26,5 @@ async def health_check():
         status=overall,
         neo4j=neo4j_status,
         postgres=pg_status,
-        version="1.0.0",
+        version="1.1.0",
     )
