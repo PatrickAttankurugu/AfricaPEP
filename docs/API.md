@@ -339,6 +339,10 @@ Example response:
 
 Clients should implement retry or exponential backoff when receiving HTTP 429 responses.
 
+> **Note**
+>
+> Limits are tracked in memory per API worker process, so the effective ceiling can be somewhat higher than the stated values when the API runs with multiple workers, and counters reset when the service restarts. Treat the stated values as the guaranteed floor and do not design clients that depend on exceeding them.
+
 ---
 
 ## Error Responses

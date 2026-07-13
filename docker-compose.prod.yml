@@ -8,7 +8,7 @@ services:
     volumes:
       - ./data/neo4j:/data
     environment:
-      NEO4J_AUTH: neo4j/${NEO4J_PASSWORD:-changeme}
+      NEO4J_AUTH: neo4j/${NEO4J_PASSWORD:?NEO4J_PASSWORD must be set for production}
       NEO4J_dbms_memory_heap_initial__size: 512m
       NEO4J_dbms_memory_heap_max__size: 1G
     healthcheck:
@@ -39,7 +39,7 @@ services:
       - ./data/postgres:/var/lib/postgresql/data
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-africapep}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set for production}
       POSTGRES_DB: ${POSTGRES_DB:-africapep}
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-africapep}"]
