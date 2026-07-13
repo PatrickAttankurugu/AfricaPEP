@@ -4,9 +4,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![Docker](https://img.shields.io/badge/docker-compose-blue.svg)](https://docs.docker.com/compose/)
-[![Tests](https://img.shields.io/badge/tests-79%20passing-brightgreen.svg)](#running-tests)
+[![Tests](https://img.shields.io/badge/tests-170%2B-brightgreen.svg)](#running-tests)
 [![Countries](https://img.shields.io/badge/countries-54-orange.svg)](#database-coverage)
-[![PEPs](https://img.shields.io/badge/PEP%20profiles-32%2C476-purple.svg)](#database-coverage)
+[![PEPs](https://img.shields.io/badge/PEP%20profiles-34%2C000%2B-purple.svg)](#database-coverage)
 [![Contributing](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
 A production-grade, open-source PEP (Politically Exposed Persons) database covering **all 54 African Union member states**. Built for KYC/AML compliance teams who need reliable PEP screening without expensive third-party data subscriptions.
@@ -15,7 +15,7 @@ A production-grade, open-source PEP (Politically Exposed Persons) database cover
 
 ## Why AfricaPEP?
 
-- **32,000+ verified PEP profiles** — Sourced from Wikidata's community-maintained, referenced database
+- **34,000+ verified PEP profiles** — Sourced from Wikidata's community-maintained, referenced database
 - **Complete African coverage** — All 54 AU member states
 - **Free and open source** — No licensing fees, no API quotas, no vendor lock-in
 - **Graph-powered** — Neo4j captures PEP relationships, family ties, and political networks
@@ -43,13 +43,15 @@ The scraper queries Wikidata's public SPARQL endpoint for all persons who hold o
 
 **Re-seeding pulls fresh data** — run `python -m africapep.database.seed` anytime to get the latest from Wikidata.
 
+Wikidata is currently the sole data source, queried through one parameterized SPARQL scraper that runs per country. The scraper framework (rate limiting, retries, per-source isolation) is built to support national sources such as government gazettes, electoral commissions, and judiciary websites: these are open contribution opportunities, tracked as [`new-scraper` issues](https://github.com/PatrickAttankurugu/AfricaPEP/issues?q=is%3Aissue+is%3Aopen+label%3Anew-scraper).
+
 ## Architecture
 
 ```
 +-------------------------------------------------------------+
 |                        DATA SOURCE                          |
 |              Wikidata SPARQL Endpoint                       |
-|    Community-verified | Referenced | 33,000+ African PEPs  |
+|    Community-verified | Referenced | 34,000+ African PEPs  |
 +-------------------------------------------------------------+
                              |
                              v
@@ -109,7 +111,7 @@ git clone https://github.com/PatrickAttankurugu/AfricaPEP.git && cd AfricaPEP
 # 2. Setup the environment and start services
 make setup
 
-# 3. Seed with live PEP data from Wikidata (32,000+ profiles)
+# 3. Seed with live PEP data from Wikidata (34,000+ profiles)
 make seed
 
 # 4. Success! API is live at http://localhost:8000
@@ -270,7 +272,7 @@ africapep/
 ├── pipeline/       # NLP normaliser, FATF classifier, entity resolver
 ├── scraper/        # BaseScraper + WikidataScraper (SPARQL-based)
 └── scheduler/      # APScheduler job definitions
-tests/              # 79 tests covering scraper, pipeline, and API
+tests/              # 170+ tests covering scraper, pipeline, and API
 docs/               # Design documents and plans
 ```
 
@@ -297,13 +299,16 @@ We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ### Good first issues
 
-New to the project? Look for issues labeled [`good first issue`](https://github.com/PatrickAttankurugu/AfricaPEP/labels/good%20first%20issue):
+New to the project? Look for issues labeled [`good first issue`](https://github.com/PatrickAttankurugu/AfricaPEP/labels/good%20first%20issue). Currently open:
 
-- Add date of birth extraction from Wikidata SPARQL
-- Improve FATF tier classification for judiciary roles
-- Add French/Arabic name transliteration support
-- Write tests for the sync module
-- Add API response pagination headers
+- Add French name transliteration support (#2)
+- Improve FATF tier classification for judiciary roles (#3)
+- Add party affiliation extraction from Wikidata (#5)
+- Add AU, ECOWAS, SADC, and EAC officials as regional PEPs (#7)
+- Add Arabic name transliteration for North African countries (#8)
+- Add Docker Compose one-command local setup (#14)
+
+You do not need to write code to contribute: compliance professionals can validate country data quality (#15). See [CONTRIBUTING-DATA.md](CONTRIBUTING-DATA.md).
 
 ### Other ways to contribute
 
@@ -325,6 +330,7 @@ New to the project? Look for issues labeled [`good first issue`](https://github.
 
 ## Community
 
+- [ROADMAP](ROADMAP.md) — Where the project is going
 - [GitHub Discussions](https://github.com/PatrickAttankurugu/AfricaPEP/discussions) — Ask questions, share ideas
 - [GitHub Issues](https://github.com/PatrickAttankurugu/AfricaPEP/issues) — Report bugs, request features
 - [CHANGELOG](CHANGELOG.md) — See what's new
