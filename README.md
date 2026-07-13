@@ -6,7 +6,7 @@
 [![Docker](https://img.shields.io/badge/docker-compose-blue.svg)](https://docs.docker.com/compose/)
 [![Tests](https://img.shields.io/badge/tests-170%2B-brightgreen.svg)](#running-tests)
 [![Countries](https://img.shields.io/badge/countries-54-orange.svg)](#database-coverage)
-[![PEPs](https://img.shields.io/badge/PEP%20profiles-34%2C000%2B-purple.svg)](#database-coverage)
+[![PEPs](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi-pep.patrickaiafrica.com%2Fapi%2Fv1%2Fstats&query=%24.total_peps&label=PEP%20profiles&color=8A2BE2)](#database-coverage)
 [![Contributing](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
 A production-grade, open-source PEP (Politically Exposed Persons) database covering **all 54 African Union member states**. Built for KYC/AML compliance teams who need reliable PEP screening without expensive third-party data subscriptions.
