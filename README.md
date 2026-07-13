@@ -268,7 +268,7 @@ python -c "from africapep.database.sync import sync_all; sync_all()"
 ```
 africapep/
 ├── api/            # FastAPI routes + Pydantic schemas
-├── database/       # Neo4j client, PostgreSQL client, ORM models, sync, seed
+├── database/       # Neo4j client, PostgreSQL client, sync, seed
 ├── pipeline/       # NLP normaliser, FATF classifier, entity resolver
 ├── scraper/        # BaseScraper + WikidataScraper (SPARQL-based)
 └── scheduler/      # APScheduler job definitions

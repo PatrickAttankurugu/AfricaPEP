@@ -37,8 +37,7 @@ docker compose exec api python -m africapep.database.seed
 
 ```bash
 # Requires Python 3.11+, Neo4j 5, PostgreSQL 15
-pip install -r requirements.txt
-python -m spacy download en_core_web_sm
+pip install -r requirements-dev.txt
 
 cp .env.example .env
 # Edit .env with your database credentials
