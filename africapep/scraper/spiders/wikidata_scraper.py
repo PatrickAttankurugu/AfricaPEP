@@ -19,6 +19,7 @@ import requests
 import structlog
 
 from africapep.config import settings
+from africapep.pipeline.classifier import matches_political_keyword
 from africapep.scraper.base_scraper import BaseScraper, RawPersonRecord
 
 log = structlog.get_logger(__name__)
@@ -39,7 +40,15 @@ PUBLIC_OFFICE_QID = "Q294414"
 
 # Cap on the number of position QIDs sent in a single VALUES clause when
 # classifying positions by office class (keeps each follow-up query small/fast).
-_OFFICE_CLASS_BATCH = 200
+# 200-QID batches routinely 504 on the P279* walk (observed for GM at 65);
+# keep batches small and split-retry on failure instead of dropping them.
+_OFFICE_CLASS_BATCH = 40
+
+# Position labels that match political keywords but are not public offices.
+_KEYWORD_FALLBACK_DENYLIST = (
+    "list of", "fifa", "goodwill ambassador", "nef ambassador",
+    "brand ambassador", "beach soccer", "student", "honorary",
+)
 
 # Wikidata QIDs for African countries, keyed by ISO 3166-1 alpha-2
 COUNTRY_QIDS: Dict[str, str] = {
@@ -214,6 +223,31 @@ LIMIT 10000
 """
 
 
+def _build_occupation_politician_query(country_qid: str, since: Optional[str] = None) -> str:
+    """Build SPARQL query for citizens with occupation politician but no P39.
+
+    Branch D of the catchment: people recorded as a politician by occupation
+    (P106 = Q82955) who have NO ``position held`` statement at all. Sparse
+    Wikidata coverage for small countries often records the occupation but not
+    the office; branches A-C can never see these people. They are emitted with
+    the generic title "Politician" and classified by the normal tier pipeline.
+    """
+    modified_filter = _modified_filter(since)
+    return f"""
+SELECT DISTINCT ?person ?personLabel ?dob ?dod ?partyLabel WHERE {{
+  ?person wdt:P27 wd:{country_qid} ;
+          wdt:P106 wd:Q82955 .
+  FILTER NOT EXISTS {{ ?person wdt:P39 ?anyposition }}
+{modified_filter}  OPTIONAL {{ ?person wdt:P569 ?dob }}
+  OPTIONAL {{ ?person wdt:P570 ?dod }}
+  OPTIONAL {{ ?person wdt:P102 ?party }}
+  SERVICE wikibase:label {{ bd:serviceParam wikibase:language "{LABEL_LANGS}" }}
+}}
+ORDER BY ?personLabel
+LIMIT 10000
+"""
+
+
 def _build_office_class_filter(position_qids: List[str]) -> str:
     """Build SPARQL query returning which given positions are public offices.
 
@@ -333,17 +367,57 @@ class WikidataScraper(BaseScraper):
             }
             candidate_qids.discard("")
             office_qids = self._fetch_office_class_qids(candidate_qids)
-            kept = [
-                b
-                for b in cbindings
-                if _qid_from_uri(b.get("position", {}).get("value", "")) in office_qids
-            ]
+            kept = []
+            keyword_recovered = 0
+            for b in cbindings:
+                pos_qid = _qid_from_uri(b.get("position", {}).get("value", ""))
+                if pos_qid in office_qids:
+                    kept.append(b)
+                    continue
+                # Ontology fallback: Wikidata's P279 classing is unreliable for
+                # small countries (even 'President of Mauritius' fails the
+                # public-office walk). Keep candidates whose position label
+                # explicitly matches a political keyword, minus known noise.
+                label = b.get("positionLabel", {}).get("value", "").lower()
+                if label and not any(d in label for d in _KEYWORD_FALLBACK_DENYLIST) \
+                        and matches_political_keyword(label):
+                    kept.append(b)
+                    keyword_recovered += 1
+            if keyword_recovered:
+                log.info(
+                    "wikidata.keyword_fallback",
+                    country=self.country_code,
+                    recovered=keyword_recovered,
+                )
             absorb(kept)
         except Exception as exc:  # noqa: BLE001 - isolate per-branch failures
             log.error(
                 "wikidata.branch.failed",
                 country=self.country_code,
                 branch="citizenship",
+                error=str(exc),
+            )
+
+        # Branch D (occupation politician, no recorded position): sparse
+        # Wikidata entries invisible to branches A-C. Emitted with the generic
+        # title "Politician"; the tier classifier handles them from there.
+        try:
+            ddata = self._run_query(
+                _build_occupation_politician_query(self._country_qid, since=self.since)
+            )
+            dbindings = ddata.get("results", {}).get("bindings", [])
+            for b in dbindings:
+                # The query shape guarantees no position; guard anyway so an
+                # unexpected binding is deduped under its real position rather
+                # than minting a duplicate "Politician" record.
+                if not b.get("positionLabel", {}).get("value"):
+                    b["positionLabel"] = {"value": "Politician"}
+            absorb(dbindings)
+        except Exception as exc:  # noqa: BLE001 - isolate per-branch failures
+            log.error(
+                "wikidata.branch.failed",
+                country=self.country_code,
+                branch="occupation",
                 error=str(exc),
             )
 
@@ -358,21 +432,39 @@ class WikidataScraper(BaseScraper):
         qids = [q for q in position_qids if q]
         for i in range(0, len(qids), _OFFICE_CLASS_BATCH):
             batch = qids[i : i + _OFFICE_CLASS_BATCH]
-            try:
-                data = self._run_query(_build_office_class_filter(batch))
-            except Exception as exc:  # noqa: BLE001 - degrade gracefully
-                log.error(
-                    "wikidata.officeclass.failed",
+            office.update(self._office_class_batch(batch, allow_split=True))
+        return office
+
+    def _office_class_batch(self, batch: list, allow_split: bool) -> set:
+        """Run one office-class VALUES query; on failure split in half once.
+
+        The P279* walk sometimes 504s on a batch that succeeds when halved.
+        A failed un-splittable batch degrades gracefully to empty (the
+        keyword fallback in Branch C still gets a chance at those records).
+        """
+        try:
+            data = self._run_query(_build_office_class_filter(batch))
+        except Exception as exc:  # noqa: BLE001 - degrade gracefully
+            if allow_split and len(batch) > 1:
+                log.warning(
+                    "wikidata.officeclass.split_retry",
                     country=self.country_code,
                     batch_size=len(batch),
-                    error=str(exc),
                 )
-                continue
-            for b in data.get("results", {}).get("bindings", []):
-                qid = _qid_from_uri(b.get("position", {}).get("value", ""))
-                if qid:
-                    office.add(qid)
-        return office
+                mid = len(batch) // 2
+                return (self._office_class_batch(batch[:mid], allow_split=False)
+                        | self._office_class_batch(batch[mid:], allow_split=False))
+            log.error(
+                "wikidata.officeclass.failed",
+                country=self.country_code,
+                batch_size=len(batch),
+                error=str(exc),
+            )
+            return set()
+        return {
+            qid for b in data.get("results", {}).get("bindings", [])
+            if (qid := _qid_from_uri(b.get("position", {}).get("value", "")))
+        }
 
     def _binding_to_record(
         self, binding: dict, now: datetime, seen: set

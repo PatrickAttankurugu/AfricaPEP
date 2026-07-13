@@ -227,6 +227,8 @@ def test_wikidata_multi_branch_merges_and_office_filters():
         q = urllib.parse.unquote(url)
         if "P279" in q:
             return _sparql_response(office_class)
+        if "P106" in q:
+            return _sparql_response([])  # Branch D: no occupation-only people
         if "P1001" in q:
             return _sparql_response(branch_b)
         if "wdt:P27" in q:
@@ -243,6 +245,118 @@ def test_wikidata_multi_branch_merges_and_office_filters():
     assert names == ["Alpha ViaP17", "Beta ViaP1001", "Gamma Citizen"]
     # The footballer (non-public-office citizen) must be excluded
     assert "Delta Athlete" not in names
+
+
+def test_wikidata_keyword_fallback_recovers_unclassed_offices():
+    """Citizens whose position fails the P279 walk are kept when the label is
+    clearly political (small-country ontology gaps), but noise stays out."""
+    import urllib.parse
+    from africapep.scraper.spiders.wikidata_scraper import WikidataScraper
+
+    ent = "http://www.wikidata.org/entity/"
+    citizen_candidates = [
+        {  # political label, NOT in office_class -> recovered by keyword fallback
+            "person": {"value": ent + "Q10"},
+            "position": {"value": ent + "Q300"},
+            "personLabel": {"value": "Epsilon President"},
+            "positionLabel": {"value": "Vice President of the Comoros"},
+        },
+        {  # monarch, NOT in office_class -> recovered (new monarch keywords)
+            "person": {"value": ent + "Q11"},
+            "position": {"value": ent + "Q301"},
+            "personLabel": {"value": "Zeta Monarch"},
+            "positionLabel": {"value": "King of Eswatini"},
+        },
+        {  # matches 'ambassador' keyword but denylisted -> dropped
+            "person": {"value": ent + "Q12"},
+            "position": {"value": ent + "Q302"},
+            "personLabel": {"value": "Eta Goodwill"},
+            "positionLabel": {"value": "NEF ambassador"},
+        },
+        {  # no political keyword at all -> dropped
+            "person": {"value": ent + "Q13"},
+            "position": {"value": ent + "Q303"},
+            "personLabel": {"value": "Theta Referee"},
+            "positionLabel": {"value": "FIFA referee"},
+        },
+    ]
+
+    def dispatch(url, timeout=None):
+        q = urllib.parse.unquote(url)
+        if "P279" in q:
+            return _sparql_response([])  # ontology knows none of them
+        if "P106" in q:
+            return _sparql_response([])
+        if "wdt:P27" in q:
+            return _sparql_response(citizen_candidates)
+        return _sparql_response([])  # branches A/B empty
+
+    with patch("africapep.scraper.base_scraper.time.sleep"), \
+         patch("africapep.scraper.spiders.wikidata_scraper.time.sleep"):
+        scraper = WikidataScraper(country_code="KM")
+        scraper.session.get = MagicMock(side_effect=dispatch)
+        records = scraper.scrape()
+
+    names = sorted(r.full_name for r in records)
+    assert names == ["Epsilon President", "Zeta Monarch"]
+
+
+def test_wikidata_occupation_politician_branch():
+    """Branch D: occupation=politician with no P39 lands with title Politician."""
+    import urllib.parse
+    from africapep.scraper.spiders.wikidata_scraper import WikidataScraper
+
+    ent = "http://www.wikidata.org/entity/"
+    occupation_only = [{
+        "person": {"value": ent + "Q20"},
+        "personLabel": {"value": "Iota OccupationOnly"},
+        "dob": {"value": "1970-05-01T00:00:00Z"},
+    }]
+
+    def dispatch(url, timeout=None):
+        q = urllib.parse.unquote(url)
+        if "P106" in q:
+            return _sparql_response(occupation_only)
+        return _sparql_response([])
+
+    with patch("africapep.scraper.base_scraper.time.sleep"), \
+         patch("africapep.scraper.spiders.wikidata_scraper.time.sleep"):
+        scraper = WikidataScraper(country_code="ER")
+        scraper.session.get = MagicMock(side_effect=dispatch)
+        records = scraper.scrape()
+
+    assert len(records) == 1
+    assert records[0].full_name == "Iota OccupationOnly"
+    assert records[0].title == "Politician"
+    assert records[0].extra_fields["wikidata_qid"] == "Q20"
+    assert records[0].extra_fields["date_of_birth"] == "1970-05-01"
+
+
+def test_wikidata_office_class_batch_splits_on_failure():
+    """A failing office-class batch is retried as two halves, not dropped."""
+    from africapep.scraper.spiders.wikidata_scraper import WikidataScraper
+
+    ent = "http://www.wikidata.org/entity/"
+    calls = {"n": 0}
+
+    def fake_run_query(query):
+        calls["n"] += 1
+        if calls["n"] == 1:
+            raise Exception("504 Server Error")  # full batch times out
+        # halves succeed; echo back whichever QIDs were asked for
+        asked = [q for q in ("Q1", "Q2", "Q3", "Q4") if f"wd:{q}" in query]
+        return {"results": {"bindings": [
+            {"position": {"value": ent + q}} for q in asked
+        ]}}
+
+    with patch("africapep.scraper.base_scraper.time.sleep"), \
+         patch("africapep.scraper.spiders.wikidata_scraper.time.sleep"):
+        scraper = WikidataScraper(country_code="GM")
+        scraper._run_query = fake_run_query
+        office = scraper._fetch_office_class_qids({"Q1", "Q2", "Q3", "Q4"})
+
+    assert office == {"Q1", "Q2", "Q3", "Q4"}
+    assert calls["n"] == 3  # 1 failed full batch + 2 successful halves
 
 
 def test_wikidata_branch_failure_does_not_regress_baseline():

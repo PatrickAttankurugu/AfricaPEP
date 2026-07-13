@@ -43,6 +43,13 @@ TIER_1_TITLES = [
     # Former heads of state remain Tier 1 PEPs
     "former president", "former prime minister",
     "former vice president", "former head of state",
+    # Monarchs and their stand-ins (e.g. Eswatini, Morocco, traditional
+    # kingdoms with constitutional roles). "of"-suffixed forms avoid
+    # substring hits like "banking" or "queensland".
+    "king of", "queen of", "sultan of", "emir of", "monarch of",
+    "regent", "ndlovukati",
+    # Vice-regal / head-of-state representatives
+    "governor-general", "governor general",
     # Candidates for highest office
     "candidate", "presidential candidate",
     # Cabinet Secretary (Kenya style)
@@ -181,6 +188,28 @@ def classify_pep_tier(title: str, institution: str = "") -> int:
         return 2
 
     return 3
+
+
+def matches_political_keyword(title: str, institution: str = "") -> bool:
+    """Whether a title/institution explicitly matches any tier keyword.
+
+    Unlike :func:`classify_pep_tier`, this never falls through to a default:
+    it answers "does this look like a political office at all?". Used by the
+    scraper as a recall fallback for positions that Wikidata's ontology fails
+    to class under public office (common for small countries, where even
+    'President of Mauritius' lacks the P279 chain).
+    """
+    title_lower = title.lower().strip() if title else ""
+    inst_lower = institution.lower().strip() if institution else ""
+    combined = f"{title_lower} {inst_lower}"
+
+    for patterns in (TIER_1_TITLES, TIER_2_TITLES, TIER_3_TITLES):
+        if any(p in combined for p in patterns):
+            return True
+    for patterns in (TIER_1_INSTITUTIONS, TIER_2_INSTITUTIONS, TIER_3_INSTITUTIONS):
+        if any(p in inst_lower for p in patterns):
+            return True
+    return False
 
 
 def get_tier_description(tier: int) -> str:
