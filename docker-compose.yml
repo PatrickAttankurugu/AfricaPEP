@@ -3,8 +3,8 @@ services:
     image: neo4j:5-community
     restart: unless-stopped
     ports:
-      - "127.0.0.1:7474:7474"
-      - "127.0.0.1:7687:7687"
+      - "127.0.0.1:${NEO4J_HTTP_PORT:-7474}:7474"
+      - "127.0.0.1:${NEO4J_BOLT_PORT:-7687}:7687"
     volumes:
       - ./data/neo4j:/data
     environment:
@@ -21,7 +21,7 @@ services:
     image: postgres:15
     restart: unless-stopped
     ports:
-      - "127.0.0.1:5432:5432"
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
     volumes:
       - ./data/postgres:/var/lib/postgresql/data
     environment:
@@ -38,7 +38,7 @@ services:
     build: .
     restart: unless-stopped
     ports:
-      - "8000:8000"
+      - "${API_PORT:-8000}:8000"
     depends_on:
       neo4j:
         condition: service_healthy
@@ -62,5 +62,10 @@ services:
         condition: service_healthy
     env_file: .env
     command: python -m africapep.scheduler.jobs
-    volumes:
-      - ./data/raw_pdfs:/app/data/raw_pdfs
+    # The scheduler serves no HTTP; without this it inherits the image's
+    # curl-based HEALTHCHECK and reports permanently unhealthy.
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep -f africapep.scheduler.jobs || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
