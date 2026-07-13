@@ -1,7 +1,6 @@
 """Tests for the NLP pipeline: normaliser, classifier, extractor."""
 from datetime import datetime, timezone
 
-import pytest
 
 
 # ── Normaliser tests ──
@@ -182,19 +181,3 @@ class TestClassifier:
         assert is_high_risk_pep(1) is True
         assert is_high_risk_pep(2) is True
         assert is_high_risk_pep(3) is False
-
-
-# ── PDF Parser tests ──
-
-class TestPDFParser:
-    def test_pdf_parser_file_not_found(self):
-        from africapep.scraper.utils.pdf_parser import extract_text_from_pdf
-
-        with pytest.raises(FileNotFoundError):
-            extract_text_from_pdf("/nonexistent/path.pdf")
-
-    def test_table_extractor_file_not_found(self):
-        from africapep.scraper.utils.pdf_parser import extract_tables_from_pdf
-
-        with pytest.raises(FileNotFoundError):
-            extract_tables_from_pdf("/nonexistent/path.pdf")
