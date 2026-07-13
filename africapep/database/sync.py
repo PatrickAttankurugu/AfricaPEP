@@ -25,7 +25,7 @@ def sync_all():
     MATCH (p:Person)
     OPTIONAL MATCH (p)-[hp:HELD_POSITION]->(pos:Position)
     WHERE hp.is_current = true
-    WITH p, collect({
+    WITH p, collect(DISTINCT {
         title: pos.title,
         institution: pos.institution,
         country: pos.country,
@@ -59,8 +59,19 @@ def sync_all():
             is_active = person.get("is_active_pep", True)
             positions = person.get("current_positions") or []
 
-            # Filter out empty position dicts
+            # Filter out empty position dicts, then drop duplicates while
+            # keeping order (duplicate Position nodes existed in the graph
+            # before ids became content-derived).
             positions = [p for p in positions if p.get("title")]
+            seen_positions = set()
+            unique_positions = []
+            for p in positions:
+                key = (p.get("title"), p.get("institution"),
+                       p.get("country"), p.get("branch"))
+                if key not in seen_positions:
+                    seen_positions.add(key)
+                    unique_positions.append(p)
+            positions = unique_positions
 
             now = datetime.now(timezone.utc).isoformat()
             db.execute(text("""

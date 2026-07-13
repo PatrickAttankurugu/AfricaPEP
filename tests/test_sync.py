@@ -130,6 +130,27 @@ class TestSyncAllMissingFields:
 
     @patch("africapep.database.sync.get_db")
     @patch("africapep.database.sync.neo4j_client")
+    def test_duplicate_positions_collapsed(self, mock_neo4j, mock_get_db):
+        person = sample_person_neo4j()
+        duplicate = {"title": "Minister of Public Health", "institution": "Govt",
+                     "country": "TD", "branch": "EXECUTIVE"}
+        other = {"title": "Minister of Finance", "institution": "Govt",
+                 "country": "TD", "branch": "EXECUTIVE"}
+        person["current_positions"] = [duplicate, dict(duplicate), other, dict(duplicate)]
+        mock_neo4j.run.side_effect = [[person], []]
+
+        db = MagicMock()
+        db.__enter__ = MagicMock(return_value=db)
+        db.__exit__ = MagicMock(return_value=False)
+        mock_get_db.return_value = db
+
+        assert sync_all() == 1
+        call_params = db.execute.call_args[0][1]
+        positions = json.loads(call_params["positions"])
+        assert positions == [duplicate, other]
+
+    @patch("africapep.database.sync.get_db")
+    @patch("africapep.database.sync.neo4j_client")
     def test_positions_without_title_filtered(self, mock_neo4j, mock_get_db):
         person = sample_person_neo4j()
         person["current_positions"] = [

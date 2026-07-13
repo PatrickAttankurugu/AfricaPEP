@@ -41,6 +41,16 @@ NAME_WEIGHT = 0.5
 DOB_WEIGHT = 0.3
 POSITION_WEIGHT = 0.2
 
+# Namespace for deriving stable Position/Organisation ids from their content.
+# Random ids here made MERGE behave like CREATE, so every pipeline run minted
+# duplicate nodes (same bug class as the Person QID fix in #24).
+_CONTENT_ID_NAMESPACE = uuid.UUID("7f3d9b2a-4c81-4f6e-9d25-8a1b3c5e7f90")
+
+
+def _content_id(*parts: Optional[str]) -> str:
+    key = "|".join((p or "").strip().lower() for p in parts)
+    return str(uuid.uuid5(_CONTENT_ID_NAMESPACE, key))
+
 
 @dataclass
 class ResolvedEntity:
@@ -382,7 +392,13 @@ class EntityResolver:
             })
 
             for pos in entity.positions:
-                pos_id = str(uuid.uuid4())
+                pos_id = _content_id(
+                    "position",
+                    pos.get("title", ""),
+                    pos.get("institution", ""),
+                    pos.get("country", entity.nationality),
+                    pos.get("branch", "EXECUTIVE"),
+                )
                 position_rows.append({
                     "id": pos_id,
                     "title": pos.get("title", ""),
@@ -402,8 +418,8 @@ class EntityResolver:
                 })
 
                 if pos.get("institution"):
-                    org_id = str(uuid.uuid4())
                     country = pos.get("country", entity.nationality)
+                    org_id = _content_id("organisation", pos["institution"], country)
                     org_rows.append({
                         "id": org_id,
                         "name": pos["institution"],
@@ -435,6 +451,11 @@ class EntityResolver:
                     "pid": entity.id,
                     "sid": src_id,
                 })
+
+        # Content-derived ids repeat when entities share a position or
+        # organisation; write each node once per flush.
+        position_rows = list({row["id"]: row for row in position_rows}.values())
+        org_rows = list({row["id"]: row for row in org_rows}.values())
 
         # ── Batch write all collected data ──
         written = len(person_rows)
