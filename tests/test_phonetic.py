@@ -1,5 +1,4 @@
 """Tests for phonetic name matching."""
-import pytest
 
 
 def test_phonetic_matches_transliteration_variants():
