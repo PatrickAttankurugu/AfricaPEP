@@ -62,10 +62,9 @@ services:
         condition: service_healthy
     env_file: .env
     command: python -m africapep.scheduler.jobs
-    # The scheduler serves no HTTP; without this it inherits the image's
-    # curl-based HEALTHCHECK and reports permanently unhealthy.
+    # The scheduler serves no HTTP but inherits the image's curl-based
+    # HEALTHCHECK, reporting permanently unhealthy. It runs as PID 1, so a
+    # crash exits the container and restart policy recovers it; no
+    # healthcheck can add signal here.
     healthcheck:
-      test: ["CMD-SHELL", "pgrep -f africapep.scheduler.jobs || exit 1"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
+      disable: true
