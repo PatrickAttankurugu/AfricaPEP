@@ -35,7 +35,7 @@ Content-Type: application/json
 
 ---
 
-# Screening Endpoint
+## Screening Endpoint
 
 Screen an individual name against the AfricaPEP database using fuzzy matching.
 
@@ -52,6 +52,11 @@ POST /screen
 | name | string | ✅ | Name to screen |
 | threshold | float | No | Minimum similarity score used for matching |
 | country | string | No | Restrict matching to a specific ISO country code |
+
+### Validation
+
+- `name` must be between **2 and 200 characters**.
+- `threshold` defaults to **0.75** when omitted.
 
 ## Example Request
 
@@ -100,7 +105,7 @@ curl -X POST https://api-pep.patrickaiafrica.com/api/v1/screen \
 
 ---
 
-# Batch Screening
+## Batch Screening
 
 Screen multiple names in a single request.
 
@@ -112,13 +117,28 @@ POST /screen/batch
 
 A batch request accepts a list of **objects**, not plain strings.
 
+
+### Constraints
+
+- Maximum **50 names** per request.
+- Exceeding the limit returns **HTTP 400** with:
+
+```json
+{
+  "detail": "...",
+  "code": "BATCH_SIZE_EXCEEDED"
+}
+```
+
+- `threshold` defaults to **0.65** if omitted.
+
 ## Example Request
 
 ```bash
 curl -X POST https://api-pep.patrickaiafrica.com/api/v1/screen/batch \
   -H "Content-Type: application/json" \
   -d '{
-    "threshold": 0.75,
+    "threshold": 0.65,
     "names": [
       {
         "name": "John Mahama"
@@ -157,13 +177,13 @@ curl -X POST https://api-pep.patrickaiafrica.com/api/v1/screen/batch \
   "total_matches": 2,
   "screening_id": "48807620-8c97-4d80-8310-ae53ac757d77",
   "screened_at": "2026-07-12T17:45:07Z",
-  "threshold": 0.75
+  "threshold": 0.65
 }
 ```
 
 ---
 
-# Search
+## Search
 
 Search the AfricaPEP database using full-text search with optional filters.
 
@@ -183,6 +203,13 @@ GET /search
 | active | boolean | Filter by active status |
 | page | integer | Page number |
 | limit | integer | Number of results per page |
+
+
+### Parameter Constraints
+
+- `limit` defaults to **20**.
+- Maximum `limit` is **100**.
+- `tier` accepts values **1**, **2**, or **3**.
 
 ## Example Requests
 
@@ -227,7 +254,7 @@ curl "https://api-pep.patrickaiafrica.com/api/v1/search?q=mahama&tier=1"
 
 ---
 
-# Profile Detail
+## Profile Detail
 
 Retrieve the complete profile for a Politically Exposed Person.
 
@@ -290,32 +317,59 @@ The profile endpoint returns detailed information including:
 
 ---
 
-# Rate Limits
+## Rate Limits
 
-The API may enforce rate limits to ensure fair usage.
+The API enforces the following rate limits per client IP:
 
-Clients should handle HTTP **429 Too Many Requests** responses appropriately and implement retry or backoff logic where necessary.
+| Endpoint | Limit |
+|----------|-------|
+| `POST /screen` | 60 requests per minute |
+| `POST /screen/batch` | 20 requests per minute |
 
-No public rate limit values are currently documented.
+When a rate limit is exceeded, the API returns **HTTP 429 Too Many Requests**.
+
+Example response:
+
+```json
+{
+  "detail": "Rate limit exceeded. Please slow down and retry shortly.",
+  "code": "RATE_LIMIT_EXCEEDED"
+}
+```
+
+Clients should implement retry or exponential backoff when receiving HTTP 429 responses.
 
 ---
 
-# Error Responses
+## Error Responses
 
 The API uses standard HTTP status codes.
 
-| Status Code | Meaning |
-|-------------|---------|
-| 200 | Request successful |
-| 400 | Invalid request |
-| 404 | Resource not found |
-| 429 | Too many requests |
-| 500 | Internal server error |
-| 503 | Service temporarily unavailable |
+| Status | Meaning                         |
+| ------ | ------------------------------- |
+| 200    | Request successful              |
+| 400    | Invalid request                 |
+| 401    | Missing or invalid API key      |
+| 404    | Resource not found              |
+| 429    | Too many requests               |
+| 500    | Internal server error           |
+| 503    | Service temporarily unavailable |
+
+
+Error responses use a consistent format:
+
+```json
+{
+  "detail": "...",
+  "code": "..."
+}
+```
+
+
 
 ---
 
-# Notes
+## Notes
 
 - Use HTTPS for all requests.
 - Send request bodies as JSON.
