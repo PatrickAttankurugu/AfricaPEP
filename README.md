@@ -102,24 +102,22 @@ Wikidata is currently the sole data source, queried through one parameterized SP
 
 ## Quick Start
 
-We've provided a simple `Makefile` to get the project running via Docker in minutes!
+One command from clone to a working, populated screening API:
 
 ```bash
-# 1. Clone the repository
 git clone https://github.com/PatrickAttankurugu/AfricaPEP.git && cd AfricaPEP
+make quickstart
+```
 
-# 2. Setup the environment and start services
-make setup
+That boots Neo4j + PostgreSQL + the API, applies schema, and seeds the bundled offline sample dataset (2 countries, ~500 real records, no live scraping). Takes 2-3 minutes on a cold clone, most of it the Docker image build.
 
-# 3a. Quick start: seed with the bundled offline sample (2 countries, ~500 records, under a minute)
-make seed-sample
-
-# 3b. Or seed with live PEP data from Wikidata (all 54 countries, 34,000+ profiles, takes a while)
-make seed
-
-# 4. Success! API is live at http://localhost:8000
+```bash
+# Verify
 curl http://localhost:8000/health
 curl -X POST http://localhost:8000/api/v1/screen -H "Content-Type: application/json" -d '{"name": "Adama Barrow"}'
+
+# When you want the full dataset: live-seed all 54 countries from Wikidata (34,000+ profiles, takes a while)
+make seed
 ```
 
 ## Local Development (Hot-Reload)
