@@ -83,18 +83,14 @@ def dedup_positions(session, dry_run: bool) -> tuple[int, int]:
             )
             keeper = canonical
 
-        # Re-point HELD_POSITION, preserving properties; a rel with the same
-        # period on the keeper counts as already present (identical periods
-        # collapse, distinct terms survive).
+        # Re-point HELD_POSITION unconditionally, preserving properties.
+        # A NOT EXISTS guard here does NOT reliably see this statement's own
+        # earlier CREATEs, so duplicates are collapsed in a dedicated pass
+        # afterwards (collapse_parallel_rels) instead of being prevented here.
         session.run("""
             UNWIND $dups AS did
             MATCH (person:Person)-[r:HELD_POSITION]->(dup:Position {id: did})
             MATCH (keep:Position {id: $keeper})
-            WHERE NOT EXISTS {
-                MATCH (person)-[k:HELD_POSITION]->(keep)
-                WHERE coalesce(k.start_date, '') = coalesce(r.start_date, '')
-                  AND coalesce(k.end_date, '') = coalesce(r.end_date, '')
-            }
             CREATE (person)-[nk:HELD_POSITION]->(keep)
             SET nk = properties(r)
         """, {"dups": dups, "keeper": keeper})
@@ -115,6 +111,31 @@ def dedup_positions(session, dry_run: bool) -> tuple[int, int]:
         removed += len(dups)
 
     return len(groups), removed
+
+
+def collapse_parallel_rels(session, dry_run: bool) -> int:
+    """Collapse parallel HELD_POSITION rels with identical properties.
+
+    Distinct terms (different start/end) are different property maps and
+    survive as separate relationships.
+    """
+    if dry_run:
+        result = session.run("""
+            MATCH (p:Person)-[r:HELD_POSITION]->(pos:Position)
+            WITH p, pos, properties(r) AS props, collect(r) AS rs
+            WHERE size(rs) > 1
+            RETURN sum(size(rs) - 1) AS extras
+        """).single()
+        return result["extras"] or 0
+
+    result = session.run("""
+        MATCH (p:Person)-[r:HELD_POSITION]->(pos:Position)
+        WITH p, pos, properties(r) AS props, collect(r) AS rs
+        WHERE size(rs) > 1
+        FOREACH (x IN rs[1..] | DELETE x)
+        RETURN sum(size(rs) - 1) AS extras
+    """).single()
+    return result["extras"] or 0
 
 
 def dedup_organisations(session, dry_run: bool) -> tuple[int, int]:
@@ -182,6 +203,9 @@ def main():
 
     with driver.session() as session:
         pos_groups, pos_removed = dedup_positions(session, args.dry_run)
+        rels_collapsed = collapse_parallel_rels(session, args.dry_run)
+        print(f"Parallel identical HELD_POSITION rels "
+              f"{'to collapse' if args.dry_run else 'collapsed'}: {rels_collapsed}")
         org_groups, org_removed = dedup_organisations(session, args.dry_run)
 
         totals = session.run("""

@@ -31,14 +31,19 @@ async def get_pep_profile(pep_id: str):
         pos = pos_data.get("position")
         if pos:
             held = pos_data.get("held", {}) or {}
+            # Term dates belong to the HELD_POSITION relationship. Position
+            # nodes are shared across holders (content-derived ids), so any
+            # dates on the node are one arbitrary holder's term.
+            start = held.get("start_date") or pos.get("start_date")
+            end = held.get("end_date") or pos.get("end_date")
             positions.append(PositionResponse(
                 title=pos.get("title", ""),
                 institution=pos.get("institution", ""),
                 country=pos.get("country", ""),
                 flag=country_flag(pos.get("country", "")),
                 branch=pos.get("branch", ""),
-                start_date=str(pos.get("start_date")) if pos.get("start_date") else None,
-                end_date=str(pos.get("end_date")) if pos.get("end_date") else None,
+                start_date=str(start) if start else None,
+                end_date=str(end) if end else None,
                 is_current=held.get("is_current", pos.get("is_current", True)),
             ))
 
