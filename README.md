@@ -15,7 +15,7 @@ A production-grade, open-source PEP (Politically Exposed Persons) database cover
 
 ## Why AfricaPEP?
 
-- **34,000+ verified PEP profiles** — Sourced from Wikidata's community-maintained, referenced database
+- **48,000+ verified PEP profiles** — Sourced from Wikidata's community-maintained, referenced database
 - **Complete African coverage** — All 54 AU member states
 - **Free and open source** — No licensing fees, no API quotas, no vendor lock-in
 - **Graph-powered** — Neo4j captures PEP relationships, family ties, and political networks
@@ -51,7 +51,7 @@ Wikidata is currently the sole data source, queried through one parameterized SP
 +-------------------------------------------------------------+
 |                        DATA SOURCE                          |
 |              Wikidata SPARQL Endpoint                       |
-|    Community-verified | Referenced | 34,000+ African PEPs  |
+|    Community-verified | Referenced | 48,000+ African PEPs  |
 +-------------------------------------------------------------+
                              |
                              v
