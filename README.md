@@ -116,7 +116,7 @@ That boots Neo4j + PostgreSQL + the API, applies schema, and seeds the bundled o
 curl http://localhost:8000/health
 curl -X POST http://localhost:8000/api/v1/screen -H "Content-Type: application/json" -d '{"name": "Adama Barrow"}'
 
-# When you want the full dataset: live-seed all 54 countries from Wikidata (34,000+ profiles, takes a while)
+# When you want the full dataset: live-seed all 54 countries from Wikidata (48,000+ profiles, takes a while)
 make seed
 ```
 
