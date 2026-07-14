@@ -39,7 +39,7 @@ app = FastAPI(
         "Built from scratch using web scrapers, NLP pipelines, and entity resolution — "
         "no third-party PEP data providers.\n\n"
         "### Key Features\n"
-        "- **Name Screening** — Fuzzy match names against 34,000+ PEP profiles\n"
+        "- **Name Screening** — Fuzzy match names against 48,000+ PEP profiles\n"
         "- **Batch Screening** — Screen up to 50 names in a single request\n"
         "- **Full-text Search** — Search by name, country, tier, and active status\n"
         "- **FATF-aligned Tiers** — Tier 1 (heads of state), Tier 2 (MPs/judges), Tier 3 (local officials)\n"
