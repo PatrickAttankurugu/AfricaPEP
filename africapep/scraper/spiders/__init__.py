@@ -10,5 +10,12 @@ from africapep.scraper.spiders.wikidata_scraper import (
     REGIONAL_BODY_QIDS,
     scrape_regional_bodies,
 )
+from africapep.scraper.spiders.ghana_parliament_scraper import GhanaParliamentScraper
 
-__all__ = ["WikidataScraper", "COUNTRY_QIDS", "REGIONAL_BODY_QIDS", "scrape_regional_bodies"]
+__all__ = [
+    "WikidataScraper",
+    "GhanaParliamentScraper",
+    "COUNTRY_QIDS",
+    "REGIONAL_BODY_QIDS",
+    "scrape_regional_bodies",
+]

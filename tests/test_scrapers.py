@@ -59,6 +59,38 @@ def test_base_scraper_cannot_instantiate():
         BaseScraper()
 
 
+def test_ghana_parliament_scraper_parses_fixture():
+    from pathlib import Path
+    from africapep.scraper.spiders.ghana_parliament_scraper import parse_members
+
+    html = Path("tests/fixtures/ghana_parliament/mps.html").read_text()
+    members = parse_members(html)
+
+    assert len(members) == 39
+    assert members[0]["name"] == "Abdul Rauf Tongym Tubazu"
+    assert members[0]["constituency"] == "Ayawaso Central"
+    assert members[0]["party"] == "National Democratic Congress"
+
+
+def test_ghana_parliament_scraper_emits_records_from_fixture():
+    from pathlib import Path
+    from unittest.mock import MagicMock, patch
+    from africapep.scraper.spiders.ghana_parliament_scraper import GhanaParliamentScraper
+
+    response = MagicMock()
+    response.text = Path("tests/fixtures/ghana_parliament/mps.html").read_text()
+    empty_response = MagicMock()
+    empty_response.text = "<html></html>"
+
+    with patch.object(GhanaParliamentScraper, "_get", side_effect=[response, empty_response]):
+        records = GhanaParliamentScraper().scrape()
+
+    assert len(records) == 39
+    assert records[0].source_type == "GHANA_PARLIAMENT"
+    assert records[0].country_code == "GH"
+    assert records[0].extra_fields["party"] == "National Democratic Congress"
+
+
 # ── WikidataScraper ──
 
 def test_wikidata_scraper_init():
