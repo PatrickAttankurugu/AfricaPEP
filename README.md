@@ -6,12 +6,19 @@
 [![Docker](https://img.shields.io/badge/docker-compose-blue.svg)](https://docs.docker.com/compose/)
 [![Tests](https://img.shields.io/badge/tests-170%2B-brightgreen.svg)](#running-tests)
 [![Countries](https://img.shields.io/badge/countries-54-orange.svg)](#database-coverage)
-[![PEPs](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi-pep.patrickaiafrica.com%2Fapi%2Fv1%2Fstats&query=%24.total_peps&label=PEP%20profiles&color=8A2BE2)](#database-coverage)
+[![PEPs](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi-pep.102-37-18-200.sslip.io%2Fapi%2Fv1%2Fstats&query=%24.total_peps&label=PEP%20profiles&color=8A2BE2)](#database-coverage)
 [![Contributing](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
 A production-grade, open-source PEP (Politically Exposed Persons) database covering **all 54 African Union member states**. Built for KYC/AML compliance teams who need reliable PEP screening without expensive third-party data subscriptions.
 
-**Live demo:** [pep.patrickaiafrica.com](https://pep.patrickaiafrica.com) |**Frontend repo:** [africapep-frontend](https://github.com/PatrickAttankurugu/africapep-frontend)
+**Live demo:** [africapep-frontend.vercel.app](https://africapep-frontend.vercel.app) |**Frontend repo:** [africapep-frontend](https://github.com/PatrickAttankurugu/africapep-frontend)
+
+> **Service address change (October 2026).** The `patrickaiafrica.com` domain has lapsed, so `pep.patrickaiafrica.com` and `api-pep.patrickaiafrica.com` no longer resolve. The service itself is running and the data is unchanged. Please use these temporary addresses:
+>
+> - Web UI: https://africapep-frontend.vercel.app
+> - API base: `https://api-pep.102-37-18-200.sslip.io/api/v1` (health check: `/health`)
+>
+> Endpoints, request formats and responses are the same; only the host changes. Treat the old hostnames as untrusted from now on, because a lapsed domain can be registered by anyone. Permanent addresses will be announced here and in [docs/API.md](docs/API.md).
 
 ## Why AfricaPEP?
 

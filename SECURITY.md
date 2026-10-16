@@ -25,8 +25,8 @@ You will receive a response within 48 hours acknowledging the report. We will wo
 
 This policy covers:
 
-- The AfricaPEP API (`api-pep.patrickaiafrica.com`)
-- The AfricaPEP frontend (`pep.patrickaiafrica.com`)
+- The AfricaPEP API (`api-pep.102-37-18-200.sslip.io`)
+- The AfricaPEP frontend (`africapep-frontend.vercel.app`)
 - The AfricaPEP codebase and its dependencies
 
 ## Out of Scope

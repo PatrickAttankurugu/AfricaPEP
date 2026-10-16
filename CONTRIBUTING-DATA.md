@@ -10,7 +10,7 @@ If you are a compliance officer, AML analyst, journalist, researcher, or simply 
 
 Pick a country you know. Open a [Country Data Validation issue](https://github.com/PatrickAttankurugu/AfricaPEP/issues/new?template=country_validation.md) and work through the checklist: coverage gaps, stale records, wrong tiers, missing name variants, duplicates.
 
-You can do the whole review from the live demo at [pep.patrickaiafrica.com](https://pep.patrickaiafrica.com), no setup required. Search for officials you know should be there, screen names with common local spellings, and record what is wrong or missing.
+You can do the whole review from the live demo at [africapep-frontend.vercel.app](https://africapep-frontend.vercel.app), no setup required. Search for officials you know should be there, screen names with common local spellings, and record what is wrong or missing.
 
 Every finding should link to public evidence: a government website, gazette, reputable news source, or official register.
 

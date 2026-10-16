@@ -5,8 +5,12 @@ This guide explains how to use the AfricaPEP REST API to screen names, perform b
 ## Base URL
 
 ```
-https://api-pep.patrickaiafrica.com/api/v1
+https://api-pep.102-37-18-200.sslip.io/api/v1
 ```
+
+> **Temporary base URL (October 2026)**
+>
+> The previous host `api-pep.patrickaiafrica.com` no longer resolves because its domain lapsed. The base URL above is the temporary replacement. Paths, payloads and responses are unchanged, so integrations only need the host updated. Do not keep calling the old hostname: a lapsed domain can be registered by a third party.
 
 ## Authentication
 
@@ -61,7 +65,7 @@ POST /screen
 ## Example Request
 
 ```bash
-curl -X POST https://api-pep.patrickaiafrica.com/api/v1/screen \
+curl -X POST https://api-pep.102-37-18-200.sslip.io/api/v1/screen \
   -H "Content-Type: application/json" \
   -d '{
     "name": "John Mahama",
@@ -135,7 +139,7 @@ A batch request accepts a list of **objects**, not plain strings.
 ## Example Request
 
 ```bash
-curl -X POST https://api-pep.patrickaiafrica.com/api/v1/screen/batch \
+curl -X POST https://api-pep.102-37-18-200.sslip.io/api/v1/screen/batch \
   -H "Content-Type: application/json" \
   -d '{
     "threshold": 0.65,
@@ -216,19 +220,19 @@ GET /search
 Search by name:
 
 ```bash
-curl "https://api-pep.patrickaiafrica.com/api/v1/search?q=mahama"
+curl "https://api-pep.102-37-18-200.sslip.io/api/v1/search?q=mahama"
 ```
 
 Filter by country:
 
 ```bash
-curl "https://api-pep.patrickaiafrica.com/api/v1/search?q=mahama&country=GH"
+curl "https://api-pep.102-37-18-200.sslip.io/api/v1/search?q=mahama&country=GH"
 ```
 
 Filter by tier:
 
 ```bash
-curl "https://api-pep.patrickaiafrica.com/api/v1/search?q=mahama&tier=1"
+curl "https://api-pep.102-37-18-200.sslip.io/api/v1/search?q=mahama&tier=1"
 ```
 
 ## Example Response
@@ -269,7 +273,7 @@ Use the `id` returned from the Search endpoint or the `pep_id` returned from the
 ## Example Request
 
 ```bash
-curl "https://api-pep.patrickaiafrica.com/api/v1/pep/wd:Q50678"
+curl "https://api-pep.102-37-18-200.sslip.io/api/v1/pep/wd:Q50678"
 ```
 
 ## Example Response

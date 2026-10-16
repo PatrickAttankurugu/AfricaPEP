@@ -22,7 +22,7 @@ classifiers = [
 [project.urls]
 Homepage = "https://github.com/PatrickAttankurugu/AfricaPEP"
 Repository = "https://github.com/PatrickAttankurugu/AfricaPEP"
-Documentation = "https://api-pep.patrickaiafrica.com/docs"
+Documentation = "https://github.com/PatrickAttankurugu/AfricaPEP/blob/main/docs/API.md"
 Issues = "https://github.com/PatrickAttankurugu/AfricaPEP/issues"
 
 [tool.pytest.ini_options]

@@ -11,7 +11,7 @@ assignees: ''
 
 ## What to check
 
-Use the live demo at https://pep.patrickaiafrica.com (or the API directly, see [docs/API.md](../../docs/API.md)) and review the data for this country against your knowledge of its political landscape.
+Use the live demo at https://africapep-frontend.vercel.app (or the API directly, see [docs/API.md](../../docs/API.md)) and review the data for this country against your knowledge of its political landscape.
 
 - [ ] **Coverage gaps:** Are any current senior officials missing? (President, VP, ministers, MPs, senior judges, central bank leadership, military chiefs)
 - [ ] **Stale records:** Are any listed officials out of office but still marked active?

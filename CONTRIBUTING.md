@@ -4,8 +4,8 @@ Thank you for your interest in contributing to AfricaPEP — the open-source Afr
 
 ## Quick Links
 
-- **Live demo:** [pep.patrickaiafrica.com](https://pep.patrickaiafrica.com)
-- **API docs:** [api-pep.patrickaiafrica.com/docs](https://api-pep.patrickaiafrica.com/docs)
+- **Live demo:** [africapep-frontend.vercel.app](https://africapep-frontend.vercel.app)
+- **API docs:** [docs/API.md](docs/API.md)
 - **Issues:** [GitHub Issues](https://github.com/PatrickAttankurugu/AfricaPEP/issues)
 - **Discussions:** [GitHub Discussions](https://github.com/PatrickAttankurugu/AfricaPEP/discussions)
 
