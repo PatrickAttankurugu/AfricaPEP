@@ -38,7 +38,7 @@ services:
     build: .
     restart: unless-stopped
     ports:
-      - "${API_PORT:-8000}:8000"
+      - "127.0.0.1:${API_PORT:-8000}:8000"
     depends_on:
       neo4j:
         condition: service_healthy
