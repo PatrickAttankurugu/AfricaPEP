@@ -91,6 +91,42 @@ def test_ghana_parliament_scraper_emits_records_from_fixture():
     assert records[0].extra_fields["party"] == "National Democratic Congress"
 
 
+def test_kenya_assembly_scraper_parses_fixture():
+    from pathlib import Path
+    from africapep.scraper.spiders.kenya_assembly_scraper import parse_members
+
+    html = Path("tests/fixtures/kenya_assembly/mps.html").read_text(encoding="utf-8")
+    members = parse_members(html)
+
+    assert len(members) == 9
+    assert members[0]["name"] == "HON KING'OLA PATRICK MAKAU, CBS"
+    assert members[0]["county"] == "MACHAKOS"
+    assert members[0]["constituency"] == "MAVOKO"
+    assert members[0]["party"] == "WDM"
+    assert members[0]["status"] == "Elected"
+
+
+def test_kenya_assembly_scraper_emits_records_from_fixture():
+    from pathlib import Path
+    from unittest.mock import MagicMock, patch
+    from africapep.scraper.spiders.kenya_assembly_scraper import KenyaNationalAssemblyScraper
+
+    response = MagicMock()
+    response.text = Path("tests/fixtures/kenya_assembly/mps.html").read_text(encoding="utf-8")
+    empty_response = MagicMock()
+    empty_response.text = "<html></html>"
+
+    with patch.object(KenyaNationalAssemblyScraper, "_get", side_effect=[response, empty_response]):
+        records = KenyaNationalAssemblyScraper().scrape()
+
+    assert len(records) == 9
+    assert records[0].source_type == "KENYA_NATIONAL_ASSEMBLY"
+    assert records[0].country_code == "KE"
+    assert records[0].institution == "National Assembly of Kenya"
+    assert records[0].extra_fields["party"] == "WDM"
+    assert records[0].extra_fields["constituency"] == "MAVOKO"
+
+
 # ── WikidataScraper ──
 
 def test_wikidata_scraper_init():
