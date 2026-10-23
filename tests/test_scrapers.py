@@ -299,9 +299,13 @@ def test_wikidata_multi_branch_merges_and_office_filters():
             return _sparql_response([])  # Branch D: no occupation-only people
         if "P1001" in q:
             return _sparql_response(branch_b)
-        if "wdt:P27" in q:
+        # P27 citizenship branch: has wdt:P27 wd: followed by a country QID (first statement)
+        # Distinguishing feature: has wdt:P39 after (position), not P17 or P1001
+        if "wdt:P27" in q and "wdt:P39" in q and "P17" not in q and "P1001" not in q:
             return _sparql_response(citizen_candidates)
-        return _sparql_response(branch_a)  # P17 baseline
+        if "wdt:P17" in q:  # P17 branch (includes optional P27)
+            return _sparql_response(branch_a)
+        return _sparql_response([])  # fallback
 
     with patch("africapep.scraper.base_scraper.time.sleep"), \
          patch("africapep.scraper.spiders.wikidata_scraper.time.sleep"):
@@ -354,8 +358,9 @@ def test_wikidata_keyword_fallback_recovers_unclassed_offices():
         if "P279" in q:
             return _sparql_response([])  # ontology knows none of them
         if "P106" in q:
-            return _sparql_response([])
-        if "wdt:P27" in q:
+            return _sparql_response([])  # Branch D: no occupation-only people
+        # P27 citizenship branch: has wdt:P27 and wdt:P39, no P17/P1001
+        if "wdt:P27" in q and "wdt:P39" in q and "P17" not in q and "P1001" not in q:
             return _sparql_response(citizen_candidates)
         return _sparql_response([])  # branches A/B empty
 
@@ -441,7 +446,7 @@ def test_wikidata_branch_failure_does_not_regress_baseline():
 
     def dispatch(url, timeout=None):
         q = urllib.parse.unquote(url)
-        if "wdt:P17" in q and "P1001" not in q and "wdt:P27" not in q:
+        if "wdt:P17" in q and "P1001" not in q:  # P17 branch (P27 is now optional in P17)
             return _sparql_response(branch_a)
         raise Exception("branch unavailable")  # B and C blow up
 
@@ -453,6 +458,71 @@ def test_wikidata_branch_failure_does_not_regress_baseline():
 
     # Baseline coverage preserved despite the other branches failing
     assert [r.full_name for r in records] == ["Alpha ViaP17"]
+
+
+def test_wikidata_p27_citizenship_guards_against_diplomat_misclassification():
+    """Branch A/B: P27 citizenship prevents misclassifying people.
+    E.g. Ghanaian diplomat accredited to Eswatini via P17=SZ gets stored with
+    nationality=GH (from P27), not nationality=SZ. Non-African citizens fallback
+    to position-country since they're not in COUNTRY_QIDS."""
+    import urllib.parse
+    from africapep.scraper.spiders.wikidata_scraper import WikidataScraper
+
+    ent = "http://www.wikidata.org/entity/"
+    # Branch A results: position linked to SZ via P17, person has GH citizenship P27
+    branch_a_ghanaian = [{
+        "person": {"value": ent + "Q1"},
+        "personLabel": {"value": "Kwame Mensah"},
+        "positionLabel": {"value": "High Commissioner to Eswatini"},
+        "citizenship": {"value": ent + "Q117"},  # Ghana (Q117 -> GH)
+    }]
+    # Branch A results: position linked to SZ via P17, person has non-African citizenship
+    # (should fallback to position-country SZ since we don't have a global QID mapping)
+    branch_a_foreign = [{
+        "person": {"value": ent + "Q2"},
+        "personLabel": {"value": "Lisa J. Peterson"},
+        "positionLabel": {"value": "United States Ambassador to Swaziland"},
+        "citizenship": {"value": ent + "Q30"},  # US (not in COUNTRY_QIDS, so fallback)
+    }]
+    # Position-based search but person lacks P27: should fallback to position-country
+    branch_a_no_p27 = [{
+        "person": {"value": ent + "Q3"},
+        "personLabel": {"value": "Local Official"},
+        "positionLabel": {"value": "Minister"},
+        "citizenship": {"value": ""},  # Missing P27
+    }]
+
+    def dispatch(url, timeout=None):
+        q = urllib.parse.unquote(url)
+        if "wd:Q1050" in q:  # Eswatini scrape
+            # Return both Ghanaian and US diplomat
+            return _sparql_response(branch_a_ghanaian + branch_a_foreign)
+        if "wd:Q114" in q:  # Kenya scrape
+            return _sparql_response(branch_a_no_p27)
+        return _sparql_response([])
+
+    with patch("africapep.scraper.base_scraper.time.sleep"), \
+         patch("africapep.scraper.spiders.wikidata_scraper.time.sleep"):
+        # Test Ghanaian ambassador to Eswatini
+        scraper = WikidataScraper(country_code="SZ")
+        scraper.session.get = MagicMock(side_effect=dispatch)
+        records = scraper.scrape()
+        assert len(records) == 2
+
+        ghanaian = [r for r in records if r.full_name == "Kwame Mensah"][0]
+        assert ghanaian.country_code == "GH", "Should use P27 (Ghana) not position-country (SZ)"
+        assert ghanaian.extra_fields["position_country_code"] == "SZ", "Should preserve the position-based country"
+
+        foreign = [r for r in records if r.full_name == "Lisa J. Peterson"][0]
+        assert foreign.country_code == "SZ", "Non-African P27 (US) not in COUNTRY_QIDS, so fallback to position-country"
+
+        # Test missing P27: should fallback to position-country
+        scraper = WikidataScraper(country_code="KE")
+        scraper.session.get = MagicMock(side_effect=dispatch)
+        records = scraper.scrape()
+        assert len(records) == 1
+        assert records[0].full_name == "Local Official"
+        assert records[0].country_code == "KE", "Should fallback to position-country when P27 missing"
 
 
 def test_wikidata_scraper_parse_date():
