@@ -68,6 +68,9 @@ COUNTRY_QIDS: Dict[str, str] = {
     "ZM": "Q953", "ZW": "Q954",
 }
 
+# Reverse mapping for P27 (citizenship) lookups: Wikidata QID -> ISO country code
+WIKIDATA_QID_TO_CODE: Dict[str, str] = {v: k for k, v in COUNTRY_QIDS.items()}
+
 # Wikidata QIDs for African regional organisations
 REGIONAL_BODY_QIDS: Dict[str, str] = {
     "AU": "Q7159",       # African Union
@@ -139,7 +142,7 @@ def _build_query(country_qid: str, since: Optional[str] = None) -> str:
     modified_filter = _modified_filter(since)
     return f"""
 SELECT DISTINCT ?person ?personLabel ?positionLabel ?institutionLabel
-       ?start ?end ?dob ?dod ?partyLabel WHERE {{
+       ?start ?end ?dob ?dod ?partyLabel ?citizenship WHERE {{
   ?person wdt:P39 ?position .
   ?position wdt:P17 wd:{country_qid} .
 {modified_filter}  OPTIONAL {{
@@ -152,6 +155,7 @@ SELECT DISTINCT ?person ?personLabel ?positionLabel ?institutionLabel
   OPTIONAL {{ ?person wdt:P569 ?dob }}
   OPTIONAL {{ ?person wdt:P570 ?dod }}
   OPTIONAL {{ ?person wdt:P102 ?party }}
+  OPTIONAL {{ ?person wdt:P27 ?citizenship }}
   SERVICE wikibase:label {{ bd:serviceParam wikibase:language "{LABEL_LANGS}" }}
 }}
 ORDER BY ?personLabel
@@ -170,7 +174,7 @@ def _build_jurisdiction_query(country_qid: str, since: Optional[str] = None) -> 
     modified_filter = _modified_filter(since)
     return f"""
 SELECT DISTINCT ?person ?personLabel ?positionLabel ?institutionLabel
-       ?start ?end ?dob ?dod ?partyLabel WHERE {{
+       ?start ?end ?dob ?dod ?partyLabel ?citizenship WHERE {{
   ?person wdt:P39 ?position .
   ?position wdt:P1001 wd:{country_qid} .
 {modified_filter}  OPTIONAL {{
@@ -183,6 +187,7 @@ SELECT DISTINCT ?person ?personLabel ?positionLabel ?institutionLabel
   OPTIONAL {{ ?person wdt:P569 ?dob }}
   OPTIONAL {{ ?person wdt:P570 ?dod }}
   OPTIONAL {{ ?person wdt:P102 ?party }}
+  OPTIONAL {{ ?person wdt:P27 ?citizenship }}
   SERVICE wikibase:label {{ bd:serviceParam wikibase:language "{LABEL_LANGS}" }}
 }}
 ORDER BY ?personLabel
@@ -505,11 +510,15 @@ class WikidataScraper(BaseScraper):
             start_date=start_date,
         )
 
+        citizenship_qid = binding.get("citizenship", {}).get("value", "")
+        citizenship_code = _qid_from_uri(citizenship_qid)
+        nationality = WIKIDATA_QID_TO_CODE.get(citizenship_code, self.country_code)
+
         return RawPersonRecord(
             full_name=name,
             title=position,
             institution=institution or position,
-            country_code=self.country_code,
+            country_code=nationality,
             source_url=f"https://www.wikidata.org/wiki/{self._country_qid}",
             source_type="WIKIDATA",
             raw_text=f"{name} - {position}",
@@ -523,6 +532,7 @@ class WikidataScraper(BaseScraper):
                 "party": party,
                 "wikidata_qid": wikidata_qid,
                 "wikidata_country_qid": self._country_qid,
+                "position_country_code": self.country_code,
             },
         )
 
