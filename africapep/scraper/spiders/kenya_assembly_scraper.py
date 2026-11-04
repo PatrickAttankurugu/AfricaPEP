@@ -3,10 +3,66 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 from html.parser import HTMLParser
+import re
 
 from africapep.scraper.base_scraper import BaseScraper, RawPersonRecord
 
 SOURCE_URL = "https://www.parliament.go.ke/the-national-assembly/mps"
+
+KNOWN_POST_NOMINALS = {
+    "CBS", "EGH", "EBS", "MBS", "OGW", "HSC", "MP", "CS", "MGH", "SC", "CGH", "QC", "FCA", "FCPA", "CPA",
+}
+
+
+def _is_post_nominal(token: str) -> bool:
+    clean = token.strip().strip(".")
+    if not clean:
+        return False
+    if clean.upper() in KNOWN_POST_NOMINALS:
+        return True
+    # Heuristic: post-nominals are short all-caps tokens (2-4 chars), while name parts are longer
+    if clean.isupper() and 2 <= len(clean) <= 4 and clean.isalpha():
+        return True
+    return False
+
+
+def _clean_name(raw_name: str) -> str:
+    """Clean Kenyan MP name string for entity resolution.
+
+    - Normalizes curly apostrophes to ASCII standard.
+    - Strips leading HON/HONOURABLE (with or without dot).
+    - Removes parenthesized titles like (DR.), (ENG.), (AMB.), (PROF.).
+    - Removes trailing comma-separated post-nominal honours (CBS, EGH, MP, CS, ...).
+    - Converts surname-first comma into space while preserving name parts.
+    - Collapses consecutive whitespace.
+    """
+    if not raw_name:
+        return ""
+
+    name = raw_name.strip()
+    # Normalize curly apostrophes (e.g. KING’OLA, JALANG’O)
+    name = name.replace("’", "'").replace("‘", "'").replace("`", "'")
+
+    # 1. Remove leading HON or HONOURABLE (with optional dot and whitespace)
+    name = re.sub(r"^(?:HON\b\.?|HONOURABLE\b\.?)\s*", "", name, flags=re.IGNORECASE)
+
+    # 2. Remove parenthesized titles such as (DR.), (ENG.), (AMB.), (PROF.)
+    name = re.sub(r"\s*\([A-Za-z\.\s]+\)\s*", " ", name)
+
+    # 3. Handle trailing post-nominals vs surname-first commas
+    parts = [p.strip() for p in name.split(",") if p.strip()]
+    if not parts:
+        return ""
+
+    while parts and _is_post_nominal(parts[-1]):
+        parts.pop()
+
+    # Join remaining parts (converts surname-first comma into space)
+    cleaned = " ".join(parts)
+
+    # 4. Collapse whitespace
+    cleaned = re.sub(r"\s+", " ", cleaned).strip()
+    return cleaned
 
 
 class _MemberParser(HTMLParser):
@@ -83,22 +139,34 @@ class KenyaNationalAssemblyScraper(BaseScraper):
         while True:
             url = SOURCE_URL if page == 0 else f"{SOURCE_URL}?page={page}"
             response = self._get(url)
+            # Ensure correct UTF-8 decoding for apostrophes and accents
+            response.encoding = "utf-8"
             members = parse_members(response.text)
             if not members:
                 break
 
             scraped_at = datetime.now(timezone.utc)
             for member in members:
+                raw_name = member["name"]
+                cleaned_name = _clean_name(raw_name)
                 raw_parts = [
-                    member["name"],
+                    cleaned_name,
                     member.get("constituency"),
                     member.get("county"),
                     member.get("party"),
                     member.get("status"),
                 ]
+                extra_fields = {
+                    key: value
+                    for key, value in member.items()
+                    if key != "name" and value
+                }
+                if raw_name:
+                    extra_fields["name_as_published"] = raw_name
+
                 records.append(
                     RawPersonRecord(
-                        full_name=member["name"],
+                        full_name=cleaned_name,
                         title="Member of Parliament",
                         institution="National Assembly of Kenya",
                         country_code=self.country_code,
@@ -106,11 +174,7 @@ class KenyaNationalAssemblyScraper(BaseScraper):
                         source_type=self.source_type,
                         raw_text=" ".join(filter(None, raw_parts)),
                         scraped_at=scraped_at,
-                        extra_fields={
-                            key: value
-                            for key, value in member.items()
-                            if key != "name" and value
-                        },
+                        extra_fields=extra_fields,
                     )
                 )
             page += 1

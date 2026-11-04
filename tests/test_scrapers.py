@@ -123,8 +123,28 @@ def test_kenya_assembly_scraper_emits_records_from_fixture():
     assert records[0].source_type == "KENYA_NATIONAL_ASSEMBLY"
     assert records[0].country_code == "KE"
     assert records[0].institution == "National Assembly of Kenya"
+    assert records[0].full_name == "KING'OLA PATRICK MAKAU"
+    assert records[0].extra_fields["name_as_published"] == "HON KING'OLA PATRICK MAKAU, CBS"
     assert records[0].extra_fields["party"] == "WDM"
     assert records[0].extra_fields["constituency"] == "MAVOKO"
+
+
+def test_kenya_assembly_name_cleaner_patterns():
+    from africapep.scraper.spiders.kenya_assembly_scraper import _clean_name
+
+    test_cases = [
+        ("HON KING'OLA PATRICK MAKAU, CBS", "KING'OLA PATRICK MAKAU"),
+        ("HON. (DR.) AMOLLO PAUL OTIENDE, CS, CBS", "AMOLLO PAUL OTIENDE"),
+        ("HON.  MEJJADONK,  BENJAMIN GATHIRU", "MEJJADONK BENJAMIN GATHIRU"),
+        ("HON. (ENG.) NZAMBIA KITHUA THUDDEUS", "NZAMBIA KITHUA THUDDEUS"),
+        ("HON. (AMB.) UKUR YATANI", "UKUR YATANI"),
+        ("HON. (PROF.) PETER ANYANG' NYONG'O", "PETER ANYANG' NYONG'O"),
+        ("HON. JALANG’O, MP", "JALANG'O"),
+        ("HON. (ARCH.) PETER, EGH", "PETER"),
+    ]
+
+    for raw, expected in test_cases:
+        assert _clean_name(raw) == expected
 
 
 # ── WikidataScraper ──
