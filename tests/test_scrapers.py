@@ -171,6 +171,7 @@ def test_wikidata_scraper_query_build():
     assert "SELECT" in query
     assert "personLabel" in query
     assert "positionLabel" in query
+    assert "wdt:P102 ?party" in query
 
 
 def test_get_uses_configurable_request_timeout():
@@ -480,6 +481,7 @@ def test_wikidata_scraper_scrape_with_mock():
                     "personLabel": {"value": "Godswill Akpabio", "type": "literal"},
                     "positionLabel": {"value": "President of the Senate", "type": "literal"},
                     "institutionLabel": {"value": "National Assembly", "type": "literal"},
+                    "partyLabel": {"value": "All Progressives Congress", "type": "literal"},
                     "start": {"value": "2023-06-13T00:00:00Z"},
                     "dob": {"value": "1962-12-09T00:00:00Z"},
                 },
@@ -509,6 +511,7 @@ def test_wikidata_scraper_scrape_with_mock():
 
     # Verify extraction of Date of Birth (P569) from the mock SPARQL response
     assert records[1].extra_fields["date_of_birth"] == "1962-12-09"
+    assert records[1].extra_fields["party"] == "All Progressives Congress"
 
 
 def test_wikidata_scraper_deduplicates():
