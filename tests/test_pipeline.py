@@ -35,6 +35,30 @@ class TestNormaliser:
         assert "Kwame Mensah" in variants
         assert len(variants) >= 3
 
+
+    def test_generate_arabic_transliteration_variants(self):
+        from africapep.pipeline.normaliser import generate_name_variants
+
+        cases = [
+            ("Mohammed Salah", "Mohamed Salah"),
+            ("Muhammad Ali", "Mohamad Ali"),
+            ("Abdel Rahman", "Abd el Rahman"),
+            ("Abd al Aziz", "Abdul Aziz"),
+            ("Khaled Hassan", "Chaled Hassan"),
+            ("Youssou Diallo", "Yusuf Diallo"),
+        ]
+        for original, expected in cases:
+            variants = generate_name_variants(original)
+            assert original in variants
+            assert expected in variants
+
+    def test_generate_name_variants_keeps_original_with_transliteration(self):
+        from africapep.pipeline.normaliser import generate_name_variants
+
+        variants = generate_name_variants("Abd el Rahman")
+        assert "Abd el Rahman" in variants
+        assert any(value.lower() in {"abdel rahman", "abdul rahman", "abd al rahman"} for value in variants)
+
     def test_normalise_country(self):
         from africapep.pipeline.normaliser import normalise_country
 

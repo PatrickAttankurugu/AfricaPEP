@@ -201,12 +201,19 @@ _TRANSLITERATION_MAP = {
 
 # Common French-Arabic name prefix alternates found in North/West Africa
 _NAME_PREFIX_ALTERNATES = {
-    "abdoul": ["abdul", "abdel"],
-    "abdul": ["abdoul", "abdel"],
-    "abdel": ["abdul", "abdoul"],
+    "abdoul": ["abdul", "abdel", "abd el", "abd al"],
+    "abdul": ["abdoul", "abdel", "abd el", "abd al"],
+    "abdel": ["abdul", "abdoul", "abd el", "abd al"],
+    "abd el": ["abdel", "abdul", "abd al"],
+    "abd al": ["abdel", "abdul", "abd el"],
     "mohammed": ["mohamed", "muhammad", "mohamad"],
     "mohamed": ["mohammed", "muhammad", "mohamad"],
     "muhammad": ["mohammed", "mohamed", "mohamad"],
+    "mohamad": ["mohammed", "mohamed", "muhammad"],
+    "khaled": ["chaled"],
+    "chaled": ["khaled"],
+    "youssou": ["yusuf"],
+    "yusuf": ["youssou"],
     "oumar": ["omar", "umar"],
     "omar": ["oumar", "umar"],
     "ousmane": ["osman", "uthman", "othman"],
@@ -238,6 +245,14 @@ def _transliterate_name(name: str) -> str:
     return ascii_name
 
 
+def _format_name_alternate(alternate: str, uppercase: bool) -> str:
+    """Preserve name casing while keeping particles such as "el" lowercase."""
+    if not uppercase:
+        return alternate
+    words = alternate.split()
+    return " ".join([words[0].title(), *(word.lower() for word in words[1:])])
+
+
 def generate_name_variants(full_name: str) -> list[str]:
     """Generate alternative name forms for fuzzy matching.
 
@@ -264,15 +279,27 @@ def generate_name_variants(full_name: str) -> list[str]:
     if transliterated != full_name:
         variants.add(transliterated)
 
-    # Generate prefix alternates for French/Arabic name parts
+    # Generate prefix/token alternates for French/Arabic name parts.
+    # Keep the original form and add each alternative independently to avoid
+    # producing a large cartesian product for long names.
     for i, part in enumerate(parts):
         part_lower = part.lower()
         if part_lower in _NAME_PREFIX_ALTERNATES:
             for alternate in _NAME_PREFIX_ALTERNATES[part_lower]:
                 alt_parts = list(parts)
-                # Preserve original casing style
-                alt_parts[i] = alternate.title() if part[0].isupper() else alternate
+                alt_parts[i] = _format_name_alternate(alternate, part[0].isupper())
                 variants.add(" ".join(alt_parts))
+
+    # Handle multi-word forms such as "Abd el" and "Abd al" as well as
+    # token variants that are not prefixes (e.g. Khaled/Chaled, Youssou/Yusuf).
+    original = " ".join(parts)
+    for source, alternates in _NAME_PREFIX_ALTERNATES.items():
+        if " " not in source:
+            continue
+        pattern = re.compile(rf"(?i)\b{re.escape(source)}\b")
+        if pattern.search(original):
+            for alternate in alternates:
+                variants.add(pattern.sub(lambda match: _format_name_alternate(alternate, match.group(0)[0].isupper()), original))
 
     return list(variants)
 
