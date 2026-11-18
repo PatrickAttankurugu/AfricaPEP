@@ -163,6 +163,23 @@ async def search_peps(
     )
 
 
+def _count_source_records(db) -> int:
+    """Row count of source_records, from the planner estimate when available.
+
+    source_records holds tens of millions of rows, so an exact COUNT(*) takes
+    about 30 seconds and made /stats time out. pg_class.reltuples is refreshed
+    by autovacuum's ANALYZE and is close enough for a public statistic. It is
+    -1 (or absent) when the table has never been analysed; fall back to an
+    exact count then, which is cheap because such a table is new or small.
+    """
+    estimate = db.execute(text(
+        "SELECT reltuples FROM pg_class WHERE oid = 'source_records'::regclass"
+    )).scalar()
+    if estimate is not None and estimate >= 0:
+        return int(estimate)
+    return db.execute(text("SELECT COUNT(*) FROM source_records")).scalar() or 0
+
+
 def _run_stats():
     """Execute stats queries synchronously (called via to_thread)."""
     with get_db() as db:
@@ -170,7 +187,7 @@ def _run_stats():
         active = db.execute(text(
             "SELECT COUNT(*) FROM pep_profiles WHERE is_active_pep = true"
         )).scalar() or 0
-        sources = db.execute(text("SELECT COUNT(*) FROM source_records")).scalar() or 0
+        sources = _count_source_records(db)
 
         country_rows = db.execute(text(
             "SELECT COALESCE(nationality, 'XX') AS c, COUNT(*) AS n "
